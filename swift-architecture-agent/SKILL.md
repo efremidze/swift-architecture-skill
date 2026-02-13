@@ -1,6 +1,6 @@
 ---
 name: swift-architecture-agent
-description: Architecture selection and implementation guidance for Swift iOS codebases, with architecture-specific playbooks and review checklists. Use when designing new features, refactoring existing modules, reviewing pull requests, or debugging maintainability issues in SwiftUI/UIKit projects and you need concrete guidance for MVVM, MVI, TCA, Clean Architecture, or VIPER patterns.
+description: Architecture selection and implementation guidance for Swift iOS codebases, with architecture-specific playbooks and review checklists. Use when designing new features, refactoring existing modules, reviewing pull requests, or debugging maintainability issues in SwiftUI/UIKit projects and you need concrete guidance for MVVM, MVI, TCA, Clean Architecture, VIPER, or Reactive patterns.
 ---
 
 # Swift Architecture Agent
@@ -17,14 +17,15 @@ Use this skill as an architecture router for Swift feature work. Select the arch
 4. If the user explicitly asks for TCA, load `references/tca.md`.
 5. If the user explicitly asks for Clean Architecture, load `references/clean-architecture.md`.
 6. If the user explicitly asks for VIPER, load `references/viper.md`.
-7. If no architecture is specified, infer one from stated constraints (state complexity, team familiarity, testing goals, and effect orchestration needs) and explain the recommendation briefly.
-8. Read only the relevant architecture reference file(s) from `references/`.
-9. Convert the selected guide into concrete deliverables for the user request:
+7. If the user explicitly asks for Reactive architecture, load `references/reactive.md`.
+8. If no architecture is specified, infer one from stated constraints (state complexity, team familiarity, testing goals, and effect orchestration needs) and explain the recommendation briefly.
+9. Read only the relevant architecture reference file(s) from `references/`.
+10. Convert the selected guide into concrete deliverables for the user request:
 - file and module structure
 - state and dependency boundaries
 - concurrency and cancellation strategy
 - testing strategy
-10. End with a concise validation checklist for code review.
+11. End with a concise validation checklist for code review.
 
 ## Architecture References
 
@@ -33,6 +34,7 @@ Use this skill as an architecture router for Swift feature work. Select the arch
 - TCA: `references/tca.md`
 - Clean Architecture: `references/clean-architecture.md`
 - VIPER: `references/viper.md`
+- Reactive: `references/reactive.md`
 
 ## Output Requirements
 

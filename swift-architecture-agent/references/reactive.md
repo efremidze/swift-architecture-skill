@@ -1,0 +1,129 @@
+# Reactive Architecture Playbook (Swift + Combine/RxSwift)
+
+Use this reference when features are stream-driven (search, live updates, real-time feeds) and benefit from declarative event pipelines.
+
+## Core Philosophy
+
+Model:
+- inputs as streams
+- transformations as operators
+- state/output as streams
+
+```text
+Input -> Publisher/Observable chain -> State -> UI
+```
+
+Keep stream composition in presentation or dedicated reactive layer, not in views.
+
+## Canonical Combine Pattern
+
+```swift
+final class SearchViewModel: ObservableObject {
+    @Published var query = ""
+    @Published private(set) var results: [String] = []
+
+    private var cancellables = Set<AnyCancellable>()
+
+    init(service: SearchService) {
+        $query
+            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+            .removeDuplicates()
+            .flatMap { service.search($0) }
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$results)
+    }
+}
+```
+
+Rules:
+- debounce user text input
+- remove duplicates where meaningful
+- hop to main thread before UI-bound state writes
+- keep cancellables tied to lifecycle
+
+## Operator Guidance
+
+- `debounce`: stabilize noisy user input (search fields)
+- `throttle`: limit high-frequency events (scroll, sensor)
+- `flatMap`: merge concurrent async work when all responses matter
+- `switchToLatest`: keep only newest request (typeahead/search)
+- `share`: avoid duplicate side effects for multiple subscribers
+- `catch`: recover from recoverable errors with fallback streams
+
+Prefer `switchToLatest` over nested subscriptions for request replacement flows.
+
+## RxSwift Mapping Notes
+
+Combine and RxSwift are conceptually equivalent for this skill:
+- `AnyPublisher` <-> `Observable`
+- `AnyCancellable` <-> `DisposeBag`
+- `receive(on:)` <-> `observe(on:)`
+- `subscribe(on:)` semantics should be applied intentionally to offload heavy work
+
+Keep architecture guidance operator-focused so it applies across frameworks.
+
+## Error Handling Pattern
+
+Recover in stream boundaries and expose user-safe state:
+
+```swift
+service.search(query)
+    .map(ResultState.success)
+    .catch { Just(.failure($0.localizedDescription)) }
+```
+
+Avoid stream termination for expected transient failures when the UI should stay interactive.
+
+## Anti-Patterns and Fixes
+
+1. Nested subscriptions:
+- Smell: subscribe inside subscribe, difficult cancellation and reasoning.
+- Fix: compose with `flatMap`/`switchToLatest`.
+
+2. Missing cancellation/disposal:
+- Smell: stream continues after screen deallocation or rebind.
+- Fix: store `AnyCancellable` or use `DisposeBag` lifecycle correctly.
+
+3. Business logic in view:
+- Smell: view constructs pipelines and calls services directly.
+- Fix: move stream orchestration to ViewModel/Presenter layer.
+
+4. UI thread violations:
+- Smell: publishing UI-bound state off main thread.
+- Fix: apply `receive(on:)` / `observe(on:)` before UI mutations.
+
+5. Unbounded fan-out:
+- Smell: many subscribers trigger duplicate network calls.
+- Fix: use `share`/multicasting where side effects should be single-execution.
+
+## Testing Strategy
+
+Test stream behavior deterministically:
+- input -> expected output transitions
+- debounce/throttle behavior with controlled schedulers
+- cancellation behavior for replaced requests
+- error fallback behavior
+
+Rules:
+- inject schedulers/time providers for tests
+- avoid real-time sleeps when possible
+- assert emitted state sequence, not internal operator details
+
+## When to Prefer Reactive Architecture
+
+Prefer when:
+- feature is event-heavy and stream-oriented
+- real-time updates and transformations are core behavior
+- composable async pipelines provide clarity over imperative callbacks
+
+Prefer MVI/TCA when:
+- explicit state-machine and strict reducer flow are primary requirements
+
+## PR Review Checklist
+
+- Streams are composed without nested subscriptions.
+- Cancellation/disposal is lifecycle-safe.
+- UI-bound updates are marshaled to main thread.
+- Operators match intent (`debounce`, `throttle`, `switchToLatest`, `share`).
+- Views do not hold business pipeline logic.
+- Error handling keeps UX resilient for transient failures.
