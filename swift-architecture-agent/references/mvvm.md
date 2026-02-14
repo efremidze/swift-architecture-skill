@@ -244,6 +244,21 @@ Test strategy:
 - Avoid sleep-based tests; use controllable stub responses.
 - If ViewModel is `@MainActor`, run assertions through `await MainActor.run`.
 
+## When to Prefer MVVM
+
+Prefer MVVM when:
+- screen-level state management is the primary concern
+- team familiarity with reactive/observable patterns is strong
+- feature complexity is moderate and does not require strict unidirectional flow
+- rapid iteration and low ceremony are valued
+
+Prefer MVI/TCA when:
+- deterministic state-machine modeling is required
+- complex effect orchestration and cancellation correctness are critical
+
+Prefer Clean Architecture/VIPER when:
+- strict layer boundaries and use-case isolation matter more than presentation-layer simplicity
+
 ## PR Review Checklist
 
 - View does not call services directly.

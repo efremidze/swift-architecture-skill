@@ -131,6 +131,74 @@ Rules:
 - avoid real-time sleeps when possible
 - assert emitted state sequence, not internal operator details
 
+```swift
+import Combine
+import XCTest
+
+final class SearchViewModelTests: XCTestCase {
+    func test_queryEmitsResults() {
+        let subject = PassthroughSubject<[String], Error>()
+        let stubService = StubSearchService(subject: subject)
+        let scheduler = DispatchQueue.test
+        let vm = SearchViewModel(service: stubService, scheduler: scheduler.eraseToAnyScheduler())
+
+        var collected: [[String]] = []
+        let cancellable = vm.$results
+            .dropFirst()
+            .sink { collected.append($0) }
+
+        vm.query = "swift"
+
+        // Advance past debounce interval.
+        scheduler.advance(by: .milliseconds(300))
+
+        // Simulate service response.
+        subject.send(["SwiftUI", "Swift"])
+        subject.send(completion: .finished)
+
+        // Advance to process receive(on:).
+        scheduler.advance()
+
+        XCTAssertEqual(collected, [["SwiftUI", "Swift"]])
+        cancellable.cancel()
+    }
+}
+
+struct StubSearchService: SearchService {
+    let subject: PassthroughSubject<[String], Error>
+    func search(_ query: String) -> AnyPublisher<[String], Error> {
+        subject.eraseToAnyPublisher()
+    }
+}
+```
+
+To support scheduler injection, parameterize the ViewModel:
+
+```swift
+final class SearchViewModel<S: Scheduler>: ObservableObject {
+    @Published var query = ""
+    @Published private(set) var results: [String] = []
+
+    private var cancellables = Set<AnyCancellable>()
+
+    init(service: SearchService, scheduler: S) where S.SchedulerTimeType == DispatchQueue.SchedulerTimeType {
+        $query
+            .debounce(for: .milliseconds(300), scheduler: scheduler)
+            .removeDuplicates()
+            .map { query in
+                service.search(query)
+                    .replaceError(with: [])
+            }
+            .switchToLatest()
+            .receive(on: scheduler)
+            .sink { [weak self] values in
+                self?.results = values
+            }
+            .store(in: &cancellables)
+    }
+}
+```
+
 ## When to Prefer Reactive Architecture
 
 Prefer when:
