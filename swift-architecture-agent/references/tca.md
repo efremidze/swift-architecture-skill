@@ -30,7 +30,7 @@ struct CounterFeature {
   struct State: Equatable {
     var count = 0
     var isLoading = false
-    var alert: AlertState<Action.Alert>?
+    @Presents var alert: AlertState<Action.Alert>?
   }
 
   enum Action: Equatable {
@@ -73,6 +73,7 @@ struct CounterFeature {
         return .none
       }
     }
+    .ifLet(\.$alert, action: \.alert)
   }
 }
 ```
@@ -214,7 +215,7 @@ If cancellation cannot fully protect order, add request versioning.
 Model navigation in state and drive it through actions.
 
 Common shapes:
-- `alert: AlertState<Action.Alert>?`
+- `@Presents var alert: AlertState<Action.Alert>?`
 - `destination: Destination.State?`
 
 Keep navigation decisions in reducers and keep views declarative.
