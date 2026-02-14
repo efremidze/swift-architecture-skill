@@ -28,9 +28,16 @@ final class SearchViewModel: ObservableObject {
         $query
             .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
             .removeDuplicates()
-            .flatMap { service.search($0) }
+            .map { query in
+                service.search(query)
+                    .replaceError(with: [])
+            }
+            .switchToLatest()
             .receive(on: DispatchQueue.main)
-            .assign(to: &$results)
+            .sink { [weak self] values in
+                self?.results = values
+            }
+            .store(in: &cancellables)
     }
 }
 ```

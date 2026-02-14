@@ -41,11 +41,11 @@ Data/
 Use explicit state types over boolean combinations.
 
 ```swift
-enum Loadable<Value> {
+enum Loadable<Value: Equatable>: Equatable {
     case idle
     case loading
     case loaded(Value)
-    case failed(Error)
+    case failed(String)
 }
 
 struct FeedState: Equatable {
@@ -93,7 +93,7 @@ final class FeedViewModel {
             } catch is CancellationError {
                 // Ignore cancellation.
             } catch {
-                state.load = .failed(error)
+                state.load = .failed(error.localizedDescription)
             }
         }
     }
@@ -136,7 +136,7 @@ final class FeedViewModel: ObservableObject {
             } catch is CancellationError {
                 // Ignore cancellation.
             } catch {
-                state.load = .failed(error)
+                state.load = .failed(error.localizedDescription)
             }
         }
     }

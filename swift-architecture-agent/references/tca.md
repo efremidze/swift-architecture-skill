@@ -167,7 +167,17 @@ Use `IdentifiedArrayOf` and `forEach` for collections with stable identity.
 
 ```swift
 struct NumberFactClient {
-  var fetch: (Int) async -> String
+  var fetch: @Sendable (Int) async -> String
+}
+
+extension NumberFactClient: DependencyKey {
+  static let liveValue = Self(fetch: { number in
+    "\(number) is a good number."
+  })
+
+  static let testValue = Self(fetch: { _ in
+    "Test fact"
+  })
 }
 
 extension DependencyValues {

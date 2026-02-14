@@ -76,7 +76,17 @@ enum Effect<Action> {
 - Avoid direct side effects inside reducer branches.
 
 ```swift
-func reduce(state: inout CounterState, intent: CounterIntent) -> Effect<CounterAction>? {
+protocol CounterServicing {
+    func increment() async throws -> Int
+    func decrement() async throws -> Int
+    func reset() async throws -> Int
+}
+
+func reduce(
+    state: inout CounterState,
+    intent: CounterIntent,
+    service: CounterServicing
+) -> Effect<CounterAction>? {
     switch intent {
     case .incrementTapped:
         state.isLoading = true
@@ -208,9 +218,20 @@ struct CounterView: View {
 Example first test:
 
 ```swift
+struct StubCounterService: CounterServicing {
+    func increment() async throws -> Int { 1 }
+    func decrement() async throws -> Int { 0 }
+    func reset() async throws -> Int { 0 }
+}
+
 func test_increment_setsLoading_andReturnsEffect() {
     var state = CounterState()
-    let effect = reduce(state: &state, intent: .incrementTapped)
+    let service = StubCounterService()
+    let effect = reduce(
+        state: &state,
+        intent: .incrementTapped,
+        service: service
+    )
     XCTAssertTrue(state.isLoading)
     XCTAssertNotNil(effect)
 }

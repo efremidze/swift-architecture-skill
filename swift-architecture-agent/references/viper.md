@@ -75,6 +75,10 @@ protocol ProfileInteracting {
     func loadUser() async throws -> User
 }
 
+protocol ProfileRouting {
+    func showSettings()
+}
+
 final class ProfilePresenter {
     weak var view: ProfileView?
     private let interactor: ProfileInteracting
