@@ -67,7 +67,9 @@ struct FeedState: Equatable {
 
 ## ViewModel Pattern
 
-Keep mutation on main actor, own task handles, and cancel stale work.
+Keep mutation on main actor and cancel stale work.
+
+Use `async` methods for work triggered by `.task` so the view-managed cooperative task handles cancellation automatically. Use internal `Task` handles only for user-initiated actions (e.g., refresh) that are not tied to the view's task lifecycle.
 
 ### Modern Pattern (iOS 17+ / `@Observable`)
 
@@ -84,26 +86,31 @@ final class FeedViewModel {
         self.repository = repository
     }
 
-    func onAppear() {
+    /// Called from `.task` — async so the view-managed task
+    /// handles cancellation automatically on disappear.
+    func loadInitialData() async {
         guard case .idle = state.load else { return }
-        load()
+        await loadData()
     }
 
-    func load() {
+    /// User-initiated refresh — spawns its own task so
+    /// callers don't need to await.
+    func refresh() {
         loadTask?.cancel()
-        state.load = .loading
+        loadTask = Task { await loadData() }
+    }
 
-        loadTask = Task {
-            do {
-                let page = try await repository.fetchPage(cursor: nil)
-                try Task.checkCancellation()
-                state.items = page.items.map(FeedItemViewData.init)
-                state.load = .loaded(())
-            } catch is CancellationError {
-                // Ignore cancellation.
-            } catch {
-                state.load = .failed(error.localizedDescription)
-            }
+    private func loadData() async {
+        state.load = .loading
+        do {
+            let page = try await repository.fetchPage(cursor: nil)
+            try Task.checkCancellation()
+            state.items = page.items.map(FeedItemViewData.init)
+            state.load = .loaded(())
+        } catch is CancellationError {
+            state.load = .idle
+        } catch {
+            state.load = .failed(error.localizedDescription)
         }
     }
 
@@ -127,26 +134,31 @@ final class FeedViewModel: ObservableObject {
         self.repository = repository
     }
 
-    func onAppear() {
+    /// Called from `.task` — async so the view-managed task
+    /// handles cancellation automatically on disappear.
+    func loadInitialData() async {
         guard case .idle = state.load else { return }
-        load()
+        await loadData()
     }
 
-    func load() {
+    /// User-initiated refresh — spawns its own task so
+    /// callers don't need to await.
+    func refresh() {
         loadTask?.cancel()
-        state.load = .loading
+        loadTask = Task { await loadData() }
+    }
 
-        loadTask = Task {
-            do {
-                let page = try await repository.fetchPage(cursor: nil)
-                try Task.checkCancellation()
-                state.items = page.items.map(FeedItemViewData.init)
-                state.load = .loaded(())
-            } catch is CancellationError {
-                // Ignore cancellation.
-            } catch {
-                state.load = .failed(error.localizedDescription)
-            }
+    private func loadData() async {
+        state.load = .loading
+        do {
+            let page = try await repository.fetchPage(cursor: nil)
+            try Task.checkCancellation()
+            state.items = page.items.map(FeedItemViewData.init)
+            state.load = .loaded(())
+        } catch is CancellationError {
+            state.load = .idle
+        } catch {
+            state.load = .failed(error.localizedDescription)
         }
     }
 
@@ -189,7 +201,7 @@ struct FeedView: View {
         List(viewModel.state.items, id: \.id) { item in
             Text(item.title)
         }
-        .task { viewModel.onAppear() }
+        .task { await viewModel.loadInitialData() }
     }
 }
 ```
@@ -204,7 +216,7 @@ struct FeedView: View {
         List(viewModel.state.items, id: \.id) { item in
             Text(item.title)
         }
-        .task { viewModel.onAppear() }
+        .task { await viewModel.loadInitialData() }
     }
 }
 ```
