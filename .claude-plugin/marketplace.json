@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "slug": "swift-architecture-skill",
+  "name": "Swift Architecture Skill",
+  "summary": "",
+  "description": "",
+  "categories": [
+    "development",
+    "mobile",
+    "ios"
+  ],
+  "tags": [
+    "swift",
+    "swiftui",
+    "architecture",
+    "mvvm",
+    "mvi",
+    "tca",
+    "clean-architecture",
+    "viper",
+    "reactive"
+  ],
+  "skills": [
+    {
+      "name": "swift-architecture-agent",
+      "path": "swift-architecture-agent/SKILL.md"
+    }
+  ]
+}
