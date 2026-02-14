@@ -48,6 +48,15 @@ enum Loadable<Value: Equatable>: Equatable {
     case failed(String)
 }
 
+struct FeedItemViewData: Identifiable, Equatable {
+    let id: UUID
+    let title: String
+}
+
+struct ToastState: Equatable {
+    let message: String
+}
+
 struct FeedState: Equatable {
     var load: Loadable<Void> = .idle
     var items: [FeedItemViewData] = []

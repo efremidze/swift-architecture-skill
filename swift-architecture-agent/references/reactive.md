@@ -74,9 +74,24 @@ Keep architecture guidance operator-focused so it applies across frameworks.
 Recover in stream boundaries and expose user-safe state:
 
 ```swift
-service.search(query)
-    .map(ResultState.success)
-    .catch { Just(.failure($0.localizedDescription)) }
+protocol SearchService {
+    func search(_ query: String) -> AnyPublisher<[String], Error>
+}
+
+enum SearchResultState: Equatable {
+    case loaded([String])
+    case failed(String)
+}
+
+func searchState(
+    query: String,
+    service: SearchService
+) -> AnyPublisher<SearchResultState, Never> {
+    service.search(query)
+        .map(SearchResultState.loaded)
+        .catch { Just(.failed($0.localizedDescription)) }
+        .eraseToAnyPublisher()
+}
 ```
 
 Avoid stream termination for expected transient failures when the UI should stay interactive.
