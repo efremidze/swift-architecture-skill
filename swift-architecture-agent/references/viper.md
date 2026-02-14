@@ -67,6 +67,7 @@ For modular repos, keep one VIPER module per feature to prevent cross-feature le
 Use protocols at boundaries and keep references directional.
 
 ```swift
+@MainActor
 protocol ProfileView: AnyObject {
     func show(name: String)
 }
@@ -79,6 +80,7 @@ protocol ProfileRouting {
     func showSettings()
 }
 
+@MainActor
 final class ProfilePresenter {
     weak var view: ProfileView?
     private let interactor: ProfileInteracting
@@ -105,6 +107,7 @@ final class ProfilePresenter {
 ```
 
 Keep `view` weak to avoid retain cycles.
+Keep presenter/view updates on the main actor so UI calls are thread-safe.
 
 ## Assembly Guidance
 
