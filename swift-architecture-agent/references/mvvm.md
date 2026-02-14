@@ -88,19 +88,19 @@ final class FeedViewModel {
 
     /// Called from `.task` — async so the view-managed task
     /// handles cancellation automatically on disappear.
-    func loadInitialData() async {
+    func loadData() async {
         guard case .idle = state.load else { return }
-        await loadData()
+        await performLoad()
     }
 
     /// User-initiated refresh — spawns its own task so
     /// callers don't need to await.
     func refresh() {
         loadTask?.cancel()
-        loadTask = Task { await loadData() }
+        loadTask = Task { await performLoad() }
     }
 
-    private func loadData() async {
+    private func performLoad() async {
         state.load = .loading
         do {
             let page = try await repository.fetchPage(cursor: nil)
@@ -136,19 +136,19 @@ final class FeedViewModel: ObservableObject {
 
     /// Called from `.task` — async so the view-managed task
     /// handles cancellation automatically on disappear.
-    func loadInitialData() async {
+    func loadData() async {
         guard case .idle = state.load else { return }
-        await loadData()
+        await performLoad()
     }
 
     /// User-initiated refresh — spawns its own task so
     /// callers don't need to await.
     func refresh() {
         loadTask?.cancel()
-        loadTask = Task { await loadData() }
+        loadTask = Task { await performLoad() }
     }
 
-    private func loadData() async {
+    private func performLoad() async {
         state.load = .loading
         do {
             let page = try await repository.fetchPage(cursor: nil)
@@ -201,7 +201,7 @@ struct FeedView: View {
         List(viewModel.state.items, id: \.id) { item in
             Text(item.title)
         }
-        .task { await viewModel.loadInitialData() }
+        .task { await viewModel.loadData() }
     }
 }
 ```
@@ -216,7 +216,7 @@ struct FeedView: View {
         List(viewModel.state.items, id: \.id) { item in
             Text(item.title)
         }
-        .task { await viewModel.loadInitialData() }
+        .task { await viewModel.loadData() }
     }
 }
 ```
