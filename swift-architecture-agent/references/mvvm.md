@@ -69,7 +69,7 @@ struct FeedState: Equatable {
 
 Keep mutation on main actor and cancel stale work.
 
-Use `async` methods for work triggered by `.task` so the view-managed cooperative task handles cancellation automatically. Use internal `Task` handles only for user-initiated actions (e.g., refresh) that are not tied to the view's task lifecycle.
+Use `async` methods for work triggered by `.task` so the view-managed cooperative task handles cancellation automatically.
 
 ### Modern Pattern (iOS 17+ / `@Observable`)
 
@@ -80,27 +80,13 @@ final class FeedViewModel {
     private(set) var state = FeedState()
 
     private let repository: FeedRepository
-    private var loadTask: Task<Void, Never>?
 
     init(repository: FeedRepository) {
         self.repository = repository
     }
 
-    /// Called from `.task` — async so the view-managed task
-    /// handles cancellation automatically on disappear.
     func loadData() async {
         guard case .idle = state.load else { return }
-        await performLoad()
-    }
-
-    /// User-initiated refresh — spawns its own task so
-    /// callers don't need to await.
-    func refresh() {
-        loadTask?.cancel()
-        loadTask = Task { await performLoad() }
-    }
-
-    private func performLoad() async {
         state.load = .loading
         do {
             let page = try await repository.fetchPage(cursor: nil)
@@ -112,10 +98,6 @@ final class FeedViewModel {
         } catch {
             state.load = .failed(error.localizedDescription)
         }
-    }
-
-    deinit {
-        loadTask?.cancel()
     }
 }
 ```
@@ -128,27 +110,13 @@ final class FeedViewModel: ObservableObject {
     @Published private(set) var state = FeedState()
 
     private let repository: FeedRepository
-    private var loadTask: Task<Void, Never>?
 
     init(repository: FeedRepository) {
         self.repository = repository
     }
 
-    /// Called from `.task` — async so the view-managed task
-    /// handles cancellation automatically on disappear.
     func loadData() async {
         guard case .idle = state.load else { return }
-        await performLoad()
-    }
-
-    /// User-initiated refresh — spawns its own task so
-    /// callers don't need to await.
-    func refresh() {
-        loadTask?.cancel()
-        loadTask = Task { await performLoad() }
-    }
-
-    private func performLoad() async {
         state.load = .loading
         do {
             let page = try await repository.fetchPage(cursor: nil)
@@ -160,10 +128,6 @@ final class FeedViewModel: ObservableObject {
         } catch {
             state.load = .failed(error.localizedDescription)
         }
-    }
-
-    deinit {
-        loadTask?.cancel()
     }
 }
 ```
