@@ -60,6 +60,52 @@ struct FeedState: Equatable {
 
 Keep mutation on main actor, own task handles, and cancel stale work.
 
+### Modern Pattern (iOS 17+ / `@Observable`)
+
+```swift
+@MainActor
+@Observable
+final class FeedViewModel {
+    private(set) var state = FeedState()
+
+    private let repository: FeedRepository
+    private var loadTask: Task<Void, Never>?
+
+    init(repository: FeedRepository) {
+        self.repository = repository
+    }
+
+    func onAppear() {
+        guard case .idle = state.load else { return }
+        load()
+    }
+
+    func load() {
+        loadTask?.cancel()
+        state.load = .loading
+
+        loadTask = Task {
+            do {
+                let page = try await repository.fetchPage(cursor: nil)
+                try Task.checkCancellation()
+                state.items = page.items.map(FeedItemViewData.init)
+                state.load = .loaded(())
+            } catch is CancellationError {
+                // Ignore cancellation.
+            } catch {
+                state.load = .failed(error)
+            }
+        }
+    }
+
+    deinit {
+        loadTask?.cancel()
+    }
+}
+```
+
+### Legacy Pattern (iOS 16 and earlier / `ObservableObject`)
+
 ```swift
 @MainActor
 final class FeedViewModel: ObservableObject {
@@ -123,6 +169,36 @@ enum FeedAssembly {
 - Keep business transforms out of `body`/`cellForRowAt`.
 - Expose dedicated `ViewData` structs for formatting and display concerns.
 - Keep View-local state only for transient UI details (focus, scroll position).
+
+SwiftUI view with `@Observable` ViewModel (iOS 17+):
+
+```swift
+struct FeedView: View {
+    @State var viewModel: FeedViewModel
+
+    var body: some View {
+        List(viewModel.state.items, id: \.id) { item in
+            Text(item.title)
+        }
+        .task { viewModel.onAppear() }
+    }
+}
+```
+
+SwiftUI view with `ObservableObject` ViewModel (iOS 16 and earlier):
+
+```swift
+struct FeedView: View {
+    @StateObject var viewModel: FeedViewModel
+
+    var body: some View {
+        List(viewModel.state.items, id: \.id) { item in
+            Text(item.title)
+        }
+        .task { viewModel.onAppear() }
+    }
+}
+```
 
 ## Anti-Patterns and Fixes
 

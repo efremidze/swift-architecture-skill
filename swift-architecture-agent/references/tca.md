@@ -84,6 +84,29 @@ Rules:
 - never mutate business state directly in the view
 - observe the smallest practical state slice
 
+### Modern Pattern (TCA 1.7+ with `@ObservableState`)
+
+With `@ObservableState`, views access store properties directly — no `WithViewStore` needed.
+
+```swift
+struct CounterView: View {
+  @Bindable var store: StoreOf<CounterFeature>
+
+  var body: some View {
+    VStack {
+      Text("Count: \(store.count)")
+      Button("+") { store.send(.incrementTapped) }
+      Button("-") { store.send(.decrementTapped) }
+      Button("Fact") { store.send(.factButtonTapped) }
+      if store.isLoading { ProgressView() }
+    }
+    .alert($store.scope(state: \.alert, action: \.alert))
+  }
+}
+```
+
+### Legacy Pattern (TCA < 1.7 with `WithViewStore`)
+
 ```swift
 struct CounterView: View {
   let store: StoreOf<CounterFeature>
@@ -105,6 +128,7 @@ struct CounterView: View {
 
 UIKit guidance:
 - keep a store in the view controller
+- use `observe { }` to subscribe to state changes
 - centralize rendering in one method
 - cancel subscriptions on deinit
 
