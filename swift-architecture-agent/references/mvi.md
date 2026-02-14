@@ -57,6 +57,36 @@ enum CounterAction {
 }
 ```
 
+Action reducer for completing async transitions:
+
+```swift
+func reduce(state: inout CounterState, action: CounterAction) {
+    switch action {
+    case .incrementResponse(.success(let value)):
+        state.count = value
+        state.isLoading = false
+        state.error = nil
+    case .incrementResponse(.failure(let error)):
+        state.isLoading = false
+        state.error = error.localizedDescription
+    case .decrementResponse(.success(let value)):
+        state.count = value
+        state.isLoading = false
+        state.error = nil
+    case .decrementResponse(.failure(let error)):
+        state.isLoading = false
+        state.error = error.localizedDescription
+    case .resetResponse(.success(let value)):
+        state.count = value
+        state.isLoading = false
+        state.error = nil
+    case .resetResponse(.failure(let error)):
+        state.isLoading = false
+        state.error = error.localizedDescription
+    }
+}
+```
+
 ### Effect
 
 - Encapsulate async side effects.
@@ -123,6 +153,7 @@ final class Store<State, Intent, Action>: ObservableObject {
 
     private let reduceIntent: (inout State, Intent) -> Effect<Action>?
     private let reduceAction: (inout State, Action) -> Void
+    private var activeTasks: [AnyHashable: Task<Void, Never>] = [:]
 
     init(
         initial: State,
@@ -148,9 +179,87 @@ final class Store<State, Intent, Action>: ObservableObject {
                 do {
                     let action = try await operation()
                     reduceAction(&state, action)
+                } catch is CancellationError {
+                    // Task was cancelled; no state update.
                 } catch {
-                    // Map to failure action as needed.
+                    // Map unexpected errors to a failure action if needed.
                 }
+            }
+        case .cancellable(let id, let operation):
+            activeTasks[id]?.cancel()
+            activeTasks[id] = Task {
+                do {
+                    let action = try await operation()
+                    reduceAction(&state, action)
+                } catch is CancellationError {
+                    // Cancelled by a newer request for the same id.
+                } catch {
+                    // Map unexpected errors to a failure action if needed.
+                }
+                activeTasks[id] = nil
+            }
+        }
+    }
+
+    deinit {
+        for task in activeTasks.values { task.cancel() }
+    }
+}
+```
+
+Update `Effect` to support cancellation:
+
+```swift
+enum Effect<Action> {
+    case none
+    case run(() async throws -> Action)
+    case cancellable(id: AnyHashable, () async throws -> Action)
+}
+```
+
+## Composed Reducers
+
+Split reducers by feature and combine for scalability.
+
+```swift
+func appReduce(
+    state: inout AppState,
+    intent: AppIntent,
+    services: AppServices
+) -> Effect<AppAction>? {
+    switch intent {
+    case .counter(let counterIntent):
+        return counterReduce(
+            state: &state.counter,
+            intent: counterIntent,
+            service: services.counter
+        ).map { effect in
+            effect.map(AppAction.counter)
+        }
+    case .settings(let settingsIntent):
+        return settingsReduce(
+            state: &state.settings,
+            intent: settingsIntent,
+            service: services.settings
+        ).map { effect in
+            effect.map(AppAction.settings)
+        }
+    }
+}
+```
+
+Add a `map` helper on `Effect` to lift child actions into parent actions:
+
+```swift
+extension Effect {
+    func map<B>(_ transform: @escaping (Action) -> B) -> Effect<B> {
+        switch self {
+        case .none:
+            return .none
+        case .run(let operation):
+            return .run {
+                let action = try await operation()
+                return transform(action)
             }
         }
     }

@@ -117,6 +117,77 @@ Rules:
 - inject protocols into use cases and presentation
 - avoid global singletons as hidden dependencies
 
+## DTO to Domain Mapping
+
+Map external models to domain entities at the data-layer boundary. Keep mapping logic in dedicated mapper types or repository implementations.
+
+```swift
+struct UserDTO: Decodable {
+    let id: String
+    let full_name: String
+    let created_at: String
+}
+
+enum UserMapper {
+    static func toDomain(_ dto: UserDTO) throws -> User {
+        guard let id = UUID(uuidString: dto.id) else {
+            throw MappingError.invalidID(dto.id)
+        }
+        return User(id: id, name: dto.full_name)
+    }
+}
+
+enum MappingError: Error {
+    case invalidID(String)
+}
+
+final class LiveUserRepository: UserRepository {
+    private let api: APIClient
+
+    init(api: APIClient) {
+        self.api = api
+    }
+
+    func fetch(id: UUID) async throws -> User {
+        let dto = try await api.fetchUser(id: id)
+        return try UserMapper.toDomain(dto)
+    }
+}
+```
+
+Rules:
+- never expose DTOs beyond the data layer
+- test mappers independently for edge cases and invalid input
+- keep mapping pure and side-effect free
+
+## Concurrency and Cancellation
+
+Use structured concurrency in use cases and propagate cancellation through async calls.
+
+```swift
+final class LoadUserProfile: LoadUserProfileUseCase {
+    private let userRepo: UserRepository
+    private let postsRepo: PostsRepository
+
+    init(userRepo: UserRepository, postsRepo: PostsRepository) {
+        self.userRepo = userRepo
+        self.postsRepo = postsRepo
+    }
+
+    func execute(id: UUID) async throws -> UserProfile {
+        async let user = userRepo.fetch(id: id)
+        async let posts = postsRepo.fetchRecent(userID: id)
+        return try await UserProfile(user: user, posts: posts)
+    }
+}
+```
+
+Rules:
+- prefer `async let` for concurrent independent fetches
+- cancellation propagates automatically through `try await`
+- use `Task.checkCancellation()` before expensive work if needed
+- in presentation, cancel tasks on view disappearance or new request
+
 ## Presentation Boundary
 
 Presentation depends on use-case abstractions, not data implementations.
@@ -160,6 +231,38 @@ Rules:
 - avoid network in unit tests
 - assert business behavior at use-case boundary
 - keep async tests deterministic using controlled stubs
+
+```swift
+struct StubUserRepository: UserRepository {
+    var result: Result<User, Error>
+
+    func fetch(id: UUID) async throws -> User {
+        try result.get()
+    }
+}
+
+@MainActor
+final class LoadUserTests: XCTestCase {
+    func test_execute_returnsUser() async throws {
+        let expected = User(id: UUID(), name: "Alice")
+        let sut = LoadUser(repository: StubUserRepository(result: .success(expected)))
+        let user = try await sut.execute(id: expected.id)
+        XCTAssertEqual(user, expected)
+    }
+
+    func test_execute_propagatesFailure() async {
+        let sut = LoadUser(repository: StubUserRepository(result: .failure(TestError.notFound)))
+        do {
+            _ = try await sut.execute(id: UUID())
+            XCTFail("Expected error")
+        } catch {
+            XCTAssertTrue(error is TestError)
+        }
+    }
+}
+
+private enum TestError: Error { case notFound }
+```
 
 ## When to Prefer Clean Architecture
 
