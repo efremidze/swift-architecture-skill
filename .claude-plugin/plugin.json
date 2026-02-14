@@ -1,0 +1,12 @@
+{
+  "name": "swift-architecture-skill",
+  "version": "0.1.0",
+  "description": "",
+  "skills": [
+    {
+      "name": "swift-architecture-agent",
+      "path": "swift-architecture-agent/SKILL.md",
+      "description": ""
+    }
+  ]
+}
