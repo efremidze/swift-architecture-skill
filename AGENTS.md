@@ -101,7 +101,7 @@ When working on this repository:
 
 ## Reference Links
 
-- [AGENTS.md specification](https://agents.md)
+- [AGENTS.md specification](https://github.com/agentsmd/agents.md)
 - [Swift Architecture Agent SKILL.md](swift-architecture-agent/SKILL.md)
 
 ---
