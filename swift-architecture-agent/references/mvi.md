@@ -96,6 +96,7 @@ func reduce(state: inout CounterState, action: CounterAction) {
 enum Effect<Action> {
     case none
     case run(() async throws -> Action)
+    case cancellable(id: AnyHashable, () async throws -> Action)
 }
 ```
 
@@ -225,16 +226,6 @@ final class Store<State, Intent, Action>: ObservableObject {
 ```
 
 Prefer mapping expected service failures to explicit failure actions in reducer effects, and use `onUnexpectedError` only as a safety net for truly unexpected faults.
-
-Update `Effect` to support cancellation:
-
-```swift
-enum Effect<Action> {
-    case none
-    case run(() async throws -> Action)
-    case cancellable(id: AnyHashable, () async throws -> Action)
-}
-```
 
 ## Composed Reducers
 
