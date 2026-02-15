@@ -2,27 +2,6 @@
 
 This repository provides a Claude Agent skill for Swift iOS architecture guidance. It contains architecture playbooks and selection guides to help AI coding agents provide concrete implementation guidance for Swift/SwiftUI/UIKit projects.
 
-## Project Structure
-
-The repository is organized as follows:
-
-```
-swift-architecture-skill/
-  CLAUDE.md                              # Repository metadata
-  swift-architecture-agent/
-    SKILL.md                             # Main skill definition and workflow
-    agents/
-      openai.yaml                        # Agent interface configuration
-    references/
-      selection-guide.md                 # Architecture decision framework
-      mvvm.md                            # MVVM pattern playbook
-      mvi.md                             # MVI pattern playbook
-      tca.md                             # TCA (Composable Architecture) playbook
-      clean-architecture.md              # Clean Architecture playbook
-      viper.md                           # VIPER pattern playbook
-      reactive.md                        # Reactive (Combine/RxSwift) playbook
-```
-
 ## Working with This Repository
 
 ### 1. Understanding the Skill
