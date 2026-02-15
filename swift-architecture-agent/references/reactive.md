@@ -18,22 +18,23 @@ Keep stream composition in presentation or dedicated reactive layer, not in view
 ## Canonical Combine Pattern
 
 ```swift
-final class SearchViewModel: ObservableObject {
+final class SearchViewModel<S: Scheduler>: ObservableObject
+where S.SchedulerTimeType == DispatchQueue.SchedulerTimeType {
     @Published var query = ""
     @Published private(set) var results: [String] = []
 
     private var cancellables = Set<AnyCancellable>()
 
-    init(service: SearchService) {
+    init(service: SearchService, scheduler: S) {
         $query
-            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+            .debounce(for: .milliseconds(300), scheduler: scheduler)
             .removeDuplicates()
             .map { query in
                 service.search(query)
                     .replaceError(with: [])
             }
             .switchToLatest()
-            .receive(on: DispatchQueue.main)
+            .receive(on: scheduler)
             .sink { [weak self] values in
                 self?.results = values
             }
@@ -41,6 +42,8 @@ final class SearchViewModel: ObservableObject {
     }
 }
 ```
+
+In production, pass `DispatchQueue.main` as the scheduler.
 
 Rules:
 - debounce user text input
@@ -130,6 +133,51 @@ Rules:
 - inject schedulers/time providers for tests
 - avoid real-time sleeps when possible
 - assert emitted state sequence, not internal operator details
+
+```swift
+import Combine
+import CombineSchedulers
+import XCTest
+
+final class SearchViewModelTests: XCTestCase {
+    func test_queryEmitsResults() {
+        let subject = PassthroughSubject<[String], Error>()
+        let stubService = StubSearchService(subject: subject)
+        // Requires Point-Free's CombineSchedulers package.
+        let scheduler = DispatchQueue.test
+        let vm = SearchViewModel(service: stubService, scheduler: scheduler.eraseToAnyScheduler())
+
+        var collected: [[String]] = []
+        let cancellable = vm.$results
+            .dropFirst()
+            .sink { collected.append($0) }
+
+        vm.query = "swift"
+
+        // Advance past debounce interval.
+        scheduler.advance(by: .milliseconds(300))
+
+        // Simulate service response.
+        subject.send(["SwiftUI", "Swift"])
+        subject.send(completion: .finished)
+
+        // Advance to process receive(on:).
+        scheduler.advance()
+
+        XCTAssertEqual(collected, [["SwiftUI", "Swift"]])
+        cancellable.cancel()
+    }
+}
+
+struct StubSearchService: SearchService {
+    let subject: PassthroughSubject<[String], Error>
+    func search(_ query: String) -> AnyPublisher<[String], Error> {
+        subject.eraseToAnyPublisher()
+    }
+}
+```
+
+The canonical `SearchViewModel` already supports scheduler injection through its initializer, so tests can pass a test scheduler without a second ViewModel variant.
 
 ## When to Prefer Reactive Architecture
 

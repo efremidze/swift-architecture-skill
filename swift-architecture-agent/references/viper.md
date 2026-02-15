@@ -13,7 +13,7 @@ Use this reference when strict separation of concerns is needed at feature level
 Expected interaction:
 
 ```text
-View -> Presenter -> Interactor -> Presenter -> View
+View -> Presenter -> Interactor -> Repository/Service -> Interactor -> Presenter -> View
 Presenter -> Router (navigation)
 ```
 
@@ -118,6 +118,74 @@ Create modules via Router/Assembly factory:
 
 This centralizes wiring and reduces circular dependency mistakes.
 
+```swift
+enum ProfileModule {
+    static func build(
+        userRepository: UserRepository,
+        navigationController: UINavigationController
+    ) -> UIViewController {
+        let interactor = ProfileInteractor(repository: userRepository)
+        let router = ProfileRouter(navigationController: navigationController)
+        let presenter = ProfilePresenter(interactor: interactor, router: router)
+        let viewController = ProfileViewController(presenter: presenter)
+        presenter.view = viewController
+        return viewController
+    }
+}
+```
+
+Rules:
+- keep the factory method as the single entry point for module creation
+- inject external dependencies (repositories, services) from the caller
+- set weak back-references (e.g., `presenter.view`) after construction
+
+## Concurrency and Cancellation
+
+When Presenter coordinates async work, track active tasks and cancel stale requests.
+
+```swift
+@MainActor
+final class ProfilePresenter {
+    weak var view: ProfileView?
+    private let interactor: ProfileInteracting
+    private let router: ProfileRouting
+    private var loadTask: Task<Void, Never>?
+
+    init(interactor: ProfileInteracting, router: ProfileRouting) {
+        self.interactor = interactor
+        self.router = router
+    }
+
+    func load() async {
+        loadTask?.cancel()
+        loadTask = Task {
+            do {
+                let user = try await interactor.loadUser()
+                view?.show(name: user.name)
+            } catch is CancellationError {
+                // Cancelled by a newer load request.
+            } catch {
+                view?.show(name: "")
+            }
+        }
+        await loadTask?.value
+    }
+
+    func didTapSettings() {
+        router.showSettings()
+    }
+
+    deinit {
+        loadTask?.cancel()
+    }
+}
+```
+
+Rules:
+- cancel in-flight tasks before issuing new requests
+- handle `CancellationError` explicitly to avoid stale UI updates
+- cancel all tasks on module teardown
+
 ## Anti-Patterns and Fixes
 
 1. Massive Presenter:
@@ -151,6 +219,68 @@ Testing rules:
 - assert interactions and outputs, not concrete implementations
 - avoid network in unit tests
 - verify presenter handles success and failure states
+
+```swift
+@MainActor
+final class MockProfileView: ProfileView {
+    var shownName: String?
+    func show(name: String) { shownName = name }
+}
+
+struct StubProfileInteractor: ProfileInteracting {
+    var result: Result<User, Error>
+    func loadUser() async throws -> User { try result.get() }
+}
+
+final class SpyProfileRouter: ProfileRouting {
+    var didShowSettings = false
+    func showSettings() { didShowSettings = true }
+}
+
+@MainActor
+final class ProfilePresenterTests: XCTestCase {
+    func test_load_success_showsUserName() async {
+        let user = User(id: UUID(), name: "Alice")
+        let view = MockProfileView()
+        let presenter = ProfilePresenter(
+            interactor: StubProfileInteractor(result: .success(user)),
+            router: SpyProfileRouter()
+        )
+        presenter.view = view
+
+        await presenter.load()
+
+        XCTAssertEqual(view.shownName, "Alice")
+    }
+
+    func test_load_failure_showsEmptyName() async {
+        let view = MockProfileView()
+        let presenter = ProfilePresenter(
+            interactor: StubProfileInteractor(result: .failure(TestError.notFound)),
+            router: SpyProfileRouter()
+        )
+        presenter.view = view
+
+        await presenter.load()
+
+        XCTAssertEqual(view.shownName, "")
+    }
+
+    func test_didTapSettings_routesToSettings() {
+        let router = SpyProfileRouter()
+        let presenter = ProfilePresenter(
+            interactor: StubProfileInteractor(result: .success(User(id: UUID(), name: ""))),
+            router: router
+        )
+
+        presenter.didTapSettings()
+
+        XCTAssertTrue(router.didShowSettings)
+    }
+}
+
+private enum TestError: Error { case notFound }
+```
 
 ## When to Prefer VIPER
 

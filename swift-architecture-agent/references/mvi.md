@@ -57,6 +57,36 @@ enum CounterAction {
 }
 ```
 
+Action reducer for completing async transitions:
+
+```swift
+func reduce(state: inout CounterState, action: CounterAction) {
+    switch action {
+    case .incrementResponse(.success(let value)):
+        state.count = value
+        state.isLoading = false
+        state.error = nil
+    case .incrementResponse(.failure(let error)):
+        state.isLoading = false
+        state.error = error.localizedDescription
+    case .decrementResponse(.success(let value)):
+        state.count = value
+        state.isLoading = false
+        state.error = nil
+    case .decrementResponse(.failure(let error)):
+        state.isLoading = false
+        state.error = error.localizedDescription
+    case .resetResponse(.success(let value)):
+        state.count = value
+        state.isLoading = false
+        state.error = nil
+    case .resetResponse(.failure(let error)):
+        state.isLoading = false
+        state.error = error.localizedDescription
+    }
+}
+```
+
 ### Effect
 
 - Encapsulate async side effects.
@@ -66,6 +96,7 @@ enum CounterAction {
 enum Effect<Action> {
     case none
     case run(() async throws -> Action)
+    case cancellable(id: AnyHashable, () async throws -> Action)
 }
 ```
 
@@ -91,20 +122,32 @@ func reduce(
     case .incrementTapped:
         state.isLoading = true
         return .run {
-            let value = try await service.increment()
-            return .incrementResponse(.success(value))
+            do {
+                let value = try await service.increment()
+                return .incrementResponse(.success(value))
+            } catch {
+                return .incrementResponse(.failure(error))
+            }
         }
     case .decrementTapped:
         state.isLoading = true
         return .run {
-            let value = try await service.decrement()
-            return .decrementResponse(.success(value))
+            do {
+                let value = try await service.decrement()
+                return .decrementResponse(.success(value))
+            } catch {
+                return .decrementResponse(.failure(error))
+            }
         }
     case .resetTapped:
         state.isLoading = true
         return .run {
-            let value = try await service.reset()
-            return .resetResponse(.success(value))
+            do {
+                let value = try await service.reset()
+                return .resetResponse(.success(value))
+            } catch {
+                return .resetResponse(.failure(error))
+            }
         }
     }
 }
@@ -123,15 +166,21 @@ final class Store<State, Intent, Action>: ObservableObject {
 
     private let reduceIntent: (inout State, Intent) -> Effect<Action>?
     private let reduceAction: (inout State, Action) -> Void
+    private let onUnexpectedError: @MainActor (Error) -> Void
+    private var activeTasks: [AnyHashable: Task<Void, Never>] = [:]
 
     init(
         initial: State,
         reduceIntent: @escaping (inout State, Intent) -> Effect<Action>?,
-        reduceAction: @escaping (inout State, Action) -> Void
+        reduceAction: @escaping (inout State, Action) -> Void,
+        onUnexpectedError: @escaping @MainActor (Error) -> Void = { error in
+            assertionFailure("Unhandled effect error: \(error)")
+        }
     ) {
         self.state = initial
         self.reduceIntent = reduceIntent
         self.reduceAction = reduceAction
+        self.onUnexpectedError = onUnexpectedError
     }
 
     func send(_ intent: Intent) {
@@ -148,9 +197,85 @@ final class Store<State, Intent, Action>: ObservableObject {
                 do {
                     let action = try await operation()
                     reduceAction(&state, action)
+                } catch is CancellationError {
+                    // Task was cancelled; no state update.
                 } catch {
-                    // Map to failure action as needed.
+                    onUnexpectedError(error)
                 }
+            }
+        case .cancellable(let id, let operation):
+            activeTasks[id]?.cancel()
+            activeTasks[id] = Task {
+                do {
+                    let action = try await operation()
+                    reduceAction(&state, action)
+                } catch is CancellationError {
+                    // Cancelled by a newer request for the same id.
+                } catch {
+                    onUnexpectedError(error)
+                }
+                activeTasks[id] = nil
+            }
+        }
+    }
+
+    deinit {
+        for task in activeTasks.values { task.cancel() }
+    }
+}
+```
+
+Prefer mapping expected service failures to explicit failure actions in reducer effects, and use `onUnexpectedError` only as a safety net for truly unexpected faults.
+
+## Composed Reducers
+
+Split reducers by feature and combine for scalability.
+
+```swift
+enum AppAction {
+    case counter(CounterAction)
+    case settings(SettingsAction)
+}
+
+func appReduce(
+    state: inout AppState,
+    intent: AppIntent,
+    services: AppServices
+) -> Effect<AppAction>? {
+    switch intent {
+    case .counter(let counterIntent):
+        return counterReduce(
+            state: &state.counter,
+            intent: counterIntent,
+            service: services.counter
+        )?.map(AppAction.counter)
+    case .settings(let settingsIntent):
+        return settingsReduce(
+            state: &state.settings,
+            intent: settingsIntent,
+            service: services.settings
+        )?.map(AppAction.settings)
+    }
+}
+```
+
+Add a `map` helper on `Effect` to lift child actions into parent actions:
+
+```swift
+extension Effect {
+    func map<B>(_ transform: @escaping (Action) -> B) -> Effect<B> {
+        switch self {
+        case .none:
+            return .none
+        case .run(let operation):
+            return .run {
+                let action = try await operation()
+                return transform(action)
+            }
+        case .cancellable(let id, let operation):
+            return .cancellable(id: id) {
+                let action = try await operation()
+                return transform(action)
             }
         }
     }

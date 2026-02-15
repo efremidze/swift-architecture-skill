@@ -72,5 +72,6 @@ End with the architecture-specific PR review checklist from the reference file, 
 - Flag anti-patterns found in existing code and provide direct fixes.
 - Include cancellation and error handling in all async flows.
 - When writing code, include only the patterns relevant to the task — do not dump entire playbooks.
+- Treat reference snippets as illustrative by default: preserve architectural correctness and idiomatic syntax, and include full compile scaffolding only when the user explicitly asks for runnable code.
 - Ask only minimum blocking questions; otherwise proceed with explicit assumptions stated up front.
 - When reviewing PRs, use the architecture-specific checklist and call out specific violations with line-level fixes.

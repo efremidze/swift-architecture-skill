@@ -12,16 +12,17 @@ Last updated: 2026-02-14
 
 | Architecture | File | Completeness | Quality | Status | Priority follow-up |
 |---|---|---:|---:|---|---|
-| MVVM | `swift-architecture-agent/references/mvvm.md` | 8.5 | 8.5 | Good | Ensure example types used by `FeedState: Equatable` are explicitly Equatable or document requirement |
-| MVI | `swift-architecture-agent/references/mvi.md` | 8.0 | 8.0 | Good | Add composed reducer examples and richer failure/cancellation handling snippet |
+| MVVM | `swift-architecture-agent/references/mvvm.md` | 9.0 | 8.5 | Good | Added "When to Prefer MVVM" section; Equatable types verified |
+| MVI | `swift-architecture-agent/references/mvi.md` | 9.0 | 8.5 | Good | Added composed reducers, action reducer with failure handling, cancellable effects in Store |
 | TCA | `swift-architecture-agent/references/tca.md` | 9.5 | 9.5 | Excellent | Add brief migration note for older TCA APIs if needed |
-| Clean Architecture | `swift-architecture-agent/references/clean-architecture.md` | 8.0 | 8.5 | Good | Add concrete adapter/mapping example (DTO -> Domain) |
-| VIPER | `swift-architecture-agent/references/viper.md` | 7.5 | 8.0 | Fair-Good | Expand assembly/wiring and module test examples |
-| Reactive | `swift-architecture-agent/references/reactive.md` | 8.0 | 8.0 | Good | Make error-handling snippet fully self-contained and add scheduler-injection test sample |
+| Clean Architecture | `swift-architecture-agent/references/clean-architecture.md` | 9.0 | 9.0 | Good | Added DTO->Domain mapping, concurrency/cancellation section, test code example |
+| VIPER | `swift-architecture-agent/references/viper.md` | 9.0 | 8.5 | Good | Added assembly code, concurrency/cancellation section, full presenter test suite |
+| Reactive | `swift-architecture-agent/references/reactive.md` | 9.0 | 8.5 | Good | Added scheduler-injection test sample and parameterized ViewModel pattern |
 
 ## Open review notes
 
-1. `swift-architecture-agent/references/reactive.md`: ensure all standalone snippets remain copy-paste compilable as examples evolve.
+1. `swift-architecture-agent/references/tca.md`: `withDependencies` test pattern (lines 248-250) uses a slightly uncommon invocation style; verify against latest TCA 1.7+ API.
+2. `swift-architecture-agent/references/reactive.md`: scheduler-injection test uses `DispatchQueue.test` which requires CombineSchedulers library; consider documenting this dependency.
 
 ## Definition of done for each architecture doc
 

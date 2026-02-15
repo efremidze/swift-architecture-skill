@@ -217,6 +217,7 @@ Model navigation in state and drive it through actions.
 Common shapes:
 - `@Presents var alert: AlertState<Action.Alert>?`
 - `destination: Destination.State?`
+- Attach a matching `.ifLet` reducer for each presentation action (`alert`, `destination`, etc.).
 
 Keep navigation decisions in reducers and keep views declarative.
 
