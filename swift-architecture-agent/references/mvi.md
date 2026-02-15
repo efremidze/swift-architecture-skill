@@ -121,20 +121,32 @@ func reduce(
     case .incrementTapped:
         state.isLoading = true
         return .run {
-            let value = try await service.increment()
-            return .incrementResponse(.success(value))
+            do {
+                let value = try await service.increment()
+                return .incrementResponse(.success(value))
+            } catch {
+                return .incrementResponse(.failure(error))
+            }
         }
     case .decrementTapped:
         state.isLoading = true
         return .run {
-            let value = try await service.decrement()
-            return .decrementResponse(.success(value))
+            do {
+                let value = try await service.decrement()
+                return .decrementResponse(.success(value))
+            } catch {
+                return .decrementResponse(.failure(error))
+            }
         }
     case .resetTapped:
         state.isLoading = true
         return .run {
-            let value = try await service.reset()
-            return .resetResponse(.success(value))
+            do {
+                let value = try await service.reset()
+                return .resetResponse(.success(value))
+            } catch {
+                return .resetResponse(.failure(error))
+            }
         }
     }
 }
@@ -222,6 +234,11 @@ enum Effect<Action> {
 Split reducers by feature and combine for scalability.
 
 ```swift
+enum AppAction {
+    case counter(CounterAction)
+    case settings(SettingsAction)
+}
+
 func appReduce(
     state: inout AppState,
     intent: AppIntent,
