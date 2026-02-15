@@ -175,7 +175,7 @@ For transient failures, prefer fallback state over terminating the stream.
 
 3. Business logic in view:
 - Smell: view constructs pipelines and calls services directly.
-- Fix: move stream orchestration to ViewModel/Presenter layer.
+- Fix: move stream orchestration to Presenter/ViewModel layer.
 
 4. UI thread violations:
 - Smell: publishing UI-bound state off main thread.

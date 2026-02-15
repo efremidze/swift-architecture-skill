@@ -467,7 +467,7 @@ final class AppRouter {
 |---|---|
 | Pure SwiftUI, linear flows | `NavigationStack` path on ViewModel |
 | Sheets, alerts, confirmations | Optional state-driven presentation |
-| UIKit host or mixed UIKit/SwiftUI | Coordinator protocol |
+| UIKit host or mixed SwiftUI/UIKit | Coordinator protocol |
 | Multi-step flows (onboarding, checkout) | Coordinator with child coordinators |
 | Universal Links / push notifications | Deep link router + state-driven nav |
 

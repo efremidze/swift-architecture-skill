@@ -24,7 +24,7 @@ Use this reference when the user asks for an architecture recommendation.
 - **TCA**: SwiftUI uses `StoreOf` in views; UIKit uses a controller render loop from `ViewStore`.
 - **Clean Architecture**: Domain/data stay the same; only presentation adapters differ.
 - **VIPER**: UIKit-native fit; SwiftUI usually uses an adapter plus `UIHostingController`.
-- **Reactive**: SwiftUI keeps pipelines in observable models; UIKit keeps them in presenter/view model.
+- **Reactive**: SwiftUI keeps pipelines in observable models; UIKit keeps them in Presenter/ViewModel.
 
 ## Quick Decision Flow
 

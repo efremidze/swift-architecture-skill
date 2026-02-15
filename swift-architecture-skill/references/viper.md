@@ -1,4 +1,4 @@
-# VIPER Playbook (Swift + UIKit/SwiftUI)
+# VIPER Playbook (Swift + SwiftUI/UIKit)
 
 Use this reference when strict feature-level separation is needed, especially in large or legacy UIKit codebases.
 

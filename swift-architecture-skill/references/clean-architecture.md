@@ -54,7 +54,7 @@ struct User: Equatable {
 ```
 
 Rules:
-- no UIKit/SwiftUI imports
+- no SwiftUI/UIKit imports
 - no persistence or network behavior
 - avoid framework-specific types unless unavoidable
 
@@ -194,7 +194,7 @@ Presentation depends on use-case abstractions, not data implementations.
 
 Expected flow:
 - View triggers intent/event
-- ViewModel/Presenter calls `UseCase`
+- Presentation layer calls `UseCase`
 - UseCase returns domain entities
 - Presentation maps entities to view state
 
