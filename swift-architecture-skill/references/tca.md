@@ -129,9 +129,8 @@ struct CounterView: View {
 
 UIKit guidance:
 - keep a store in the view controller
-- use `observe { }` to subscribe to state changes
+- subscribe to state changes from the store
 - centralize rendering in one method
-- cancel subscriptions on deinit
 
 Concrete UIKit pattern:
 
@@ -142,17 +141,14 @@ import UIKit
 
 @MainActor
 final class CounterViewController: UIViewController {
-  private let store: StoreOf<CounterFeature>
   private let viewStore: ViewStoreOf<CounterFeature>
-  private var cancellables: Set<AnyCancellable> = []
+  private var cancellables = Set<AnyCancellable>()
 
   init(store: StoreOf<CounterFeature>) {
-    self.store = store
     self.viewStore = ViewStore(store, observe: { $0 })
     super.init(nibName: nil, bundle: nil)
   }
 
-  @available(*, unavailable)
   required init?(coder: NSCoder) { nil }
 
   override func viewDidLoad() {
@@ -355,4 +351,3 @@ Prefer MVVM or lighter MVI variants when:
 - Navigation is modeled in state.
 - Tests cover success, failure, and cancellation flows.
 - Views render and send actions only.
-- SwiftUI/UIKit integration does not mirror store state into extra mutable UI-layer state.

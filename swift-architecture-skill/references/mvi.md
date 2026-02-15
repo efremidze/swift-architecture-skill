@@ -308,7 +308,7 @@ struct CounterView: View {
 
 ### UIKit Integration
 
-In UIKit, subscribe once, render idempotently, and map control events to intents.
+In UIKit, subscribe once, render from state, and map control events to intents.
 
 ```swift
 import Combine
@@ -323,7 +323,6 @@ final class CounterViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
     }
 
-    @available(*, unavailable)
     required init?(coder: NSCoder) { nil }
 
     override func viewDidLoad() {
@@ -349,7 +348,6 @@ final class CounterViewController: UIViewController {
 UIKit rules:
 - keep all UI writes in `render(_:)`
 - convert delegate/target-action callbacks into `Intent`
-- keep ephemeral control state (focus/scroll offset) local to the controller
 
 ## Concurrency Rules
 
@@ -427,5 +425,4 @@ Prefer MVVM when:
 - Effects are isolated and mapped back into actions.
 - Cancellation/versioning exists for concurrent requests.
 - View sends intents only; no direct business mutation.
-- SwiftUI/UIKit integration keeps a single source of truth with no mirrored mutable state.
 - Reducer tests cover success, failure, and cancellation.
