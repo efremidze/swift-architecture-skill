@@ -7,13 +7,13 @@ This repository provides an Agent Skill for Swift iOS architecture guidance. It 
 ### 1. Understanding the Skill
 
 Before making changes:
-- Read `swift-architecture-agent/SKILL.md` to understand the overall workflow
+- Read `swift-architecture-skill/SKILL.md` to understand the overall workflow
 - The skill acts as a router that selects appropriate architecture playbooks based on user requests
 - Each playbook in `references/` is a self-contained guide with patterns, anti-patterns, and checklists
 
 ### 2. Modifying Architecture Playbooks
 
-When editing playbooks in `swift-architecture-agent/references/`:
+When editing playbooks in `swift-architecture-skill/references/`:
 - **Maintain consistent structure**: Each playbook should have core concepts, code patterns, anti-patterns, testing strategy, and PR review checklist
 - **Use modern Swift**: All code examples should use Swift concurrency (async/await, actors) and SwiftUI patterns where applicable
 - **Include complete examples**: Code snippets should be runnable and demonstrate the full pattern
@@ -31,7 +31,7 @@ This repository contains documentation and skill definitions rather than executa
 
 To add a new architecture playbook:
 
-1. Create a new `.md` file in `swift-architecture-agent/references/`
+1. Create a new `.md` file in `swift-architecture-skill/references/`
 2. Follow the existing playbook structure:
    - Overview and when to use this pattern
    - Core concepts and principles
@@ -39,7 +39,7 @@ To add a new architecture playbook:
    - Anti-patterns with fixes
    - Testing strategy
    - PR review checklist
-3. Update `swift-architecture-agent/SKILL.md` to reference the new playbook
+3. Update `swift-architecture-skill/SKILL.md` to reference the new playbook
 4. Update `references/selection-guide.md` to include the new pattern in decision criteria
 
 ### 5. Coding Conventions
@@ -66,8 +66,8 @@ When writing Swift code examples in playbooks:
 | Command | Purpose |
 | ------- | ------- |
 | `find . -name "*.md"` | List all markdown files |
-| `grep -r "pattern" swift-architecture-agent/references/` | Search across all playbooks |
-| `wc -l swift-architecture-agent/references/*.md` | Check playbook sizes |
+| `grep -r "pattern" swift-architecture-skill/references/` | Search across all playbooks |
+| `wc -l swift-architecture-skill/references/*.md` | Check playbook sizes |
 
 ## Memory and Context
 
@@ -81,7 +81,7 @@ When working on this repository:
 ## Reference Links
 
 - [AGENTS.md specification](https://github.com/agentsmd/agents.md)
-- [Swift Architecture Agent SKILL.md](swift-architecture-agent/SKILL.md)
+- [Swift Architecture Skill Guide](swift-architecture-skill/SKILL.md)
 
 ---
 

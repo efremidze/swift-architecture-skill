@@ -30,6 +30,67 @@ This Agent Skill helps you design and implement the right architecture pattern f
 - Anti-patterns with fixes
 - PR review checklists
 
+## How to Install
+
+### Option A: Using `skills.sh` (recommended)
+
+Install this skill with:
+
+```bash
+npx skills add https://github.com/efremidze/swift-architecture-skill --skill swift-architecture-skill
+```
+
+Then use it in your agent:
+
+```text
+Use `swift-architecture-skill` to recommend the best architecture for this feature.
+```
+
+### Option B: Claude Code Plugin
+
+For personal usage in Claude Code:
+
+1. Add the marketplace:
+
+```text
+/plugin marketplace add efremidze/swift-architecture-skill
+```
+
+2. Install the skill:
+
+```text
+/plugin install swift-architecture-skill@swift-architecture-skill
+```
+
+For team/project usage, you can also configure plugin enablement via repository-level `.claude` settings.
+
+### Option C: Manual Install
+
+1. Clone this repository.
+2. Install or symlink `swift-architecture-skill/` to your tool's skills directory.
+3. Use your AI tool and ask it to use `swift-architecture-skill`.
+
+## Project Structure
+
+```text
+swift-architecture-skill/
+  SKILL.md                    # Skill definition and workflow
+  agents/
+    openai.yaml               # Agent interface configuration
+  references/
+    selection-guide.md        # Architecture decision framework
+    mvvm.md                   # MVVM pattern playbook
+    mvi.md                    # MVI pattern playbook
+    tca.md                    # TCA playbook
+    clean-architecture.md     # Clean Architecture playbook
+    viper.md                  # VIPER playbook
+    reactive.md               # Reactive (Combine/RxSwift) playbook
+```
+
+## Other Skills
+
+- [swift-patterns-skill](https://github.com/efremidze/swift-patterns-skill)
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details

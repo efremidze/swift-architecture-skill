@@ -24,4 +24,4 @@ jobs:
 
       - name: Validate Skill
         run: |
-          python -m skills_ref.cli validate ./swift-architecture-agent
+          python -m skills_ref.cli validate ./swift-architecture-skill
