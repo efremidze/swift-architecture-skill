@@ -47,6 +47,7 @@ Read the selected architecture reference and convert its guidance into deliverab
 - **Async strategy**: cancellation, actor isolation, and error paths
 - **Testing strategy**: what to test, how to stub dependencies, and example test structure
 - **Migration path** (for refactors): incremental steps to move from current to target architecture
+- **UI stack adaptation**: where SwiftUI and UIKit guidance should differ for the chosen architecture
 
 ### Step 5: Validate with Checklist
 

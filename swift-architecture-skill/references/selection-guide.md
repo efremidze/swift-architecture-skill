@@ -17,6 +17,15 @@ Use this reference when the user asks for an architecture recommendation.
 | Async/effect orchestration | Manual | Structured | Built-in | Manual | Manual | Operator-driven |
 | Framework dependency | None | None | swift-composable-architecture | None | None | Combine or RxSwift |
 
+## UI Stack Nuance by Architecture
+
+- **MVVM**: SwiftUI favors direct state binding; UIKit/mixed favors coordinator-driven navigation.
+- **MVI**: SwiftUI uses store-bound views; UIKit maps events to intents and renders from store state.
+- **TCA**: SwiftUI uses `StoreOf` in views; UIKit uses a controller render loop from `ViewStore`.
+- **Clean Architecture**: Domain/data stay the same; only presentation adapters differ.
+- **VIPER**: UIKit-native fit; SwiftUI usually uses an adapter plus `UIHostingController`.
+- **Reactive**: SwiftUI keeps pipelines in observable models; UIKit keeps them in Presenter/ViewModel.
+
 ## Quick Decision Flow
 
 ```text

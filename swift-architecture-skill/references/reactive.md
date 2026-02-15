@@ -48,6 +48,75 @@ Rules:
 - hop to main thread before UI-bound state writes
 - keep cancellables tied to lifecycle
 
+## UI Integration by Stack
+
+### SwiftUI Pattern
+
+- Keep operator chains in `ObservableObject`/`@Observable` types, not in `View`.
+- Bind UI input (`TextField`, toggle, selection) to published inputs on the model.
+
+### UIKit Pattern (Combine)
+
+- Keep pipelines in Presenter/ViewModel.
+- Map delegate/target-action callbacks into input subjects.
+- Render from a single state subscription.
+
+```swift
+import Combine
+import UIKit
+
+@MainActor
+final class SearchPresenter {
+    let state = CurrentValueSubject<SearchResultState, Never>(.loaded([]))
+    private let query = PassthroughSubject<String, Never>()
+    private var cancellables = Set<AnyCancellable>()
+
+    init(service: SearchService) {
+        query
+            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+            .removeDuplicates()
+            .map { value in
+                service.search(value)
+                    .map(SearchResultState.loaded)
+                    .catch { Just(.failed($0.localizedDescription)) }
+            }
+            .switchToLatest()
+            .sink { [weak self] in self?.state.send($0) }
+            .store(in: &cancellables)
+    }
+
+    func queryChanged(_ text: String) { query.send(text) }
+}
+
+final class SearchViewController: UIViewController, UISearchBarDelegate {
+    private let presenter: SearchPresenter
+    private var cancellables = Set<AnyCancellable>()
+
+    init(presenter: SearchPresenter) {
+        self.presenter = presenter
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { return nil }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        presenter.state
+            .sink { [weak self] in self?.render($0) }
+            .store(in: &cancellables)
+    }
+
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        presenter.queryChanged(searchText)
+    }
+
+    private func render(_ state: SearchResultState) {
+        // Render labels/list/error from stream state.
+    }
+}
+```
+
 ## Operator Guidance
 
 - `debounce`: stabilize noisy user input (search fields)
@@ -106,7 +175,7 @@ For transient failures, prefer fallback state over terminating the stream.
 
 3. Business logic in view:
 - Smell: view constructs pipelines and calls services directly.
-- Fix: move stream orchestration to ViewModel/Presenter layer.
+- Fix: move stream orchestration to Presenter/ViewModel layer.
 
 4. UI thread violations:
 - Smell: publishing UI-bound state off main thread.
@@ -190,5 +259,5 @@ Prefer MVI/TCA when:
 - Cancellation/disposal is lifecycle-safe.
 - UI-bound updates are marshaled to main thread.
 - Operators match intent (`debounce`, `throttle`, `switchToLatest`, `share`).
-- Views do not hold business pipeline logic.
+- Views/controllers do not hold business pipeline logic.
 - Error handling keeps UX resilient for transient failures.

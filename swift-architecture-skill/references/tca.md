@@ -129,9 +129,48 @@ struct CounterView: View {
 
 UIKit guidance:
 - keep a store in the view controller
-- use `observe { }` to subscribe to state changes
+- subscribe to state changes from the store
 - centralize rendering in one method
-- cancel subscriptions on deinit
+
+Concrete UIKit pattern:
+
+```swift
+import ComposableArchitecture
+import Combine
+import UIKit
+
+@MainActor
+final class CounterViewController: UIViewController {
+  private let viewStore: ViewStoreOf<CounterFeature>
+  private var cancellables = Set<AnyCancellable>()
+
+  init(store: StoreOf<CounterFeature>) {
+    self.viewStore = ViewStore(store, observe: { $0 })
+    super.init(nibName: nil, bundle: nil)
+  }
+
+  required init?(coder: NSCoder) { return nil }
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+
+    viewStore.publisher
+      .sink { [weak self] state in
+        self?.render(state)
+      }
+      .store(in: &cancellables)
+  }
+
+  @objc private func incrementTapped() {
+    viewStore.send(.incrementTapped)
+  }
+
+  private func render(_ state: CounterFeature.State) {
+    title = "Count: \(state.count)"
+    // Render labels/buttons/loading from state only.
+  }
+}
+```
 
 ## Composition Patterns
 

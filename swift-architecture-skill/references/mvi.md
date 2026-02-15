@@ -288,6 +288,8 @@ extension Effect {
 - Send user events through `store.send(intent)`.
 - Never mutate domain state directly in views.
 
+### SwiftUI Integration
+
 ```swift
 struct CounterView: View {
     @StateObject var store: Store<CounterState, CounterIntent, CounterAction>
@@ -303,6 +305,49 @@ struct CounterView: View {
     }
 }
 ```
+
+### UIKit Integration
+
+In UIKit, subscribe once, render from state, and map control events to intents.
+
+```swift
+import Combine
+import UIKit
+
+final class CounterViewController: UIViewController {
+    private let store: Store<CounterState, CounterIntent, CounterAction>
+    private var cancellables = Set<AnyCancellable>()
+
+    init(store: Store<CounterState, CounterIntent, CounterAction>) {
+        self.store = store
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { return nil }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        store.$state
+            .receive(on: RunLoop.main)
+            .sink { [weak self] in self?.render($0) }
+            .store(in: &cancellables)
+    }
+
+    @objc private func incrementTapped() {
+        store.send(.incrementTapped)
+    }
+
+    private func render(_ state: CounterState) {
+        title = "Count: \(state.count)"
+        // Update labels/buttons/loading from state only.
+    }
+}
+```
+
+UIKit rules:
+- keep all UI writes in `render(_:)`
+- convert delegate/target-action callbacks into `Intent`
 
 ## Concurrency Rules
 

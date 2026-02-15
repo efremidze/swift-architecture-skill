@@ -54,7 +54,7 @@ struct User: Equatable {
 ```
 
 Rules:
-- no UIKit/SwiftUI imports
+- no SwiftUI/UIKit imports
 - no persistence or network behavior
 - avoid framework-specific types unless unavoidable
 
@@ -194,9 +194,19 @@ Presentation depends on use-case abstractions, not data implementations.
 
 Expected flow:
 - View triggers intent/event
-- ViewModel/Presenter calls `UseCase`
+- Presentation layer calls `UseCase`
 - UseCase returns domain entities
 - Presentation maps entities to view state
+
+SwiftUI adaptation:
+- use `@Observable`/`ObservableObject` ViewModels that expose view state
+- trigger use cases from intent methods on the ViewModel
+- keep SwiftUI views declarative and free of use-case/repository calls
+
+UIKit adaptation:
+- use Presenter/ViewModel objects owned by view controllers
+- convert delegate/target-action events into presenter intents
+- keep controllers responsible for rendering only; business coordination stays in presenter/use case layers
 
 ## Anti-Patterns and Fixes
 
