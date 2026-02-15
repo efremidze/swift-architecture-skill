@@ -21,7 +21,7 @@ Use this reference when the user asks for an architecture recommendation.
 
 ```text
 1. Is the feature stream-heavy (search, live feeds, real-time updates)?
-   YES -> Consider Reactive (references/reactive.md)
+   YES -> Consider Reactive (references/reactive.md). If strict reducer/state-machine flow is also required, continue to step 2 and likely combine patterns.
    NO  -> Continue
 
 2. Is strict unidirectional data flow and state-machine modeling required?

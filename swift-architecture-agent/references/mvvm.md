@@ -510,7 +510,7 @@ Test strategy:
 
 Prefer MVVM when:
 - screen-level state management is the primary concern
-- team familiarity with reactive/observable patterns is strong
+- team wants low-ceremony state handling
 - feature complexity is moderate and does not require strict unidirectional flow
 - rapid iteration and low ceremony are valued
 
