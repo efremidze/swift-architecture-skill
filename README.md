@@ -43,7 +43,7 @@ npx skills add https://github.com/efremidze/swift-architecture-skill --skill swi
 Then use it in your agent:
 
 ```text
-Use the swift-architecture-skill skill to recommend the best architecture for this feature.
+Use `swift-architecture-skill` to recommend the best architecture for this feature.
 ```
 
 ### Option B: Claude Code Plugin

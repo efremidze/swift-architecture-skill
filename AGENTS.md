@@ -81,7 +81,7 @@ When working on this repository:
 ## Reference Links
 
 - [AGENTS.md specification](https://github.com/agentsmd/agents.md)
-- [Swift Architecture Skill SKILL.md](swift-architecture-skill/SKILL.md)
+- [Swift Architecture Skill Guide](swift-architecture-skill/SKILL.md)
 
 ---
 
