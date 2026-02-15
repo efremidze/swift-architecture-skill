@@ -1,10 +1,10 @@
 # Swift Architecture Skill
 
-A Claude Agent skill that provides architecture guidance for Swift iOS development.
+An Agent Skill that provides architecture guidance for Swift iOS development.
 
 ## Overview
 
-This skill helps you select and implement the right architecture pattern for your Swift iOS project. It provides concrete code examples, anti-patterns to avoid, and PR review checklists.
+This Agent Skill helps you select and implement the right architecture pattern for your Swift iOS project. It provides concrete code examples, anti-patterns to avoid, and PR review checklists.
 
 ## Supported Architectures
 
