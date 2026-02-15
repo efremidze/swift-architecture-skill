@@ -266,13 +266,15 @@ struct FeedView: View {
                 }
             }
             .navigationDestination(for: FeedDestination.self) { destination in
+                // Note: In real implementation, create ViewModels via Assembly pattern.
+                // Simplified here to show navigation structure.
                 switch destination {
                 case .detail(let item):
-                    FeedDetailView(item: item)
+                    FeedDetailView(viewModel: FeedDetailViewModel(item: item))
                 case .profile(let userId):
-                    ProfileView(userId: userId)
+                    ProfileView(viewModel: ProfileViewModel(userId: userId))
                 case .settings:
-                    SettingsView()
+                    SettingsView(viewModel: SettingsViewModel())
                 }
             }
             .task { viewModel.onAppear() }
@@ -325,11 +327,13 @@ struct FeedView: View {
             Text(item.title)
         }
         .sheet(item: $viewModel.activeSheet) { sheet in
+            // Note: In real implementation, create ViewModels via Assembly pattern.
+            // Simplified here to show sheet presentation structure.
             switch sheet {
             case .compose:
-                ComposeView()
+                ComposeView(viewModel: ComposeViewModel())
             case .filter(let current):
-                FilterView(filter: current)
+                FilterView(viewModel: FilterViewModel(filter: current))
             }
         }
     }
@@ -372,7 +376,7 @@ final class FeedViewModel {
 
     func didTapCompose() {
         coordinator?.presentCompose { [weak self] in
-            self?.load()
+            self?.load() // Calls load() method shown earlier (lines 96-112)
         }
     }
 }
@@ -396,7 +400,8 @@ final class FeedFlowCoordinator: FeedCoordinator {
     }
 
     func showProfile(userId: UUID) {
-        let vc = ProfileAssembly.makeViewController(userId: userId)
+        let viewModel = ProfileAssembly.makeViewModel(userId: userId)
+        let vc = UIHostingController(rootView: ProfileView(viewModel: viewModel))
         navigationController.pushViewController(vc, animated: true)
     }
 
