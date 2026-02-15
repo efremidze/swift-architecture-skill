@@ -1,6 +1,6 @@
 # Architecture Selection Guide
 
-Use this reference when the user does not specify an architecture or asks for a recommendation. Walk through the decision factors below and recommend the best-fit pattern.
+Use this reference when the user asks for an architecture recommendation.
 
 ## Decision Matrix
 
@@ -44,37 +44,31 @@ Use this reference when the user does not specify an architecture or asks for a 
 
 ## Inference from User Constraints
 
-When inferring architecture, look for these signals in the user's request:
+Use these request signals:
 
 ### Signals pointing to MVVM
 - "simple feature", "screen-level state", "standard iOS pattern"
-- Small to medium feature scope with no complex state machines
-- Team is new to iOS or prefers low ceremony
+- small/medium feature without strict state-machine needs
 
 ### Signals pointing to MVI
 - "state machine", "deterministic transitions", "unidirectional"
-- Complex multi-step workflows (checkout, onboarding)
-- Need to replay or serialize state
+- need to replay/serialize state transitions
 
 ### Signals pointing to TCA
 - "composable", "TestStore", "pointfree", mentions of TCA
-- Existing TCA codebase or explicit desire for TCA
-- Need strong composition across many child features
+- existing TCA codebase or strong child-feature composition needs
 
 ### Signals pointing to Clean Architecture
 - "layers", "use cases", "dependency rule", "hexagonal"
-- Large team needing stable module boundaries
-- Infrastructure replacement or multi-platform sharing is a goal
+- stable module boundaries and replaceable infrastructure are priorities
 
 ### Signals pointing to VIPER
 - "module", "router", "presenter", legacy UIKit codebase
-- Large existing UIKit app with navigation complexity
-- Strict role separation is a team requirement
+- strict role separation in large UIKit modules
 
 ### Signals pointing to Reactive
 - "streams", "Combine", "RxSwift", "real-time", "search"
-- Feature is event-pipeline driven (typeahead, WebSocket feeds)
-- Team already uses Combine or RxSwift extensively
+- feature behavior is event-pipeline driven (typeahead, WebSocket, live feeds)
 
 ## Combining Architectures
 
@@ -89,9 +83,9 @@ When combining, clarify which pattern governs which layer and keep boundaries co
 
 ## Recommendation Format
 
-When recommending an architecture, provide:
+When recommending:
 
-1. The recommended pattern and a one-sentence justification
-2. Load the corresponding reference file
-3. If the choice is close between two patterns, briefly explain the trade-off
-4. Apply the selected playbook to the user's specific feature context
+1. Name one pattern and justify it in one sentence.
+2. Cite the reference file.
+3. If close call, note the trade-off briefly.
+4. Apply the playbook to the user’s feature.

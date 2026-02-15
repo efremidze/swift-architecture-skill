@@ -1,6 +1,6 @@
 # TCA Playbook (Swift + SwiftUI/UIKit)
 
-Use this reference when features need strict unidirectional flow, strong composition, and deterministic testing with `TestStore`.
+Use this reference for strict unidirectional flow, strong composition, and `TestStore`-driven testing.
 
 ## Mental Model
 
@@ -191,7 +191,7 @@ extension DependencyValues {
 
 ## Effects and Concurrency
 
-Use `.run` for async work and always route results back as actions.
+Use `.run` for async work and route results back as actions.
 
 Add cancellation for re-entrant effects:
 
@@ -208,7 +208,7 @@ case .factButtonTapped:
   .cancellable(id: CancelID.fact, cancelInFlight: true)
 ```
 
-If cancellation cannot fully protect order, add request versioning.
+If cancellation is not enough, add request versioning.
 
 ## Navigation Pattern
 

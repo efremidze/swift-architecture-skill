@@ -7,17 +7,17 @@ description: Architecture selection and implementation guidance for Swift iOS co
 
 ## Overview
 
-Use this skill as an architecture router for Swift feature work. Select the architecture playbook that matches the request, then apply its patterns to produce implementation-ready guidance.
+Use this skill to pick the best Swift architecture playbook and apply it to the user’s task.
 
 ## Workflow
 
 ### Step 1: Analyze the Request Context
 
-Before selecting an architecture, understand the user's situation:
-- Is this a new feature, a refactor, a PR review, or a debugging task?
-- What UI framework is in use (SwiftUI, UIKit, or both)?
-- What is the scope (single screen, multi-screen flow, app-wide)?
-- Are there existing patterns in the codebase to follow?
+Before selecting an architecture, capture:
+- task type (new feature, refactor, PR review, debugging)
+- UI stack (SwiftUI, UIKit, or mixed)
+- scope (single screen, multi-screen, app-wide)
+- existing conventions to preserve
 
 ### Step 2: Select the Architecture
 
@@ -33,12 +33,10 @@ Architecture reference mapping:
 
 ### Step 3: Analyze Existing Codebase (When Applicable)
 
-When the user has an existing codebase:
-- Scan for existing architectural patterns and conventions already in use
-- Identify the project's dependency injection approach
-- Note the concurrency model (async/await, Combine, GCD, or mixed)
-- Check for existing state management patterns
-- Align recommendations with established project conventions
+When code already exists:
+- detect current architecture and DI style
+- note concurrency model (async/await, Combine, GCD, mixed)
+- align recommendations to local conventions
 
 ### Step 4: Produce Concrete Deliverables
 
@@ -46,24 +44,13 @@ Read the selected architecture reference and convert its guidance into deliverab
 
 - **File and module structure**: directory layout with file names specific to the feature
 - **State and dependency boundaries**: concrete types, protocols, and injection points
-- **Concurrency and cancellation strategy**: task management, actor isolation, and cancellation IDs
-- **Error handling**: explicit error types and recovery paths
+- **Async strategy**: cancellation, actor isolation, and error paths
 - **Testing strategy**: what to test, how to stub dependencies, and example test structure
 - **Migration path** (for refactors): incremental steps to move from current to target architecture
 
 ### Step 5: Validate with Checklist
 
 End with the architecture-specific PR review checklist from the reference file, adapted to the user's feature.
-
-## Architecture References
-
-- Selection Guide: `references/selection-guide.md`
-- MVVM: `references/mvvm.md`
-- MVI: `references/mvi.md`
-- TCA: `references/tca.md`
-- Clean Architecture: `references/clean-architecture.md`
-- VIPER: `references/viper.md`
-- Reactive: `references/reactive.md`
 
 ## Output Requirements
 
@@ -72,6 +59,6 @@ End with the architecture-specific PR review checklist from the reference file, 
 - Flag anti-patterns found in existing code and provide direct fixes.
 - Include cancellation and error handling in all async flows.
 - When writing code, include only the patterns relevant to the task — do not dump entire playbooks.
-- Treat reference snippets as illustrative by default: preserve architectural correctness and idiomatic syntax, and include full compile scaffolding only when the user explicitly asks for runnable code.
+- Treat reference snippets as illustrative by default; add full compile scaffolding only if the user asks for runnable code.
 - Ask only minimum blocking questions; otherwise proceed with explicit assumptions stated up front.
 - When reviewing PRs, use the architecture-specific checklist and call out specific violations with line-level fixes.
