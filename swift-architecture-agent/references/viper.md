@@ -266,7 +266,6 @@ final class ProfilePresenterTests: XCTestCase {
         XCTAssertEqual(view.shownName, "")
     }
 
-    @MainActor
     func test_didTapSettings_routesToSettings() {
         let router = SpyProfileRouter()
         let presenter = ProfilePresenter(
