@@ -37,13 +37,13 @@ This Agent Skill helps you design and implement the right architecture pattern f
 Install this skill with:
 
 ```bash
-npx skills add https://github.com/efremidze/swift-architecture-skill --skill swift-architecture-agent
+npx skills add https://github.com/efremidze/swift-architecture-skill --skill swift-architecture-skill
 ```
 
 Then use it in your agent:
 
 ```text
-Use the swift-architecture-agent skill to recommend the best architecture for this feature.
+Use the swift-architecture-skill skill to recommend the best architecture for this feature.
 ```
 
 ### Option B: Claude Code Plugin
@@ -59,7 +59,7 @@ For personal usage in Claude Code:
 2. Install the skill:
 
 ```text
-/plugin install swift-architecture-agent@swift-architecture-skill
+/plugin install swift-architecture-skill@swift-architecture-skill
 ```
 
 For team/project usage, you can also configure plugin enablement via repository-level `.claude` settings.
@@ -67,13 +67,13 @@ For team/project usage, you can also configure plugin enablement via repository-
 ### Option C: Manual Install
 
 1. Clone this repository.
-2. Install or symlink `swift-architecture-agent/` to your tool's skills directory.
-3. Use your AI tool and ask it to use `swift-architecture-agent`.
+2. Install or symlink `swift-architecture-skill/` to your tool's skills directory.
+3. Use your AI tool and ask it to use `swift-architecture-skill`.
 
 ## Project Structure
 
 ```text
-swift-architecture-agent/
+swift-architecture-skill/
   SKILL.md                    # Skill definition and workflow
   agents/
     openai.yaml               # Agent interface configuration

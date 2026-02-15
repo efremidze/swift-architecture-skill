@@ -5,7 +5,7 @@ This repository contains an Agent Skill that provides Swift architecture design 
 ## Project Structure
 
 ```
-swift-architecture-agent/
+swift-architecture-skill/
   SKILL.md                    # Skill definition and workflow
   agents/
     openai.yaml               # Agent interface configuration
