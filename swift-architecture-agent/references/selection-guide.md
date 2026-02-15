@@ -24,25 +24,21 @@ Use this reference when the user does not specify an architecture or asks for a 
    YES -> Consider Reactive (references/reactive.md)
    NO  -> Continue
 
-2. Does the team already use TCA or is the app TCA-based?
-   YES -> Use TCA (references/tca.md)
-   NO  -> Continue
-
-3. Is strict unidirectional data flow and state-machine modeling required?
-   YES -> Is framework dependency acceptable?
+2. Is strict unidirectional data flow and state-machine modeling required?
+   YES -> Is the app already TCA-based, or is adding TCA dependency acceptable?
           YES -> TCA (references/tca.md)
           NO  -> MVI (references/mvi.md)
    NO  -> Continue
 
-4. Does the codebase need strict layer isolation with replaceable infrastructure?
+3. Does the codebase need strict layer isolation with replaceable infrastructure?
    YES -> Clean Architecture (references/clean-architecture.md)
    NO  -> Continue
 
-5. Is this a large UIKit codebase needing strict per-feature separation?
+4. Is this a large UIKit codebase needing strict per-feature separation?
    YES -> VIPER (references/viper.md)
    NO  -> Continue
 
-6. Default recommendation:
+5. Default recommendation:
    -> MVVM (references/mvvm.md)
 ```
 

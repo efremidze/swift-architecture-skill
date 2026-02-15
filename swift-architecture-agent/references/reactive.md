@@ -18,22 +18,23 @@ Keep stream composition in presentation or dedicated reactive layer, not in view
 ## Canonical Combine Pattern
 
 ```swift
-final class SearchViewModel: ObservableObject {
+final class SearchViewModel<S: Scheduler>: ObservableObject
+where S.SchedulerTimeType == DispatchQueue.SchedulerTimeType {
     @Published var query = ""
     @Published private(set) var results: [String] = []
 
     private var cancellables = Set<AnyCancellable>()
 
-    init(service: SearchService) {
+    init(service: SearchService, scheduler: S) {
         $query
-            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+            .debounce(for: .milliseconds(300), scheduler: scheduler)
             .removeDuplicates()
             .map { query in
                 service.search(query)
                     .replaceError(with: [])
             }
             .switchToLatest()
-            .receive(on: DispatchQueue.main)
+            .receive(on: scheduler)
             .sink { [weak self] values in
                 self?.results = values
             }
@@ -41,6 +42,8 @@ final class SearchViewModel: ObservableObject {
     }
 }
 ```
+
+In production, pass `DispatchQueue.main` as the scheduler.
 
 Rules:
 - debounce user text input
@@ -174,32 +177,7 @@ struct StubSearchService: SearchService {
 }
 ```
 
-To support scheduler injection, parameterize the ViewModel:
-
-```swift
-final class SearchViewModel<S: Scheduler>: ObservableObject {
-    @Published var query = ""
-    @Published private(set) var results: [String] = []
-
-    private var cancellables = Set<AnyCancellable>()
-
-    init(service: SearchService, scheduler: S) where S.SchedulerTimeType == DispatchQueue.SchedulerTimeType {
-        $query
-            .debounce(for: .milliseconds(300), scheduler: scheduler)
-            .removeDuplicates()
-            .map { query in
-                service.search(query)
-                    .replaceError(with: [])
-            }
-            .switchToLatest()
-            .receive(on: scheduler)
-            .sink { [weak self] values in
-                self?.results = values
-            }
-            .store(in: &cancellables)
-    }
-}
-```
+The canonical `SearchViewModel` already supports scheduler injection through its initializer, so tests can pass a test scheduler without a second ViewModel variant.
 
 ## When to Prefer Reactive Architecture
 

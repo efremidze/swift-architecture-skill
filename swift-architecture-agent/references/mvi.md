@@ -244,19 +244,17 @@ func appReduce(
 ) -> Effect<AppAction>? {
     switch intent {
     case .counter(let counterIntent):
-        guard let effect = counterReduce(
+        return counterReduce(
             state: &state.counter,
             intent: counterIntent,
             service: services.counter
-        ) else { return nil }
-        return effect.map(AppAction.counter)
+        )?.map(AppAction.counter)
     case .settings(let settingsIntent):
-        guard let effect = settingsReduce(
+        return settingsReduce(
             state: &state.settings,
             intent: settingsIntent,
             service: services.settings
-        ) else { return nil }
-        return effect.map(AppAction.settings)
+        )?.map(AppAction.settings)
     }
 }
 ```
