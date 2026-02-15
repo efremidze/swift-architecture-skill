@@ -156,7 +156,7 @@ final class ProfilePresenter {
         self.router = router
     }
 
-    func load() {
+    func load() async {
         loadTask?.cancel()
         loadTask = Task {
             do {
@@ -168,6 +168,7 @@ final class ProfilePresenter {
                 view?.show(name: "")
             }
         }
+        await loadTask?.value
     }
 
     func didTapSettings() {
@@ -247,8 +248,7 @@ final class ProfilePresenterTests: XCTestCase {
         )
         presenter.view = view
 
-        presenter.load()
-        await Task.yield()
+        await presenter.load()
 
         XCTAssertEqual(view.shownName, "Alice")
     }
@@ -261,8 +261,7 @@ final class ProfilePresenterTests: XCTestCase {
         )
         presenter.view = view
 
-        presenter.load()
-        await Task.yield()
+        await presenter.load()
 
         XCTAssertEqual(view.shownName, "")
     }
