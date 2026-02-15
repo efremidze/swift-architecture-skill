@@ -143,7 +143,7 @@ Rules:
 SwiftUI integration option:
 - keep Presenter/Interactor/Router unchanged
 - wrap SwiftUI feature view in `UIHostingController`
-- bridge Presenter output to SwiftUI through a lightweight adapter object
+- bridge Presenter output through a small adapter object
 
 ```swift
 import SwiftUI
@@ -162,13 +162,7 @@ final class ProfileViewAdapter: ObservableObject, ProfileView {
         self.name = name
     }
 
-    func load() async {
-        await presenter.load()
-    }
-
-    func didTapSettings() {
-        presenter.didTapSettings()
-    }
+    func didTapSettings() { presenter.didTapSettings() }
 }
 
 struct ProfileScreen: View {
@@ -179,7 +173,6 @@ struct ProfileScreen: View {
             Text(adapter.name)
             Button("Settings") { adapter.didTapSettings() }
         }
-        .task { await adapter.load() }
     }
 }
 

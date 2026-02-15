@@ -54,13 +54,12 @@ Rules:
 
 - Keep operator chains in `ObservableObject`/`@Observable` types, not in `View`.
 - Bind UI input (`TextField`, toggle, selection) to published inputs on the model.
-- Keep short-lived UI concerns (`isFocused`, scroll position) as local view state.
 
 ### UIKit Pattern (Combine)
 
-- Keep pipeline composition in Presenter/ViewModel.
-- Bridge control events (`UISearchBarDelegate`, target-action) into input subjects.
-- Subscribe in `viewDidLoad`, render from state stream, and store cancellables on the controller.
+- Keep pipelines in Presenter/ViewModel.
+- Map delegate/target-action callbacks into input subjects.
+- Render from a single state subscription.
 
 ```swift
 import Combine
@@ -85,9 +84,7 @@ final class SearchPresenter {
             .store(in: &cancellables)
     }
 
-    func queryChanged(_ text: String) {
-        query.send(text)
-    }
+    func queryChanged(_ text: String) { query.send(text) }
 }
 
 final class SearchViewController: UIViewController, UISearchBarDelegate {
@@ -99,7 +96,6 @@ final class SearchViewController: UIViewController, UISearchBarDelegate {
         super.init(nibName: nil, bundle: nil)
     }
 
-    @available(*, unavailable)
     required init?(coder: NSCoder) { nil }
 
     override func viewDidLoad() {
