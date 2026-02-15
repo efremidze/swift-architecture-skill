@@ -162,6 +162,7 @@ final class ProfileViewAdapter: ObservableObject, ProfileView {
         self.name = name
     }
 
+    func load() async { await presenter.load() }
     func didTapSettings() { presenter.didTapSettings() }
 }
 
@@ -173,6 +174,7 @@ struct ProfileScreen: View {
             Text(adapter.name)
             Button("Settings") { adapter.didTapSettings() }
         }
+        .task { await adapter.load() }
     }
 }
 

@@ -75,11 +75,12 @@ final class SearchPresenter {
         query
             .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
             .removeDuplicates()
-            .flatMap { value in
+            .map { value in
                 service.search(value)
                     .map(SearchResultState.loaded)
                     .catch { Just(.failed($0.localizedDescription)) }
             }
+            .switchToLatest()
             .sink { [weak self] in self?.state.send($0) }
             .store(in: &cancellables)
     }
