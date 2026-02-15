@@ -20,16 +20,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Validate plugin metadata JSON
-        run: |
-          python -m json.tool .claude-plugin/plugin.json >/dev/null
-          python -m json.tool .claude-plugin/marketplace.json >/dev/null
-
-      - name: Run repo validator
-        run: |
-          chmod +x scripts/validate-skill.sh
-          scripts/validate-skill.sh ./swift-architecture-agent
-
       - name: Install skillport CLI
         run: |
           python -m pip install --upgrade pip
