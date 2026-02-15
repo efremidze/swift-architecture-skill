@@ -187,7 +187,7 @@ SwiftUI view with `@Observable` ViewModel (iOS 17+):
 
 ```swift
 struct FeedView: View {
-    @State var viewModel: FeedViewModel
+    @State private var viewModel: FeedViewModel
 
     var body: some View {
         List(viewModel.state.items, id: \.id) { item in
@@ -202,7 +202,7 @@ SwiftUI view with `ObservableObject` ViewModel (iOS 16 and earlier):
 
 ```swift
 struct FeedView: View {
-    @StateObject var viewModel: FeedViewModel
+    @StateObject private var viewModel: FeedViewModel
 
     var body: some View {
         List(viewModel.state.items, id: \.id) { item in
@@ -254,9 +254,11 @@ View binds the path to `NavigationStack`:
 
 ```swift
 struct FeedView: View {
-    @State var viewModel: FeedViewModel
+    @State private var viewModel: FeedViewModel
 
     var body: some View {
+        @Bindable var viewModel = viewModel
+
         NavigationStack(path: $viewModel.navigationPath) {
             List(viewModel.state.items) { item in
                 Button(item.title) {
@@ -310,9 +312,11 @@ final class FeedViewModel {
 
 ```swift
 struct FeedView: View {
-    @State var viewModel: FeedViewModel
+    @State private var viewModel: FeedViewModel
 
     var body: some View {
+        @Bindable var viewModel = viewModel
+
         List(viewModel.state.items) { item in
             Text(item.title)
         }
@@ -337,7 +341,7 @@ When UIKit is involved or complex multi-step flows require centralized control, 
 protocol FeedCoordinator: AnyObject {
     func showDetail(for item: FeedItemViewData)
     func showProfile(userId: UUID)
-    func presentCompose(onComplete: @escaping () -> Void)
+    func presentCompose(onComplete: @MainActor @escaping () -> Void)
 }
 ```
 
@@ -392,7 +396,7 @@ final class FeedFlowCoordinator: FeedCoordinator {
         navigationController.pushViewController(vc, animated: true)
     }
 
-    func presentCompose(onComplete: @escaping () -> Void) {
+    func presentCompose(onComplete: @MainActor @escaping () -> Void) {
         let composeVM = ComposeAssembly.makeViewModel(onComplete: onComplete)
         let vc = UIHostingController(rootView: ComposeView(viewModel: composeVM))
         navigationController.present(vc, animated: true)
