@@ -26,7 +26,11 @@ App/
       FeedViewModel.swift
       FeedState.swift
       FeedViewData.swift
+      FeedDestination.swift
       FeedAssembly.swift
+  Navigation/
+    AppRouter.swift
+    DeepLink.swift
 Domain/
   Entities/
   UseCases/
@@ -48,7 +52,7 @@ enum Loadable<Value: Equatable>: Equatable {
     case failed(String)
 }
 
-struct FeedItemViewData: Identifiable, Equatable {
+struct FeedItemViewData: Identifiable, Hashable {
     let id: UUID
     let title: String
 }
@@ -183,7 +187,7 @@ SwiftUI view with `@Observable` ViewModel (iOS 17+):
 
 ```swift
 struct FeedView: View {
-    @State var viewModel: FeedViewModel
+    @State private var viewModel: FeedViewModel
 
     var body: some View {
         List(viewModel.state.items, id: \.id) { item in
@@ -198,7 +202,7 @@ SwiftUI view with `ObservableObject` ViewModel (iOS 16 and earlier):
 
 ```swift
 struct FeedView: View {
-    @StateObject var viewModel: FeedViewModel
+    @StateObject private var viewModel: FeedViewModel
 
     var body: some View {
         List(viewModel.state.items, id: \.id) { item in
@@ -208,6 +212,269 @@ struct FeedView: View {
     }
 }
 ```
+
+## Navigation Patterns
+
+Navigation in MVVM should keep routing decisions testable and decoupled from UIKit/SwiftUI presentation mechanics. The ViewModel decides *where* to go; a separate layer decides *how* to present it.
+
+### SwiftUI Navigation (iOS 16+ / `NavigationStack`)
+
+Model navigation destinations as an enum and drive `NavigationStack` with a path owned by the ViewModel.
+
+```swift
+enum FeedDestination: Hashable {
+    case detail(FeedItemViewData)
+    case profile(userId: UUID)
+    case settings
+}
+```
+
+ViewModel exposes a navigation path:
+
+```swift
+@MainActor
+@Observable
+final class FeedViewModel {
+    private(set) var state = FeedState()
+    var navigationPath: [FeedDestination] = []
+
+    // ...existing properties...
+
+    func didTapItem(_ item: FeedItemViewData) {
+        navigationPath.append(.detail(item))
+    }
+
+    func didTapProfile(userId: UUID) {
+        navigationPath.append(.profile(userId: userId))
+    }
+}
+```
+
+View binds the path to `NavigationStack`:
+
+```swift
+struct FeedView: View {
+    @State private var viewModel: FeedViewModel
+
+    var body: some View {
+        @Bindable var viewModel = viewModel
+
+        NavigationStack(path: $viewModel.navigationPath) {
+            List(viewModel.state.items) { item in
+                Button(item.title) {
+                    viewModel.didTapItem(item)
+                }
+            }
+            .navigationDestination(for: FeedDestination.self) { destination in
+                // Note: In real implementation, create ViewModels via Assembly pattern.
+                // Simplified here to show navigation structure.
+                switch destination {
+                case .detail(let item):
+                    FeedDetailView(viewModel: FeedDetailViewModel(item: item))
+                case .profile(let userId):
+                    ProfileView(viewModel: ProfileViewModel(userId: userId))
+                case .settings:
+                    SettingsView(viewModel: SettingsViewModel())
+                }
+            }
+            .task { viewModel.onAppear() }
+        }
+    }
+}
+```
+
+### Modal / Sheet Presentation
+
+Model sheet presentation as optional state on the ViewModel.
+
+```swift
+@MainActor
+@Observable
+final class FeedViewModel {
+    private(set) var state = FeedState()
+    var activeSheet: FeedSheet?
+
+    struct FeedFilter: Equatable {
+        var showUnreadOnly = false
+    }
+
+    enum FeedSheet: Identifiable {
+        case compose
+        case filter(current: FeedFilter)
+
+        var id: String {
+            switch self {
+            case .compose: "compose"
+            case .filter: "filter"
+            }
+        }
+    }
+
+    func didTapCompose() {
+        activeSheet = .compose
+    }
+}
+```
+
+```swift
+struct FeedView: View {
+    @State private var viewModel: FeedViewModel
+
+    var body: some View {
+        @Bindable var viewModel = viewModel
+
+        List(viewModel.state.items) { item in
+            Text(item.title)
+        }
+        .sheet(item: $viewModel.activeSheet) { sheet in
+            // Note: In real implementation, create ViewModels via Assembly pattern.
+            // Simplified here to show sheet presentation structure.
+            switch sheet {
+            case .compose:
+                ComposeView(viewModel: ComposeViewModel())
+            case .filter(let current):
+                FilterView(viewModel: FilterViewModel(filter: current))
+            }
+        }
+    }
+}
+```
+
+### Coordinator Pattern (UIKit or Mixed Codebases)
+
+When UIKit is involved or complex multi-step flows require centralized control, use a Coordinator protocol.
+
+```swift
+@MainActor
+protocol FeedCoordinator: AnyObject {
+    func showDetail(for item: FeedItemViewData)
+    func showProfile(userId: UUID)
+    func presentCompose(onComplete: @MainActor @escaping () -> Void)
+}
+```
+
+Inject the Coordinator into the ViewModel:
+
+```swift
+@MainActor
+@Observable
+final class FeedViewModel {
+    private(set) var state = FeedState()
+
+    private let repository: FeedRepository
+    private weak var coordinator: FeedCoordinator?
+    private var loadTask: Task<Void, Never>?
+
+    init(repository: FeedRepository, coordinator: FeedCoordinator) {
+        self.repository = repository
+        self.coordinator = coordinator
+    }
+
+    func didTapItem(_ item: FeedItemViewData) {
+        coordinator?.showDetail(for: item)
+    }
+
+    func didTapCompose() {
+        coordinator?.presentCompose { [weak self] in
+            self?.load()
+        }
+    }
+}
+```
+
+Concrete implementation lives in the navigation layer:
+
+```swift
+@MainActor
+final class FeedFlowCoordinator: FeedCoordinator {
+    private let navigationController: UINavigationController
+
+    init(navigationController: UINavigationController) {
+        self.navigationController = navigationController
+    }
+
+    func showDetail(for item: FeedItemViewData) {
+        let viewModel = FeedDetailAssembly.makeViewModel(item: item)
+        let vc = UIHostingController(rootView: FeedDetailView(viewModel: viewModel))
+        navigationController.pushViewController(vc, animated: true)
+    }
+
+    func showProfile(userId: UUID) {
+        let viewModel = ProfileAssembly.makeViewModel(userId: userId)
+        let vc = UIHostingController(rootView: ProfileView(viewModel: viewModel))
+        navigationController.pushViewController(vc, animated: true)
+    }
+
+    func presentCompose(onComplete: @MainActor @escaping () -> Void) {
+        let composeVM = ComposeAssembly.makeViewModel(onComplete: onComplete)
+        let vc = UIHostingController(rootView: ComposeView(viewModel: composeVM))
+        navigationController.present(vc, animated: true)
+    }
+}
+```
+
+### Deep Linking
+
+Centralize deep link resolution in a router that maps URLs to navigation destinations.
+
+```swift
+enum DeepLink {
+    case feedItem(id: UUID)
+    case profile(userId: UUID)
+    case settings
+
+    init?(url: URL) {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let host = components.host else { return nil }
+        switch host {
+        case "feed":
+            guard let idString = components.queryItems?.first(where: { $0.name == "id" })?.value,
+                  let id = UUID(uuidString: idString) else { return nil }
+            self = .feedItem(id: id)
+        case "profile":
+            guard let idString = components.queryItems?.first(where: { $0.name == "userId" })?.value,
+                  let id = UUID(uuidString: idString) else { return nil }
+            self = .profile(userId: id)
+        case "settings":
+            self = .settings
+        default:
+            return nil
+        }
+    }
+}
+```
+
+Apply deep links to existing navigation state:
+
+```swift
+@MainActor
+@Observable
+final class AppRouter {
+    var feedViewModel: FeedViewModel
+
+    func handle(_ deepLink: DeepLink) {
+        switch deepLink {
+        case .feedItem(let id):
+            let placeholder = FeedItemViewData(id: id, title: "")
+            feedViewModel.navigationPath = [.detail(placeholder)]
+        case .profile(let userId):
+            feedViewModel.navigationPath = [.profile(userId: userId)]
+        case .settings:
+            feedViewModel.navigationPath = [.settings]
+        }
+    }
+}
+```
+
+### Which Pattern to Choose
+
+| Scenario | Recommended Pattern |
+|---|---|
+| Pure SwiftUI, linear flows | `NavigationStack` path on ViewModel |
+| Sheets, alerts, confirmations | Optional state-driven presentation |
+| UIKit host or mixed UIKit/SwiftUI | Coordinator protocol |
+| Multi-step flows (onboarding, checkout) | Coordinator with child coordinators |
+| Universal Links / push notifications | Deep link router + state-driven nav |
 
 ## Anti-Patterns and Fixes
 
@@ -266,4 +533,7 @@ Prefer Clean Architecture/VIPER when:
 - Dependencies are injected (no app-wide singleton dependency in ViewModel).
 - Async tasks have cancellation strategy.
 - Domain models are not directly coupled to View rendering.
+- Navigation destinations are modeled as value types (enum/struct), not imperative calls.
+- ViewModel does not import UIKit or reference presentation APIs directly.
+- Deep link handling routes through a centralized router, not ad-hoc view logic.
 - Unit tests cover success, failure, and cancellation.

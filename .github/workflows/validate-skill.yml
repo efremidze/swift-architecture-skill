@@ -1,0 +1,27 @@
+name: Validate Skill
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install skills-ref CLI
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "git+https://github.com/agentskills/agentskills.git#subdirectory=skills-ref"
+
+      - name: Validate Skill
+        run: |
+          python -m skills_ref.cli validate ./swift-architecture-agent
