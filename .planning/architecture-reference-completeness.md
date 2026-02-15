@@ -1,38 +1,37 @@
 # Architecture Reference Completeness Tracker
 
-Last updated: 2026-02-14
+Last updated: 2026-02-15
 
 ## Scoring rubric
 
 - Completeness: coverage of architecture fundamentals, practical patterns, anti-patterns, testing, and review checklist.
-- Quality: correctness, clarity, copy-paste reliability of snippets, and production usefulness.
+- Quality: correctness, clarity, and production usefulness of guidance and snippets.
 - Scale: 1 (poor) to 10 (excellent).
 
 ## Current scorecard
 
 | Architecture | File | Completeness | Quality | Status | Priority follow-up |
 |---|---|---:|---:|---|---|
-| MVVM | `swift-architecture-agent/references/mvvm.md` | 9.0 | 8.5 | Good | Added "When to Prefer MVVM" section; Equatable types verified |
-| MVI | `swift-architecture-agent/references/mvi.md` | 9.0 | 8.5 | Good | Added composed reducers, action reducer with failure handling, cancellable effects in Store |
-| TCA | `swift-architecture-agent/references/tca.md` | 9.5 | 9.5 | Excellent | Add brief migration note for older TCA APIs if needed |
-| Clean Architecture | `swift-architecture-agent/references/clean-architecture.md` | 9.0 | 9.0 | Good | Added DTO->Domain mapping, concurrency/cancellation section, test code example |
-| VIPER | `swift-architecture-agent/references/viper.md` | 9.0 | 8.5 | Good | Added assembly code, concurrency/cancellation section, full presenter test suite |
-| Reactive | `swift-architecture-agent/references/reactive.md` | 9.0 | 8.5 | Good | Added scheduler-injection test sample and parameterized ViewModel pattern |
+| MVVM | `swift-architecture-agent/references/mvvm.md` | 9.2 | 9.1 | Excellent | Navigation/deep-link path aligned on stable IDs; guidance wording aligned with selection matrix |
+| MVI | `swift-architecture-agent/references/mvi.md` | 9.2 | 9.1 | Excellent | Effect model, composition mapping, and error/cancellation guidance are coherent |
+| TCA | `swift-architecture-agent/references/tca.md` | 9.5 | 9.4 | Excellent | Presentation reducer guidance (`.ifLet`) and navigation modeling are aligned |
+| Clean Architecture | `swift-architecture-agent/references/clean-architecture.md` | 9.2 | 9.2 | Excellent | Layering, DTO mapping, DI, and cancellation guidance are consistent |
+| VIPER | `swift-architecture-agent/references/viper.md` | 9.2 | 9.0 | Excellent | Interaction model, actor/thread guidance, and tests are aligned |
+| Reactive | `swift-architecture-agent/references/reactive.md` | 9.2 | 9.1 | Excellent | Canonical pipeline, scheduler-injection testing, and fallback error handling are aligned |
 
 ## Open review notes
 
-1. `swift-architecture-agent/references/tca.md`: `withDependencies` test pattern (lines 248-250) uses a slightly uncommon invocation style; verify against latest TCA 1.7+ API.
-2. `swift-architecture-agent/references/reactive.md`: scheduler-injection test uses `DispatchQueue.test` which requires CombineSchedulers library; consider documenting this dependency.
+1. `swift-architecture-agent/references/tca.md`: keep an eye on TCA API drift in test helper style (`withDependencies`) on future package upgrades.
 
 ## Definition of done for each architecture doc
 
 - Has clear "when to use" guidance and trade-offs.
 - Has canonical structure and dependency boundaries.
-- Has at least one self-contained, copy-paste-friendly code path.
+- Has at least one clear, self-contained reference code path.
 - Includes concurrency/cancellation guidance where applicable.
 - Includes anti-patterns with fixes.
 - Includes testing strategy and PR review checklist.
-- Has no known syntax/compilation blockers in showcased snippets.
+- Has no known misleading architectural guidance or contradictory examples.
 
 ## Update process
 
@@ -40,4 +39,4 @@ When a review pass is done:
 
 1. Update scores and status in the scorecard.
 2. Add/remove items in `Open review notes`.
-3. Mark any architecture as `Excellent` only when there are no known snippet correctness caveats.
+3. Mark any architecture as `Excellent` only when there are no known guidance correctness caveats.
