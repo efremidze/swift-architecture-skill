@@ -292,6 +292,10 @@ final class FeedViewModel {
     private(set) var state = FeedState()
     var activeSheet: FeedSheet?
 
+    struct FeedFilter: Equatable {
+        var showUnreadOnly = false
+    }
+
     enum FeedSheet: Identifiable {
         case compose
         case filter(current: FeedFilter)
