@@ -376,7 +376,7 @@ final class FeedViewModel {
 
     func didTapCompose() {
         coordinator?.presentCompose { [weak self] in
-            self?.load() // Calls load() method shown earlier (lines 96-112)
+            self?.load()
         }
     }
 }
