@@ -261,6 +261,11 @@ extension Effect {
                 let action = try await operation()
                 return transform(action)
             }
+        case .cancellable(let id, let operation):
+            return .cancellable(id: id) {
+                let action = try await operation()
+                return transform(action)
+            }
         }
     }
 }

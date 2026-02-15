@@ -158,7 +158,7 @@ final class LiveUserRepository: UserRepository {
 Rules:
 - never expose DTOs beyond the data layer
 - test mappers independently for edge cases and invalid input
-- keep mapping pure and side-effect free
+- keep mapping pure and side-effect-free
 
 ## Concurrency and Cancellation
 

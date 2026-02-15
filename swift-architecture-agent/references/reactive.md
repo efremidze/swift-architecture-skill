@@ -139,6 +139,8 @@ final class SearchViewModelTests: XCTestCase {
     func test_queryEmitsResults() {
         let subject = PassthroughSubject<[String], Error>()
         let stubService = StubSearchService(subject: subject)
+        // Note: DispatchQueue.test and eraseToAnyScheduler() require Point-Free's CombineSchedulers
+        // (github.com/pointfreeco/combine-schedulers) for deterministic testing.
         let scheduler = DispatchQueue.test
         let vm = SearchViewModel(service: stubService, scheduler: scheduler.eraseToAnyScheduler())
 

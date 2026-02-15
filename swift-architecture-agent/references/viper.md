@@ -220,6 +220,7 @@ Testing rules:
 - verify presenter handles success and failure states
 
 ```swift
+@MainActor
 final class MockProfileView: ProfileView {
     var shownName: String?
     func show(name: String) { shownName = name }
@@ -246,7 +247,8 @@ final class ProfilePresenterTests: XCTestCase {
         )
         presenter.view = view
 
-        await presenter.load()
+        presenter.load()
+        await Task.yield()
 
         XCTAssertEqual(view.shownName, "Alice")
     }
@@ -259,7 +261,8 @@ final class ProfilePresenterTests: XCTestCase {
         )
         presenter.view = view
 
-        await presenter.load()
+        presenter.load()
+        await Task.yield()
 
         XCTAssertEqual(view.shownName, "")
     }
