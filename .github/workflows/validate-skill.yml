@@ -1,0 +1,40 @@
+name: Validate Skill
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate plugin metadata JSON
+        run: |
+          python -m json.tool .claude-plugin/plugin.json >/dev/null
+          python -m json.tool .claude-plugin/marketplace.json >/dev/null
+
+      - name: Run repo validator
+        run: |
+          chmod +x scripts/validate-skill.sh
+          scripts/validate-skill.sh ./swift-architecture-agent
+
+      - name: Install skills-ref CLI
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "git+https://github.com/agentskills/agentskills.git#subdirectory=skills-ref"
+
+      - name: Validate with skills-ref
+        run: |
+          skills-ref validate ./swift-architecture-agent
