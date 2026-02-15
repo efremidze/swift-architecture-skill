@@ -52,7 +52,7 @@ enum Loadable<Value: Equatable>: Equatable {
     case failed(String)
 }
 
-struct FeedItemViewData: Identifiable, Equatable {
+struct FeedItemViewData: Identifiable, Hashable {
     let id: UUID
     let title: String
 }
