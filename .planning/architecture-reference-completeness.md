@@ -21,8 +21,7 @@ Last updated: 2026-02-14
 
 ## Open review notes
 
-1. `swift-architecture-agent/references/mvvm.md`: `FeedState` claims `Equatable`; verify/document `FeedItemViewData` and `ToastState` equatability assumptions.
-2. `swift-architecture-agent/references/reactive.md`: error-handling example references undeclared sample symbols (`query`, `ResultState`) and should be made standalone.
+1. `swift-architecture-agent/references/reactive.md`: ensure all standalone snippets remain copy-paste compilable as examples evolve.
 
 ## Definition of done for each architecture doc
 
