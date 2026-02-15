@@ -219,11 +219,11 @@ Navigation in MVVM should keep routing decisions testable and decoupled from UIK
 
 ### SwiftUI Navigation (iOS 16+ / `NavigationStack`)
 
-Model navigation destinations as an enum and drive `NavigationStack` with a path owned by the ViewModel.
+Model navigation destinations as an enum and drive `NavigationStack` with a path owned by the ViewModel. Prefer stable route identifiers (`id`) over passing list-specific `ViewData` into deeper screens.
 
 ```swift
 enum FeedDestination: Hashable {
-    case detail(FeedItemViewData)
+    case detail(id: UUID)
     case profile(userId: UUID)
     case settings
 }
@@ -241,7 +241,7 @@ final class FeedViewModel {
     // ...existing properties...
 
     func didTapItem(_ item: FeedItemViewData) {
-        navigationPath.append(.detail(item))
+        navigationPath.append(.detail(id: item.id))
     }
 
     func didTapProfile(userId: UUID) {
@@ -269,8 +269,8 @@ struct FeedView: View {
                 // Note: In real implementation, create ViewModels via Assembly pattern.
                 // Simplified here to show navigation structure.
                 switch destination {
-                case .detail(let item):
-                    FeedDetailView(viewModel: FeedDetailViewModel(item: item))
+                case .detail(let itemID):
+                    FeedDetailView(viewModel: FeedDetailViewModel(itemID: itemID))
                 case .profile(let userId):
                     ProfileView(viewModel: ProfileViewModel(userId: userId))
                 case .settings:
@@ -347,7 +347,7 @@ When UIKit is involved or complex multi-step flows require centralized control, 
 ```swift
 @MainActor
 protocol FeedCoordinator: AnyObject {
-    func showDetail(for item: FeedItemViewData)
+    func showDetail(itemID: UUID)
     func showProfile(userId: UUID)
     func presentCompose(onComplete: @MainActor @escaping () -> Void)
 }
@@ -371,7 +371,7 @@ final class FeedViewModel {
     }
 
     func didTapItem(_ item: FeedItemViewData) {
-        coordinator?.showDetail(for: item)
+        coordinator?.showDetail(itemID: item.id)
     }
 
     func didTapCompose() {
@@ -393,8 +393,8 @@ final class FeedFlowCoordinator: FeedCoordinator {
         self.navigationController = navigationController
     }
 
-    func showDetail(for item: FeedItemViewData) {
-        let viewModel = FeedDetailAssembly.makeViewModel(item: item)
+    func showDetail(itemID: UUID) {
+        let viewModel = FeedDetailAssembly.makeViewModel(itemID: itemID)
         let vc = UIHostingController(rootView: FeedDetailView(viewModel: viewModel))
         navigationController.pushViewController(vc, animated: true)
     }
@@ -455,8 +455,7 @@ final class AppRouter {
     func handle(_ deepLink: DeepLink) {
         switch deepLink {
         case .feedItem(let id):
-            let placeholder = FeedItemViewData(id: id, title: "")
-            feedViewModel.navigationPath = [.detail(placeholder)]
+            feedViewModel.navigationPath = [.detail(id: id)]
         case .profile(let userId):
             feedViewModel.navigationPath = [.profile(userId: userId)]
         case .settings:

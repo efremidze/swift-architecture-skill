@@ -107,7 +107,7 @@ Compose live dependencies in the app or feature assembly layer.
 ```swift
 enum UserFeatureAssembly {
     static func makeLoadUserUseCase() -> LoadUserUseCase {
-        let repository = LiveUserRepository(api: .live, store: .live)
+        let repository = LiveUserRepository(api: .live)
         return LoadUser(repository: repository)
     }
 }

@@ -13,7 +13,7 @@ Use this reference when strict separation of concerns is needed at feature level
 Expected interaction:
 
 ```text
-View -> Presenter -> Interactor -> Presenter -> View
+View -> Presenter -> Interactor -> Repository/Service -> Interactor -> Presenter -> View
 Presenter -> Router (navigation)
 ```
 
