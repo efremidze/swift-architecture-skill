@@ -149,7 +149,7 @@ final class CounterViewController: UIViewController {
     super.init(nibName: nil, bundle: nil)
   }
 
-  required init?(coder: NSCoder) { nil }
+  required init?(coder: NSCoder) { return nil }
 
   override func viewDidLoad() {
     super.viewDidLoad()
