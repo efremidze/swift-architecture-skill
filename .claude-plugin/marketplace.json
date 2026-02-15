@@ -2,7 +2,7 @@
   "name": "Swift Architecture Skill",
   "metadata": {
     "description": "Agent Skill for Swift architecture design and implementation patterns.",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "plugins": [
     {
