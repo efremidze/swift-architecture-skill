@@ -1,6 +1,6 @@
 # Swift Architecture Skill
 
-An Agent Skill that provides architecture guidance for Swift iOS development.
+An [Agent Skill](https://github.com/agentskills/agentskills) that provides architecture guidance for Swift iOS development.
 
 ## Overview
 
