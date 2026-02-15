@@ -198,6 +198,16 @@ Expected flow:
 - UseCase returns domain entities
 - Presentation maps entities to view state
 
+SwiftUI adaptation:
+- use `@Observable`/`ObservableObject` ViewModels that expose view state
+- trigger use cases from intent methods on the ViewModel
+- keep SwiftUI views declarative and free of use-case/repository calls
+
+UIKit adaptation:
+- use Presenter/ViewModel objects owned by view controllers
+- convert delegate/target-action events into presenter intents
+- keep controllers responsible for rendering only; business coordination stays in presenter/use case layers
+
 ## Anti-Patterns and Fixes
 
 1. God use case:

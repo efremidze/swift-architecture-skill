@@ -288,6 +288,8 @@ extension Effect {
 - Send user events through `store.send(intent)`.
 - Never mutate domain state directly in views.
 
+### SwiftUI Integration
+
 ```swift
 struct CounterView: View {
     @StateObject var store: Store<CounterState, CounterIntent, CounterAction>
@@ -303,6 +305,51 @@ struct CounterView: View {
     }
 }
 ```
+
+### UIKit Integration
+
+In UIKit, subscribe once, render idempotently, and map control events to intents.
+
+```swift
+import Combine
+import UIKit
+
+final class CounterViewController: UIViewController {
+    private let store: Store<CounterState, CounterIntent, CounterAction>
+    private var cancellables = Set<AnyCancellable>()
+
+    init(store: Store<CounterState, CounterIntent, CounterAction>) {
+        self.store = store
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { nil }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        store.$state
+            .receive(on: RunLoop.main)
+            .sink { [weak self] in self?.render($0) }
+            .store(in: &cancellables)
+    }
+
+    @objc private func incrementTapped() {
+        store.send(.incrementTapped)
+    }
+
+    private func render(_ state: CounterState) {
+        title = "Count: \(state.count)"
+        // Update labels/buttons/loading from state only.
+    }
+}
+```
+
+UIKit rules:
+- keep all UI writes in `render(_:)`
+- convert delegate/target-action callbacks into `Intent`
+- keep ephemeral control state (focus/scroll offset) local to the controller
 
 ## Concurrency Rules
 
@@ -380,4 +427,5 @@ Prefer MVVM when:
 - Effects are isolated and mapped back into actions.
 - Cancellation/versioning exists for concurrent requests.
 - View sends intents only; no direct business mutation.
+- SwiftUI/ UIKit integration keeps a single source of truth with no mirrored mutable state.
 - Reducer tests cover success, failure, and cancellation.

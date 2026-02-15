@@ -37,6 +37,7 @@ Keep one VIPER module per feature to prevent cross-feature leakage.
 - Render data provided by Presenter.
 - Forward user inputs (`didTap...`, `didAppear`, text changes).
 - Avoid direct service/repository access.
+- In SwiftUI, use an adapter (`ObservableObject`) that forwards to Presenter.
 
 ### Presenter
 
@@ -138,6 +139,64 @@ Rules:
 - keep the factory method as the single entry point for module creation
 - inject external dependencies (repositories, services) from the caller
 - set weak back-references (e.g., `presenter.view`) after construction
+
+SwiftUI integration option:
+- keep Presenter/Interactor/Router unchanged
+- wrap SwiftUI feature view in `UIHostingController`
+- bridge Presenter output to SwiftUI through a lightweight adapter object
+
+```swift
+import SwiftUI
+import UIKit
+
+@MainActor
+final class ProfileViewAdapter: ObservableObject, ProfileView {
+    @Published private(set) var name = ""
+    private let presenter: ProfilePresenter
+
+    init(presenter: ProfilePresenter) {
+        self.presenter = presenter
+    }
+
+    func show(name: String) {
+        self.name = name
+    }
+
+    func load() async {
+        await presenter.load()
+    }
+
+    func didTapSettings() {
+        presenter.didTapSettings()
+    }
+}
+
+struct ProfileScreen: View {
+    @ObservedObject var adapter: ProfileViewAdapter
+
+    var body: some View {
+        VStack {
+            Text(adapter.name)
+            Button("Settings") { adapter.didTapSettings() }
+        }
+        .task { await adapter.load() }
+    }
+}
+
+enum ProfileModuleSwiftUI {
+    static func build(
+        userRepository: UserRepository,
+        navigationController: UINavigationController
+    ) -> UIViewController {
+        let interactor = ProfileInteractor(repository: userRepository)
+        let router = ProfileRouter(navigationController: navigationController)
+        let presenter = ProfilePresenter(interactor: interactor, router: router)
+        let adapter = ProfileViewAdapter(presenter: presenter)
+        presenter.view = adapter
+        return UIHostingController(rootView: ProfileScreen(adapter: adapter))
+    }
+}
+```
 
 ## Concurrency and Cancellation
 
