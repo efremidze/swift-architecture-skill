@@ -156,7 +156,7 @@ final class ProfilePresenter {
         self.router = router
     }
 
-    func load() {
+    func load() async {
         loadTask?.cancel()
         loadTask = Task {
             do {
@@ -168,6 +168,7 @@ final class ProfilePresenter {
                 view?.show(name: "")
             }
         }
+        await loadTask?.value
     }
 
     func didTapSettings() {
@@ -220,6 +221,7 @@ Testing rules:
 - verify presenter handles success and failure states
 
 ```swift
+@MainActor
 final class MockProfileView: ProfileView {
     var shownName: String?
     func show(name: String) { shownName = name }
