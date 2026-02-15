@@ -427,5 +427,5 @@ Prefer MVVM when:
 - Effects are isolated and mapped back into actions.
 - Cancellation/versioning exists for concurrent requests.
 - View sends intents only; no direct business mutation.
-- SwiftUI/ UIKit integration keeps a single source of truth with no mirrored mutable state.
+- SwiftUI/UIKit integration keeps a single source of truth with no mirrored mutable state.
 - Reducer tests cover success, failure, and cancellation.

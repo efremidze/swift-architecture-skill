@@ -133,6 +133,49 @@ UIKit guidance:
 - centralize rendering in one method
 - cancel subscriptions on deinit
 
+Concrete UIKit pattern:
+
+```swift
+import ComposableArchitecture
+import Combine
+import UIKit
+
+@MainActor
+final class CounterViewController: UIViewController {
+  private let store: StoreOf<CounterFeature>
+  private let viewStore: ViewStoreOf<CounterFeature>
+  private var cancellables: Set<AnyCancellable> = []
+
+  init(store: StoreOf<CounterFeature>) {
+    self.store = store
+    self.viewStore = ViewStore(store, observe: { $0 })
+    super.init(nibName: nil, bundle: nil)
+  }
+
+  @available(*, unavailable)
+  required init?(coder: NSCoder) { nil }
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+
+    viewStore.publisher
+      .sink { [weak self] state in
+        self?.render(state)
+      }
+      .store(in: &cancellables)
+  }
+
+  @objc private func incrementTapped() {
+    viewStore.send(.incrementTapped)
+  }
+
+  private func render(_ state: CounterFeature.State) {
+    title = "Count: \(state.count)"
+    // Render labels/buttons/loading from state only.
+  }
+}
+```
+
 ## Composition Patterns
 
 Use `Scope` for parent-child composition.
@@ -312,3 +355,4 @@ Prefer MVVM or lighter MVI variants when:
 - Navigation is modeled in state.
 - Tests cover success, failure, and cancellation flows.
 - Views render and send actions only.
+- SwiftUI/UIKit integration does not mirror store state into extra mutable UI-layer state.
