@@ -4,7 +4,7 @@ An [Agent Skill](https://github.com/agentskills/agentskills) that provides archi
 
 ## Overview
 
-This Agent Skill helps you select and implement the right architecture pattern for your Swift iOS project. It provides concrete code examples, anti-patterns to avoid, and PR review checklists.
+This Agent Skill helps you design and implement the right architecture pattern for your Swift iOS project. It provides concrete code examples, anti-patterns to avoid, and PR review checklists.
 
 ## Supported Architectures
 

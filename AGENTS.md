@@ -1,6 +1,6 @@
 # AGENTS Guidelines for Swift Architecture Skill
 
-This repository provides a Claude Agent skill for Swift iOS architecture guidance. It contains architecture playbooks and selection guides to help AI coding agents provide concrete implementation guidance for Swift/SwiftUI/UIKit projects.
+This repository provides an Agent Skill for Swift iOS architecture guidance. It contains architecture playbooks and selection guides to help coding agents provide concrete design and implementation patterns for Swift/SwiftUI/UIKit projects.
 
 ## Working with This Repository
 

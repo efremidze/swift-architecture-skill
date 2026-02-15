@@ -1,6 +1,6 @@
 ---
 name: swift-architecture-agent
-description: Architecture selection and implementation guidance for Swift iOS codebases, with architecture-specific playbooks and review checklists. Use when designing new features, refactoring existing modules, reviewing pull requests, or debugging maintainability issues in SwiftUI/UIKit projects and you need concrete guidance for MVVM, MVI, TCA, Clean Architecture, VIPER, or Reactive patterns.
+description: Agent Skill for Swift architecture design and implementation patterns, with architecture-specific playbooks and review checklists. Use when designing new features, refactoring existing modules, reviewing pull requests, or debugging maintainability issues in SwiftUI/UIKit projects and you need concrete guidance for MVVM, MVI, TCA, Clean Architecture, VIPER, or Reactive patterns.
 ---
 
 # Swift Architecture Agent
