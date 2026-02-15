@@ -165,16 +165,21 @@ final class Store<State, Intent, Action>: ObservableObject {
 
     private let reduceIntent: (inout State, Intent) -> Effect<Action>?
     private let reduceAction: (inout State, Action) -> Void
+    private let onUnexpectedError: @MainActor (Error) -> Void
     private var activeTasks: [AnyHashable: Task<Void, Never>] = [:]
 
     init(
         initial: State,
         reduceIntent: @escaping (inout State, Intent) -> Effect<Action>?,
-        reduceAction: @escaping (inout State, Action) -> Void
+        reduceAction: @escaping (inout State, Action) -> Void,
+        onUnexpectedError: @escaping @MainActor (Error) -> Void = { error in
+            assertionFailure("Unhandled effect error: \(error)")
+        }
     ) {
         self.state = initial
         self.reduceIntent = reduceIntent
         self.reduceAction = reduceAction
+        self.onUnexpectedError = onUnexpectedError
     }
 
     func send(_ intent: Intent) {
@@ -194,7 +199,7 @@ final class Store<State, Intent, Action>: ObservableObject {
                 } catch is CancellationError {
                     // Task was cancelled; no state update.
                 } catch {
-                    // Map unexpected errors to a failure action if needed.
+                    onUnexpectedError(error)
                 }
             }
         case .cancellable(let id, let operation):
@@ -206,7 +211,7 @@ final class Store<State, Intent, Action>: ObservableObject {
                 } catch is CancellationError {
                     // Cancelled by a newer request for the same id.
                 } catch {
-                    // Map unexpected errors to a failure action if needed.
+                    onUnexpectedError(error)
                 }
                 activeTasks[id] = nil
             }
@@ -218,6 +223,8 @@ final class Store<State, Intent, Action>: ObservableObject {
     }
 }
 ```
+
+Prefer mapping expected service failures to explicit failure actions in reducer effects, and use `onUnexpectedError` only as a safety net for truly unexpected faults.
 
 Update `Effect` to support cancellation:
 
