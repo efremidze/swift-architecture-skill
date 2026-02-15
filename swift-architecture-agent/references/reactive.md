@@ -133,14 +133,14 @@ Rules:
 
 ```swift
 import Combine
+import CombineSchedulers
 import XCTest
 
 final class SearchViewModelTests: XCTestCase {
     func test_queryEmitsResults() {
         let subject = PassthroughSubject<[String], Error>()
         let stubService = StubSearchService(subject: subject)
-        // Note: DispatchQueue.test and eraseToAnyScheduler() require Point-Free's CombineSchedulers
-        // (github.com/pointfreeco/combine-schedulers) for deterministic testing.
+        // Requires Point-Free's CombineSchedulers package.
         let scheduler = DispatchQueue.test
         let vm = SearchViewModel(service: stubService, scheduler: scheduler.eraseToAnyScheduler())
 
