@@ -7,7 +7,7 @@ description: Agent Skill for Swift architecture design and implementation patter
 
 ## Overview
 
-Use this skill to pick the best Swift architecture playbook and apply it to the user’s task.
+Use this skill to pick the best Swift architecture playbook for SwiftUI/UIKit codebases and apply it to the user’s task.
 
 ## Workflow
 

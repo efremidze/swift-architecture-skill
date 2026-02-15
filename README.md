@@ -1,10 +1,10 @@
 # Swift Architecture Skill
 
-An [Agent Skill](https://github.com/agentskills/agentskills) that provides architecture guidance for Swift iOS development.
+An [Agent Skill](https://github.com/agentskills/agentskills) that provides architecture guidance for Swift, SwiftUI, and UIKit iOS development.
 
 ## Overview
 
-This Agent Skill helps you design and implement the right architecture pattern for your Swift iOS project. It provides concrete code examples, anti-patterns to avoid, and PR review checklists.
+This Agent Skill helps you design and implement the right architecture pattern for your Swift, SwiftUI, or UIKit iOS project. It provides concrete code examples, anti-patterns to avoid, and PR review checklists.
 
 ## Supported Architectures
 
@@ -25,7 +25,7 @@ This Agent Skill helps you design and implement the right architecture pattern f
 ## Features
 
 - Architecture selection guidance based on your constraints
-- Modern Swift patterns (async/await, actors, SwiftUI)
+- Modern Swift patterns (async/await, actors, SwiftUI, UIKit)
 - Testing strategies with example code
 - Anti-patterns with fixes
 - PR review checklists

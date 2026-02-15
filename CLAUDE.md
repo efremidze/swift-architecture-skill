@@ -32,4 +32,4 @@ swift-architecture-skill/
 - Each playbook follows a consistent structure: core concepts, code patterns, anti-patterns with fixes, testing strategy, and PR review checklist
 - The skill supports MVVM, MVI, TCA, Clean Architecture, VIPER, and Reactive patterns
 - When no architecture is specified, use `references/selection-guide.md` to infer the best fit
-- Code examples use modern Swift concurrency (async/await, actors) and SwiftUI patterns
+- Code examples use modern Swift concurrency (async/await, actors) and cover both SwiftUI and UIKit patterns
