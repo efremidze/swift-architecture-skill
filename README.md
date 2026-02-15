@@ -91,6 +91,10 @@ swift-architecture-skill/
 
 - [swift-patterns-skill](https://github.com/efremidze/swift-patterns-skill)
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines, including how to add a new architecture playbook.
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details
