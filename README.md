@@ -87,6 +87,10 @@ swift-architecture-skill/
     reactive.md               # Reactive (Combine/RxSwift) playbook
 ```
 
+## Other Skills
+
+- [swift-patterns-skill](https://github.com/efremidze/swift-patterns-skill)
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details
