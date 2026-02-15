@@ -1,12 +1,21 @@
 {
   "name": "swift-architecture-skill",
-  "version": "0.1.0",
-  "description": "",
-  "skills": [
-    {
-      "name": "swift-architecture-agent",
-      "path": "swift-architecture-agent/SKILL.md",
-      "description": ""
-    }
-  ]
+  "version": "0.2.0",
+  "description": "Agent Skill for Swift architecture design and implementation patterns.",
+  "homepage": "https://github.com/efremidze/swift-architecture-skill",
+  "repository": "https://github.com/efremidze/swift-architecture-skill",
+  "license": "MIT",
+  "keywords": [
+    "swift",
+    "ios",
+    "swiftui",
+    "architecture",
+    "mvvm",
+    "mvi",
+    "tca",
+    "clean-architecture",
+    "viper",
+    "reactive"
+  ],
+  "skills": "./swift-architecture-agent"
 }
