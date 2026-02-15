@@ -1,6 +1,6 @@
 # Swift Architecture Skill
 
-This repository contains a Claude Agent skill that provides architecture selection and implementation guidance for Swift iOS codebases.
+This repository contains an Agent Skill that provides Swift architecture design and implementation patterns for iOS codebases.
 
 ## Project Structure
 

@@ -1,6 +1,6 @@
 # MVI Playbook (Swift + SwiftUI/UIKit)
 
-Use this reference when strict unidirectional data flow and deterministic state transitions are required.
+Use this reference for strict unidirectional flow and deterministic state transitions.
 
 ## Mental Model
 
@@ -225,11 +225,11 @@ final class Store<State, Intent, Action>: ObservableObject {
 }
 ```
 
-Prefer mapping expected service failures to explicit failure actions in reducer effects, and use `onUnexpectedError` only as a safety net for truly unexpected faults.
+Map expected service failures to explicit failure actions; reserve `onUnexpectedError` for true fallthrough faults.
 
 ## Composed Reducers
 
-Split reducers by feature and combine for scalability.
+Split reducers by feature and compose them.
 
 ```swift
 enum AppAction {

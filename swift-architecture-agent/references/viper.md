@@ -1,6 +1,6 @@
 # VIPER Playbook (Swift + UIKit/SwiftUI)
 
-Use this reference when strict separation of concerns is needed at feature level, especially in larger codebases or legacy UIKit modules.
+Use this reference when strict feature-level separation is needed, especially in large or legacy UIKit codebases.
 
 ## Core Components
 
@@ -28,7 +28,7 @@ Feature/
   Router/
 ```
 
-For modular repos, keep one VIPER module per feature to prevent cross-feature leakage.
+Keep one VIPER module per feature to prevent cross-feature leakage.
 
 ## Responsibilities
 
@@ -64,7 +64,7 @@ For modular repos, keep one VIPER module per feature to prevent cross-feature le
 
 ## Wiring Pattern
 
-Use protocols at boundaries and keep references directional.
+Use boundary protocols and directional references.
 
 ```swift
 @MainActor

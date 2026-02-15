@@ -1,29 +1,27 @@
 {
-  "schema_version": "1.0",
-  "slug": "swift-architecture-skill",
   "name": "Swift Architecture Skill",
-  "summary": "",
-  "description": "",
-  "categories": [
-    "development",
-    "mobile",
-    "ios"
-  ],
-  "tags": [
-    "swift",
-    "swiftui",
-    "architecture",
-    "mvvm",
-    "mvi",
-    "tca",
-    "clean-architecture",
-    "viper",
-    "reactive"
-  ],
-  "skills": [
+  "metadata": {
+    "description": "Agent Skill for Swift architecture design and implementation patterns.",
+    "version": "0.2.0"
+  },
+  "plugins": [
     {
-      "name": "swift-architecture-agent",
-      "path": "swift-architecture-agent/SKILL.md"
+      "name": "swift-architecture-skill",
+      "source": "./",
+      "description": "Swift architecture Agent Skill with playbooks for MVVM, MVI, TCA, Clean Architecture, VIPER, and Reactive.",
+      "tags": [
+        "swift",
+        "ios",
+        "swiftui",
+        "architecture",
+        "mvvm",
+        "mvi",
+        "tca",
+        "clean-architecture",
+        "viper",
+        "reactive"
+      ],
+      "category": "development"
     }
   ]
 }

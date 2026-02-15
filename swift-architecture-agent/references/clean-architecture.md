@@ -1,6 +1,6 @@
 # Clean Architecture Playbook (Swift + SwiftUI/UIKit)
 
-Use this reference when a Swift codebase needs strict layer boundaries, clear dependency direction, and use-case-driven business logic.
+Use this reference when a Swift codebase needs strict layer boundaries and use-case-driven business logic.
 
 ## Core Dependency Rule
 
@@ -119,7 +119,7 @@ Rules:
 
 ## DTO to Domain Mapping
 
-Map external models to domain entities at the data-layer boundary. Keep mapping logic in dedicated mapper types or repository implementations.
+Map external models to domain entities at the data-layer boundary, in mappers or repository implementations.
 
 ```swift
 struct UserDTO: Decodable {
@@ -162,7 +162,7 @@ Rules:
 
 ## Concurrency and Cancellation
 
-Use structured concurrency in use cases and propagate cancellation through async calls.
+Use structured concurrency in use cases and let cancellation propagate through async calls.
 
 ```swift
 final class LoadUserProfile: LoadUserProfileUseCase {

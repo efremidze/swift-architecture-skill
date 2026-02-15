@@ -1,19 +1,16 @@
 # Reactive Architecture Playbook (Swift + Combine/RxSwift)
 
-Use this reference when features are stream-driven (search, live updates, real-time feeds) and benefit from declarative event pipelines.
+Use this reference for stream-driven features (search, live updates, real-time feeds).
 
 ## Core Philosophy
 
-Model:
-- inputs as streams
-- transformations as operators
-- state/output as streams
+Model inputs, transforms, and outputs as streams.
 
 ```text
 Input -> Publisher/Observable chain -> State -> UI
 ```
 
-Keep stream composition in presentation or dedicated reactive layer, not in views.
+Keep stream composition in presentation or a dedicated reactive layer, not in views.
 
 ## Canonical Combine Pattern
 
@@ -64,13 +61,11 @@ Prefer `switchToLatest` over nested subscriptions for request replacement flows.
 
 ## RxSwift Mapping Notes
 
-Combine and RxSwift are conceptually equivalent for this skill:
+Combine and RxSwift mapping:
 - `AnyPublisher` <-> `Observable`
 - `AnyCancellable` <-> `DisposeBag`
 - `receive(on:)` <-> `observe(on:)`
 - `subscribe(on:)` semantics should be applied intentionally to offload heavy work
-
-Keep architecture guidance operator-focused so it applies across frameworks.
 
 ## Error Handling Pattern
 
@@ -97,7 +92,7 @@ func searchState(
 }
 ```
 
-Avoid stream termination for expected transient failures when the UI should stay interactive.
+For transient failures, prefer fallback state over terminating the stream.
 
 ## Anti-Patterns and Fixes
 
@@ -177,7 +172,7 @@ struct StubSearchService: SearchService {
 }
 ```
 
-The canonical `SearchViewModel` already supports scheduler injection through its initializer, so tests can pass a test scheduler without a second ViewModel variant.
+The canonical `SearchViewModel` already supports scheduler injection for tests.
 
 ## When to Prefer Reactive Architecture
 

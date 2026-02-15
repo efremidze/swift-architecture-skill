@@ -1,6 +1,6 @@
 # MVVM Playbook (Swift + SwiftUI/UIKit)
 
-Use this reference when the request is explicitly MVVM or when screen-level state and async effects need clear separation and test seams.
+Use this reference for MVVM requests or screen-level state with async effects.
 
 ## Core Boundaries
 
@@ -215,11 +215,11 @@ struct FeedView: View {
 
 ## Navigation Patterns
 
-Navigation in MVVM should keep routing decisions testable and decoupled from UIKit/SwiftUI presentation mechanics. The ViewModel decides *where* to go; a separate layer decides *how* to present it.
+Keep routing decisions testable and decoupled from presentation APIs: ViewModel decides *where*, routing layer decides *how*.
 
 ### SwiftUI Navigation (iOS 16+ / `NavigationStack`)
 
-Model navigation destinations as an enum and drive `NavigationStack` with a path owned by the ViewModel. Prefer stable route identifiers (`id`) over passing list-specific `ViewData` into deeper screens.
+Model destinations as an enum and drive `NavigationStack` from ViewModel path state. Prefer stable IDs over list-specific `ViewData`.
 
 ```swift
 enum FeedDestination: Hashable {
@@ -266,8 +266,6 @@ struct FeedView: View {
                 }
             }
             .navigationDestination(for: FeedDestination.self) { destination in
-                // Note: In real implementation, create ViewModels via Assembly pattern.
-                // Simplified here to show navigation structure.
                 switch destination {
                 case .detail(let itemID):
                     FeedDetailView(viewModel: FeedDetailViewModel(itemID: itemID))
@@ -327,8 +325,6 @@ struct FeedView: View {
             Text(item.title)
         }
         .sheet(item: $viewModel.activeSheet) { sheet in
-            // Note: In real implementation, create ViewModels via Assembly pattern.
-            // Simplified here to show sheet presentation structure.
             switch sheet {
             case .compose:
                 ComposeView(viewModel: ComposeViewModel())
@@ -514,7 +510,7 @@ Test strategy:
 
 Prefer MVVM when:
 - screen-level state management is the primary concern
-- team familiarity with reactive/observable patterns is strong
+- team wants low-ceremony state handling
 - feature complexity is moderate and does not require strict unidirectional flow
 - rapid iteration and low ceremony are valued
 
