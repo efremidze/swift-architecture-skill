@@ -79,6 +79,23 @@ Use these request signals:
 - "streams", "Combine", "RxSwift", "real-time", "search"
 - feature behavior is event-pipeline driven (typeahead, WebSocket, live feeds)
 
+## Validating User-Requested Architectures
+
+When the user pre-selects an architecture, validate it before finalizing:
+
+1. Check fit across:
+   - UI stack (SwiftUI/UIKit/mixed)
+   - feature complexity and state model needs
+   - effect orchestration requirements
+   - team familiarity and dependency tolerance
+   - alignment with existing codebase conventions
+2. Decide whether the request is a `fit` or a `mismatch`.
+3. Respond based on the result:
+   - `fit`: proceed with requested architecture
+   - `mismatch`: recommend closest-fit alternative and explain why
+
+If the user insists on a mismatched choice, proceed with the requested architecture but include a risk-mitigation plan.
+
 ## Combining Architectures
 
 Some projects use multiple patterns. Common valid combinations:
@@ -94,7 +111,8 @@ When combining, clarify which pattern governs which layer and keep boundaries co
 
 When recommending:
 
-1. Name one pattern and justify it in one sentence.
-2. Cite the reference file.
-3. If close call, note the trade-off briefly.
-4. Apply the playbook to the user’s feature.
+1. Name one pattern and provide a fit result (`fit` or `mismatch`).
+2. Give 1-2 concise reasons grounded in user constraints.
+3. Cite the reference file.
+4. If `mismatch`, include the closest-fit alternative and one trade-off.
+5. Apply the selected playbook to the user’s feature.
