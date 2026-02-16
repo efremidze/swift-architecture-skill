@@ -8,8 +8,8 @@ Check whether the skill catches architecture/code smells and proposes concrete, 
 
 ## Layout
 
-- `evals/cases.json`: all eval cases in one file
-- `evals/rubric.md`: manual scoring rubric
+- `.evals/cases.json`: all eval cases in one file
+- `.evals/rubric.md`: manual scoring rubric
 - `scripts/run-skill-evals.sh`: runner
 
 ## Case Format (`cases.json`)
@@ -30,7 +30,7 @@ Each case includes:
 ./scripts/run-skill-evals.sh
 ```
 
-This creates `evals/runs/<timestamp>/` with:
+This creates `.evals/runs/<timestamp>/` with:
 
 - `packet.md` (all prompts)
 - `responses/<id>.md`
@@ -52,7 +52,7 @@ bash -lc "$CMD" < prompt_text > responses/<id>.md
 3. Grade a completed run:
 
 ```bash
-./scripts/run-skill-evals.sh --grade-only --run-dir evals/runs/<timestamp>
+./scripts/run-skill-evals.sh --grade-only --run-dir .evals/runs/<timestamp>
 ```
 
 ## Scoring Guidance

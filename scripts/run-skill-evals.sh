@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CASES_FILE="$ROOT_DIR/evals/cases.json"
-RUNS_DIR="$ROOT_DIR/evals/runs"
+CASES_FILE="$ROOT_DIR/.evals/cases.json"
+RUNS_DIR="$ROOT_DIR/.evals/runs"
 RUN_DIR=""
 CMD=""
 GRADE_ONLY=0
@@ -30,7 +30,7 @@ create_scorecard() {
   cat > "$file" <<SCORE
 # Scorecard: $case_id
 
-Use \`evals/rubric.md\` for definitions.
+Use \`.evals/rubric.md\` for definitions.
 
 - [ ] \`smell_detection\` (0/1)
 - [ ] \`architecture_fit\` (0/1)
@@ -138,7 +138,7 @@ fi
 
 run_cases_file="$RUN_DIR/cases.json"
 if [[ ! -f "$run_cases_file" ]]; then
-  echo "Run has no cases.json; using current evals/cases.json for grading." >&2
+  echo "Run has no cases.json; using current .evals/cases.json for grading." >&2
   run_cases_file="$CASES_FILE"
 fi
 
@@ -197,4 +197,4 @@ done < <(jq -c '.cases[]' "$run_cases_file")
 
 echo "Wrote: $summary_file"
 echo "Keyword pass: $pass_cases/$total_cases"
-echo "Use scorecards/ + evals/rubric.md for final manual verdict."
+echo "Use scorecards/ + .evals/rubric.md for final manual verdict."
