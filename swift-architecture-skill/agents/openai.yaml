@@ -1,4 +1,4 @@
 interface:
   display_name: "Swift Architecture Skill"
-  short_description: "Guide Swift architectural patterns and implementation decisions"
-  default_prompt: "Use this skill to select and apply Swift architecture patterns by feature context, then provide concrete implementation guidance and review checks."
+  short_description: "Architecture guidance for Swift, SwiftUI, and UIKit iOS projects"
+  default_prompt: "Use this skill to select and apply the right architecture for Swift, SwiftUI, and UIKit features, then provide concrete implementation guidance and review checks."
