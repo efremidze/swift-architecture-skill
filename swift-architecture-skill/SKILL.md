@@ -21,7 +21,13 @@ Before selecting an architecture, capture:
 
 ### Step 2: Select the Architecture
 
-If the user explicitly names an architecture, use it. Otherwise, load `references/selection-guide.md` and infer the best fit from stated constraints (state complexity, team familiarity, testing goals, effect orchestration needs, and framework preferences). Explain the recommendation briefly.
+If the user explicitly names an architecture, treat it as the initial candidate and run a fit check before committing:
+- validate against UI stack fit (SwiftUI/UIKit/mixed), state complexity, effect orchestration needs, team familiarity, and existing codebase conventions
+- if it fits, proceed with the requested architecture
+- if it mismatches key constraints, explicitly explain the mismatch and recommend the closest-fit alternative from `references/selection-guide.md`
+- if the user still insists on a mismatched architecture, proceed with a risk-mitigated plan and state the risks up front
+
+When no architecture is named, load `references/selection-guide.md` and infer the best fit from stated constraints (state complexity, team familiarity, testing goals, effect orchestration needs, and framework preferences). Explain the recommendation briefly.
 
 Architecture reference mapping:
 - MVVM → `references/mvvm.md`
@@ -59,6 +65,8 @@ End with the architecture-specific PR review checklist from the reference file, 
 - Prefer protocol-based dependency injection and explicit state modeling.
 - Flag anti-patterns found in existing code and provide direct fixes.
 - Include cancellation and error handling in all async flows.
+- For explicit architecture requests, include a short fit result (`fit` or `mismatch`) with 1-2 reasons.
+- For mismatch cases, include one closest-fit alternative and why it better matches the stated constraints.
 - When writing code, include only the patterns relevant to the task — do not dump entire playbooks.
 - Treat reference snippets as illustrative by default; add full compile scaffolding only if the user asks for runnable code.
 - Ask only minimum blocking questions; otherwise proceed with explicit assumptions stated up front.
