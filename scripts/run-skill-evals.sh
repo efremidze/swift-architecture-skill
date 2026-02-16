@@ -57,6 +57,12 @@ build_packet() {
   } > "$packet_path"
 }
 
+match_keyword() {
+  local keyword="$1"
+  local response_file="$2"
+  grep -qiF -- "$keyword" "$response_file"
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --cmd)
@@ -164,19 +170,70 @@ while IFS= read -r case_json; do
   forb_hits=0
   forb_total=0
 
-  while IFS= read -r keyword; do
-    req_total=$((req_total + 1))
-    if grep -qiF -- "$keyword" "$response_file"; then
-      req_hits=$((req_hits + 1))
-    fi
-  done < <(jq -r '.required_keywords[]?' <<< "$case_json")
+  # Preferred mode: required_any is an array of checks, where each check is either:
+  # - a single string
+  # - an array of equivalent phrases (any-of match)
+  # Backward compatible fallback: required_keywords (all-of single terms).
+  if jq -e '.required_any? | type == "array" and length > 0' >/dev/null <<< "$case_json"; then
+    while IFS= read -r group_json; do
+      req_total=$((req_total + 1))
+      group_hit=0
 
-  while IFS= read -r keyword; do
-    forb_total=$((forb_total + 1))
-    if grep -qiF -- "$keyword" "$response_file"; then
-      forb_hits=$((forb_hits + 1))
-    fi
-  done < <(jq -r '.forbidden_keywords[]?' <<< "$case_json")
+      if jq -e 'type == "array"' >/dev/null <<< "$group_json"; then
+        while IFS= read -r keyword; do
+          if match_keyword "$keyword" "$response_file"; then
+            group_hit=1
+            break
+          fi
+        done < <(jq -r '.[]' <<< "$group_json")
+      elif jq -e 'type == "string"' >/dev/null <<< "$group_json"; then
+        keyword="$(jq -r '.' <<< "$group_json")"
+        if match_keyword "$keyword" "$response_file"; then
+          group_hit=1
+        fi
+      fi
+
+      req_hits=$((req_hits + group_hit))
+    done < <(jq -c '.required_any[]' <<< "$case_json")
+  else
+    while IFS= read -r keyword; do
+      req_total=$((req_total + 1))
+      if match_keyword "$keyword" "$response_file"; then
+        req_hits=$((req_hits + 1))
+      fi
+    done < <(jq -r '.required_keywords[]?' <<< "$case_json")
+  fi
+
+  # Optional forbidden_any supports grouped any-of forbidden matches.
+  if jq -e '.forbidden_any? | type == "array" and length > 0' >/dev/null <<< "$case_json"; then
+    while IFS= read -r group_json; do
+      forb_total=$((forb_total + 1))
+      group_hit=0
+
+      if jq -e 'type == "array"' >/dev/null <<< "$group_json"; then
+        while IFS= read -r keyword; do
+          if match_keyword "$keyword" "$response_file"; then
+            group_hit=1
+            break
+          fi
+        done < <(jq -r '.[]' <<< "$group_json")
+      elif jq -e 'type == "string"' >/dev/null <<< "$group_json"; then
+        keyword="$(jq -r '.' <<< "$group_json")"
+        if match_keyword "$keyword" "$response_file"; then
+          group_hit=1
+        fi
+      fi
+
+      forb_hits=$((forb_hits + group_hit))
+    done < <(jq -c '.forbidden_any[]' <<< "$case_json")
+  else
+    while IFS= read -r keyword; do
+      forb_total=$((forb_total + 1))
+      if match_keyword "$keyword" "$response_file"; then
+        forb_hits=$((forb_hits + 1))
+      fi
+    done < <(jq -r '.forbidden_keywords[]?' <<< "$case_json")
+  fi
 
   keyword_pass=0
   if [[ "$req_total" -gt 0 && "$req_hits" -eq "$req_total" && "$forb_hits" -eq 0 ]]; then

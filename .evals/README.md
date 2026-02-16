@@ -19,8 +19,10 @@ Each case includes:
 - `id`
 - `notes`
 - `prompt`
-- `required_keywords`
+- `required_keywords` (legacy all-of keywords)
+- `required_any` (optional grouped any-of checks; preferred)
 - `forbidden_keywords`
+- `forbidden_any` (optional grouped any-of checks)
 
 ## Run a Batch
 
