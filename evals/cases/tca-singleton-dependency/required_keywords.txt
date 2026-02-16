@@ -1,4 +1,0 @@
-singleton
-@dependency
-teststore
-side effect

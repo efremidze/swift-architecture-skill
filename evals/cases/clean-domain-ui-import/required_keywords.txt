@@ -1,4 +1,0 @@
-domain
-swiftui
-dependency rule
-presentation

@@ -1,4 +1,0 @@
-retain cycle
-weak
-ownership
-router

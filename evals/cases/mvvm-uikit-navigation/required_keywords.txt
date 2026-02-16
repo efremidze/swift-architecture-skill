@@ -1,4 +1,0 @@
-uikit
-viewmodel
-coordinator
-navigation

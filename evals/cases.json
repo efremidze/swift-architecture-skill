@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "clean-domain-ui-import",
+      "notes": "Expected smell: domain use case imports SwiftUI type.\nExpected direction: return plain domain/presentation data and map to UI in presentation layer.\n",
+      "prompt": "Use `swift-architecture-skill` to review this Clean Architecture snippet.\n\nContext:\n- Team wants strict dependency rule\n- Domain layer should not depend on UI frameworks\n\n```swift\nimport Foundation\nimport SwiftUI\n\nstruct OrderSummaryUseCase {\n    func makeBadgeText(total: Double) -> Text {\n        Text(\"Total: \\(total)\")\n    }\n}\n```\n\nRequest:\n1. Identify the dependency issue.\n2. Provide a boundary-correct fix.\n3. Keep recommendation practical for a staged refactor.\n",
+      "required_keywords": [
+        "domain",
+        "swiftui",
+        "dependency rule",
+        "presentation"
+      ],
+      "forbidden_keywords": [
+        "this is clean architecture",
+        "text in usecase is fine"
+      ]
+    },
+    {
+      "id": "mvvm-uikit-navigation",
+      "notes": "Expected smell: ViewModel directly owns UIKit navigation objects.\nExpected direction: move navigation execution to coordinator/router while keeping ViewModel value-oriented.\n",
+      "prompt": "Use `swift-architecture-skill` to review this code and suggest architecture fixes.\n\nContext:\n- Existing pattern: MVVM\n- UI stack: mixed SwiftUI/UIKit\n- Goal: keep ViewModel testable and framework-independent\n\n```swift\nimport Foundation\nimport UIKit\n\n@MainActor\nfinal class FeedViewModel {\n    private let api: FeedAPI\n    private weak var navigationController: UINavigationController?\n\n    init(api: FeedAPI, navigationController: UINavigationController?) {\n        self.api = api\n        self.navigationController = navigationController\n    }\n\n    func didTapCompose() {\n        let compose = ComposeViewController()\n        navigationController?.pushViewController(compose, animated: true)\n    }\n}\n```\n\nRequest:\n1. Identify architecture smells.\n2. Recommend an MVVM-consistent fix.\n3. Show a small refactor plan (2-4 steps).\n",
+      "required_keywords": [
+        "uikit",
+        "viewmodel",
+        "coordinator",
+        "navigation"
+      ],
+      "forbidden_keywords": [
+        "no issues",
+        "looks good",
+        "keep as is"
+      ]
+    },
+    {
+      "id": "reactive-nested-subscriptions",
+      "notes": "Expected smell: subscribe-inside-subscribe with weak cancellation semantics.\nExpected direction: compose operators (`map` + `switchToLatest`) and keep lifecycle-bound cancellation.\n",
+      "prompt": "Use `swift-architecture-skill` to review this reactive implementation.\n\nContext:\n- Search feature with Combine\n- Requirement: replace stale requests, avoid leaks\n\n```swift\nimport Combine\n\nfinal class SearchPresenter {\n    private let query = PassthroughSubject<String, Never>()\n    private var cancellables = Set<AnyCancellable>()\n\n    init(service: SearchService) {\n        query.sink { value in\n            service.search(value).sink(\n                receiveCompletion: { _ in },\n                receiveValue: { results in\n                    print(results)\n                }\n            ).store(in: &self.cancellables)\n        }\n        .store(in: &cancellables)\n    }\n}\n```\n\nRequest:\n1. Identify architecture/reactive smells.\n2. Recommend a better stream composition pattern.\n3. Mention cancellation behavior.\n",
+      "required_keywords": [
+        "nested subscription",
+        "switchtolatest",
+        "cancellation",
+        "lifecycle"
+      ],
+      "forbidden_keywords": [
+        "no problem",
+        "nested sink is fine"
+      ]
+    },
+    {
+      "id": "swiftui-view-does-network",
+      "notes": "Expected smell: view performs data fetching directly and bypasses DI.\nExpected direction: move effects to ViewModel/service boundary with explicit error/cancel behavior.\n",
+      "prompt": "Use `swift-architecture-skill` to review this SwiftUI feature.\n\nContext:\n- Team wants MVVM boundaries\n- App uses async/await and dependency injection\n\n```swift\nimport SwiftUI\n\nstruct ProfileView: View {\n    @State private var name = \"\"\n\n    var body: some View {\n        VStack {\n            Text(name)\n            Button(\"Load\") {\n                Task {\n                    let user = try? await URLSession.shared\n                        .data(from: URL(string: \"https://example.com/user\")!)\n                    name = \"Loaded\"\n                }\n            }\n        }\n    }\n}\n```\n\nRequest:\n1. Identify smells.\n2. Propose a better architecture boundary.\n3. Mention async error-handling and cancellation expectations.\n",
+      "required_keywords": [
+        "viewmodel",
+        "dependency injection",
+        "error",
+        "cancellation"
+      ],
+      "forbidden_keywords": [
+        "urlsession.shared is fine",
+        "keep network calls in view",
+        "no change needed"
+      ]
+    },
+    {
+      "id": "tca-singleton-dependency",
+      "notes": "Expected smell: reducer calling global singleton directly.\nExpected direction: inject analytics via TCA dependency system for testability.\n",
+      "prompt": "Use `swift-architecture-skill` to review this TCA reducer.\n\nContext:\n- Existing architecture: TCA\n- Testing requirement: deterministic TestStore tests\n\n```swift\nimport ComposableArchitecture\n\n@Reducer\nstruct SettingsFeature {\n    @ObservableState\n    struct State: Equatable {\n        var isEnabled = false\n    }\n\n    enum Action: Equatable {\n        case toggleChanged(Bool)\n    }\n\n    var body: some ReducerOf<Self> {\n        Reduce { state, action in\n            switch action {\n            case let .toggleChanged(value):\n                state.isEnabled = value\n                Analytics.shared.track(\"toggle\", [\"value\": value])\n                return .none\n            }\n        }\n    }\n}\n```\n\nRequest:\n1. Identify architectural smell(s).\n2. Propose the TCA-correct dependency approach.\n3. Explain testing impact.\n",
+      "required_keywords": [
+        "singleton",
+        "@dependency",
+        "teststore",
+        "side effect"
+      ],
+      "forbidden_keywords": [
+        "analytics.shared is acceptable",
+        "no architecture issue"
+      ]
+    },
+    {
+      "id": "viper-retain-cycle",
+      "notes": "Expected smell: strong bidirectional references in module wiring.\nExpected direction: apply weak references and explicit ownership boundaries.\n",
+      "prompt": "Use `swift-architecture-skill` to review this VIPER wiring.\n\nContext:\n- Large UIKit codebase\n- Concern: memory leaks during repeated navigation\n\n```swift\nprotocol ProfileView: AnyObject {}\n\nfinal class ProfilePresenter {\n    var view: ProfileView?\n    let router: ProfileRouter\n\n    init(router: ProfileRouter) {\n        self.router = router\n    }\n}\n\nfinal class ProfileRouter {\n    var presenter: ProfilePresenter?\n}\n\nfunc build() {\n    let router = ProfileRouter()\n    let presenter = ProfilePresenter(router: router)\n    router.presenter = presenter\n}\n```\n\nRequest:\n1. Identify architectural smell(s).\n2. Recommend VIPER-correct ownership rules.\n3. Provide concrete fix guidance.\n",
+      "required_keywords": [
+        "retain cycle",
+        "weak",
+        "ownership",
+        "router"
+      ],
+      "forbidden_keywords": [
+        "no leak",
+        "this is fine"
+      ]
+    }
+  ]
+}

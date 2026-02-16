@@ -1,3 +1,0 @@
-urlsession.shared is fine
-keep network calls in view
-no change needed
