@@ -1,0 +1,2 @@
+analytics.shared is acceptable
+no architecture issue
