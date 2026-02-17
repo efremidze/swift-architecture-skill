@@ -4,7 +4,13 @@ An [Agent Skill](https://github.com/agentskills/agentskills) that provides archi
 
 ## Overview
 
-This Agent Skill helps you design and implement the right architecture pattern for your Swift, SwiftUI, or UIKit iOS project. It provides concrete code examples, anti-patterns to avoid, and PR review checklists.
+This Agent Skill helps you design and implement the right architecture pattern for your iOS project.
+
+**Architecture selection.** Describe your feature or module and the skill picks the right pattern based on your UI stack, state complexity, and existing conventions. Name a pattern explicitly and it validates the fit before you commit.
+
+**Dedicated playbooks.** Each architecture has its own reference covering code patterns, anti-patterns with fixes, testing strategies, and a PR review checklist — scoped to your task, not a full reference dump.
+
+**SwiftUI and UIKit, both covered.** Every playbook addresses both stacks with concrete guidance on where they diverge, using modern async/await and actors throughout.
 
 ## Supported Architectures
 
@@ -14,21 +20,6 @@ This Agent Skill helps you design and implement the right architecture pattern f
 - **Clean Architecture** - Layered architecture with dependency inversion
 - **VIPER** - View-Interactor-Presenter-Entity-Router pattern
 - **Reactive** - Combine/RxSwift patterns
-
-## How It Works
-
-1. Request architecture guidance for a feature or module
-2. The skill routes to the appropriate architecture playbook
-3. Get concrete patterns, code examples, and testing strategies
-4. Review changes with architecture-specific checklists
-
-## Features
-
-- Architecture selection guidance based on your constraints
-- Modern Swift patterns (async/await, actors, SwiftUI, UIKit)
-- Testing strategies with example code
-- Anti-patterns with fixes
-- PR review checklists
 
 ## Quick Start
 
