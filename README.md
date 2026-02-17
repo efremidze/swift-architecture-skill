@@ -1,7 +1,7 @@
 # Swift Architecture Skill
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://github.com/efremidze/swift-architecture-skill/releases)
+[![Version](https://img.shields.io/github/v/release/efremidze/swift-architecture-skill)](https://github.com/efremidze/swift-architecture-skill/releases)
 
 An Agent Skill that provides architecture guidance for Swift, SwiftUI, and UIKit iOS development. Get concrete, actionable patterns instead of abstract advice.
 
@@ -238,7 +238,7 @@ Contributions are welcome! This repository provides architecture playbooks for A
 **Before contributing:**
 - Read [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines
 - Review existing playbooks to match structure and style
-- Ensure Swift examples are syntactically correct and use Swift 5.9+ features
+- Ensure Swift examples are syntactically correct and use modern Swift features
 
 All playbooks must include: overview, core concepts, code patterns, anti-patterns with fixes, testing strategy, and PR review checklist.
 
