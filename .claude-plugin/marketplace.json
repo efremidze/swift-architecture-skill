@@ -1,14 +1,38 @@
 {
+  "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/marketplace/marketplace.schema.json",
   "name": "Swift Architecture Skill",
+  "version": "0.3.0",
+  "author": {
+    "name": "Lasha Efremidze",
+    "email": "efremidzel@hotmail.com"
+  },
   "metadata": {
-    "description": "Agent Skill for Swift architecture design and implementation patterns.",
-    "version": "0.3.0"
+    "description": "Agent Skill for Swift architecture design and implementation patterns."
   },
   "plugins": [
     {
       "name": "swift-architecture-skill",
-      "source": "./",
       "description": "Swift architecture Agent Skill with playbooks for MVVM, MVI, TCA, Clean Architecture, VIPER, and Reactive.",
+      "repository": "https://github.com/efremidze/swift-architecture-skill",
+      "version": "0.3.0",
+      "author": {
+        "name": "Lasha Efremidze",
+        "email": "efremidzel@hotmail.com"
+      },
+      "license": "MIT",
+      "category": "development",
+      "keywords": [
+        "swift",
+        "ios",
+        "swiftui",
+        "architecture",
+        "mvvm",
+        "mvi",
+        "tca",
+        "clean-architecture",
+        "viper",
+        "reactive"
+      ],
       "tags": [
         "swift",
         "ios",
@@ -21,7 +45,7 @@
         "viper",
         "reactive"
       ],
-      "category": "development"
+      "source": "./"
     }
   ]
 }
