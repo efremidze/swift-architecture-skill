@@ -30,6 +30,19 @@ This Agent Skill helps you design and implement the right architecture pattern f
 - Anti-patterns with fixes
 - PR review checklists
 
+## Quick Start
+
+Install with a single command:
+
+```bash
+npx skills add https://github.com/efremidze/swift-architecture-skill --skill swift-architecture-skill
+```
+
+Then use it in your AI assistant:
+> Review my SwiftUI view for state management issues
+
+[View on skills.sh →](https://skills.sh/efremidze/swift-patterns-skill/swift-architecture-skill)
+
 ## How to Install
 
 ### Option A: Using `skills.sh` (recommended)
@@ -42,7 +55,7 @@ npx skills add https://github.com/efremidze/swift-architecture-skill --skill swi
 
 Then use it in your agent:
 
-```text
+```bash
 Use `swift-architecture-skill` to recommend the best architecture for this feature.
 ```
 
@@ -52,17 +65,33 @@ For personal usage in Claude Code:
 
 1. Add the marketplace:
 
-```text
+```bash
 /plugin marketplace add efremidze/swift-architecture-skill
 ```
 
 2. Install the skill:
 
-```text
+```bash
 /plugin install swift-architecture-skill@swift-architecture-skill
 ```
 
-For team/project usage, you can also configure plugin enablement via repository-level `.claude` settings.
+Or configure for your team in `.claude/settings.json`:
+
+```json
+{
+  "enabledPlugins": {
+    "efremidze@swift-architecture-skill": true
+  },
+  "extraKnownMarketplaces": {
+    "swift-architecture-skill": {
+      "source": {
+        "source": "github",
+        "repo": "efremidze/swift-architecture-skill"
+      }
+    }
+  }
+}
+```
 
 ### Option C: Manual Install
 
@@ -70,9 +99,13 @@ For team/project usage, you can also configure plugin enablement via repository-
 2. Install or symlink `swift-architecture-skill/` to your tool's skills directory.
 3. Use your AI tool and ask it to use `swift-architecture-skill`.
 
-## Project Structure
+## What Makes This Different
 
-```text
+
+
+## Skill Structure
+
+```bash
 swift-architecture-skill/
   SKILL.md                    # Skill definition and workflow
   agents/
@@ -93,8 +126,10 @@ swift-architecture-skill/
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines, including how to add a new architecture playbook.
+Contributions are welcome! This repository follows the [Agent Skills open format](https://agentskills.io/home), which has specific structural requirements.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on improving the skill content and reference files.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details
+MIT License. See [LICENSE](LICENSE) for details.
