@@ -95,8 +95,6 @@ Or configure for your team in `.claude/settings.json`:
 ```bash
 swift-architecture-skill/
   SKILL.md                    # Skill definition and workflow
-  agents/
-    openai.yaml               # Agent interface configuration
   references/
     selection-guide.md        # Architecture decision framework
     mvvm.md                   # MVVM pattern playbook
