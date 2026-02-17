@@ -71,7 +71,7 @@ Or configure for your team in `.claude/settings.json`:
 ```json
 {
   "enabledPlugins": {
-    "efremidze@swift-architecture-skill": true
+    "swift-architecture-skill@swift-architecture-skill": true
   },
   "extraKnownMarketplaces": {
     "swift-architecture-skill": {
