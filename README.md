@@ -4,7 +4,13 @@ An [Agent Skill](https://github.com/agentskills/agentskills) that provides archi
 
 ## Overview
 
-This Agent Skill helps you design and implement the right architecture pattern for your Swift, SwiftUI, or UIKit iOS project. It provides concrete code examples, anti-patterns to avoid, and PR review checklists.
+This Agent Skill helps you design and implement the right architecture pattern for your iOS project.
+
+**Architecture selection.** Describe your feature or module and the skill picks the right pattern based on your UI stack, state complexity, and existing conventions. Name a pattern explicitly and it validates the fit before you commit.
+
+**Dedicated playbooks.** Each architecture has its own reference covering code patterns, anti-patterns with fixes, testing strategies, and a PR review checklist — scoped to your task, not a full reference dump.
+
+**SwiftUI and UIKit, both covered.** Every playbook addresses both stacks with concrete guidance on where they diverge, using modern async/await and actors throughout.
 
 ## Supported Architectures
 
@@ -15,20 +21,18 @@ This Agent Skill helps you design and implement the right architecture pattern f
 - **VIPER** - View-Interactor-Presenter-Entity-Router pattern
 - **Reactive** - Combine/RxSwift patterns
 
-## How It Works
+## Quick Start
 
-1. Request architecture guidance for a feature or module
-2. The skill routes to the appropriate architecture playbook
-3. Get concrete patterns, code examples, and testing strategies
-4. Review changes with architecture-specific checklists
+Install with a single command:
 
-## Features
+```bash
+npx skills add https://github.com/efremidze/swift-architecture-skill --skill swift-architecture-skill
+```
 
-- Architecture selection guidance based on your constraints
-- Modern Swift patterns (async/await, actors, SwiftUI, UIKit)
-- Testing strategies with example code
-- Anti-patterns with fixes
-- PR review checklists
+Then use it in your AI assistant:
+> Review my SwiftUI view for state management issues
+
+[View on skills.sh →](https://skills.sh/efremidze/swift-architecture-skill/swift-architecture-skill)
 
 ## How to Install
 
@@ -42,7 +46,7 @@ npx skills add https://github.com/efremidze/swift-architecture-skill --skill swi
 
 Then use it in your agent:
 
-```text
+```bash
 Use `swift-architecture-skill` to recommend the best architecture for this feature.
 ```
 
@@ -52,17 +56,33 @@ For personal usage in Claude Code:
 
 1. Add the marketplace:
 
-```text
+```bash
 /plugin marketplace add efremidze/swift-architecture-skill
 ```
 
 2. Install the skill:
 
-```text
+```bash
 /plugin install swift-architecture-skill@swift-architecture-skill
 ```
 
-For team/project usage, you can also configure plugin enablement via repository-level `.claude` settings.
+Or configure for your team in `.claude/settings.json`:
+
+```json
+{
+  "enabledPlugins": {
+    "swift-architecture-skill@swift-architecture-skill": true
+  },
+  "extraKnownMarketplaces": {
+    "swift-architecture-skill": {
+      "source": {
+        "source": "github",
+        "repo": "efremidze/swift-architecture-skill"
+      }
+    }
+  }
+}
+```
 
 ### Option C: Manual Install
 
@@ -70,9 +90,9 @@ For team/project usage, you can also configure plugin enablement via repository-
 2. Install or symlink `swift-architecture-skill/` to your tool's skills directory.
 3. Use your AI tool and ask it to use `swift-architecture-skill`.
 
-## Project Structure
+## Skill Structure
 
-```text
+```bash
 swift-architecture-skill/
   SKILL.md                    # Skill definition and workflow
   agents/
@@ -93,8 +113,10 @@ swift-architecture-skill/
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines, including how to add a new architecture playbook.
+Contributions are welcome! This repository follows the [Agent Skills open format](https://agentskills.io/home), which has specific structural requirements.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on improving the skill content and reference files.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details
+MIT License. See [LICENSE](LICENSE) for details.
