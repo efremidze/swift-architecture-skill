@@ -6,11 +6,11 @@ An [Agent Skill](https://github.com/agentskills/agentskills) that provides archi
 
 This Agent Skill helps you design and implement the right architecture pattern for your iOS project.
 
-**Architecture selection.** Describe your feature or module and the skill picks the right pattern based on your UI stack, state complexity, and existing conventions. Name a pattern explicitly and it validates the fit before you commit.
+- **Architecture selection**: Describe your feature or module and the skill picks the right pattern based on your UI stack, state complexity, and existing conventions. Name a pattern explicitly and it validates the fit before you commit.
 
-**Dedicated playbooks.** Each architecture has its own reference covering code patterns, anti-patterns with fixes, testing strategies, and a PR review checklist — scoped to your task, not a full reference dump.
+- **Dedicated playbooks**: Each architecture has its own reference covering code patterns, anti-patterns with fixes, testing strategies, and a PR review checklist — scoped to your task, not a full reference dump.
 
-**SwiftUI and UIKit, both covered.** Every playbook addresses both stacks with concrete guidance on where they diverge, using modern async/await and actors throughout.
+- **SwiftUI and UIKit**: Every playbook addresses both stacks with concrete guidance on where they diverge, using modern async/await and actors throughout.
 
 ## Supported Architectures
 
