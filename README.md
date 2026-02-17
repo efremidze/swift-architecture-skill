@@ -32,7 +32,7 @@ npx skills add https://github.com/efremidze/swift-architecture-skill --skill swi
 Then use it in your AI assistant:
 > Review my SwiftUI view for state management issues
 
-[View on skills.sh →](https://skills.sh/efremidze/swift-patterns-skill/swift-architecture-skill)
+[View on skills.sh →](https://skills.sh/efremidze/swift-architecture-skill/swift-architecture-skill)
 
 ## How to Install
 
