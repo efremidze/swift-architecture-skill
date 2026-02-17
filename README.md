@@ -99,10 +99,6 @@ Or configure for your team in `.claude/settings.json`:
 2. Install or symlink `swift-architecture-skill/` to your tool's skills directory.
 3. Use your AI tool and ask it to use `swift-architecture-skill`.
 
-## What Makes This Different
-
-
-
 ## Skill Structure
 
 ```bash
