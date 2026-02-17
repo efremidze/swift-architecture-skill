@@ -13,7 +13,7 @@ This skill helps AI coding assistants make better architecture decisions for you
 
 - **Implementation-Ready Playbooks**: Each architecture comes with concrete code patterns, common anti-patterns with fixes, testing strategies, and PR review checklists—all scoped to your specific task, not generic documentation.
 
-- **Modern Swift Best Practices**: All guidance uses Swift 5.9+ features including async/await, actors, and structured concurrency. Both SwiftUI and UIKit patterns are covered with clear guidance on their differences.
+- **Modern Swift Best Practices**: All guidance uses modern Swift features including async/await, actors, and structured concurrency. Both SwiftUI and UIKit patterns are covered with clear guidance on their differences.
 
 ## Supported Architectures
 
