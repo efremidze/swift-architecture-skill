@@ -1,6 +1,5 @@
 # Swift Architecture Skill
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/github/v/release/efremidze/swift-architecture-skill)](https://github.com/efremidze/swift-architecture-skill/releases)
 
 An Agent Skill that provides architecture guidance for Swift, SwiftUI, and UIKit iOS development. Get concrete, actionable patterns instead of abstract advice.
