@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "default_section_heading_regex": "^##\\s+Testing Strategy\\s*$",
+  "cases": [
+    {
+      "id": "tca-official-style-good",
+      "file": "quality/benchmarks/cases/tca-official-style-good.md",
+      "expect_syntax": true,
+      "expect_semantic": true
+    },
+    {
+      "id": "reactive-switchtolatest-good",
+      "file": "quality/benchmarks/cases/reactive-switchtolatest-good.md",
+      "expect_syntax": true,
+      "expect_semantic": true
+    },
+    {
+      "id": "xctest-async-good",
+      "file": "quality/benchmarks/cases/xctest-async-good.md",
+      "expect_syntax": true,
+      "expect_semantic": true
+    },
+    {
+      "id": "missing-failure-should-fail",
+      "file": "quality/benchmarks/cases/missing-failure-should-fail.md",
+      "expect_syntax": true,
+      "expect_semantic": false
+    },
+    {
+      "id": "missing-cancellation-should-fail",
+      "file": "quality/benchmarks/cases/missing-cancellation-should-fail.md",
+      "expect_syntax": true,
+      "expect_semantic": false
+    },
+    {
+      "id": "missing-dependency-control-should-fail",
+      "file": "quality/benchmarks/cases/missing-dependency-control-should-fail.md",
+      "expect_syntax": true,
+      "expect_semantic": false
+    },
+    {
+      "id": "nondeterministic-sleep-should-fail",
+      "file": "quality/benchmarks/cases/nondeterministic-sleep-should-fail.md",
+      "expect_syntax": true,
+      "expect_semantic": false
+    },
+    {
+      "id": "too-few-tests-should-fail",
+      "file": "quality/benchmarks/cases/too-few-tests-should-fail.md",
+      "expect_syntax": true,
+      "expect_semantic": false
+    },
+    {
+      "id": "no-swift-snippet-should-fail",
+      "file": "quality/benchmarks/cases/no-swift-snippet-should-fail.md",
+      "expect_syntax": false,
+      "expect_semantic": false
+    },
+    {
+      "id": "syntax-broken-should-fail-syntax-only",
+      "file": "quality/benchmarks/cases/syntax-broken-should-fail-syntax-only.md",
+      "expect_syntax": false,
+      "expect_semantic": true
+    }
+  ]
+}

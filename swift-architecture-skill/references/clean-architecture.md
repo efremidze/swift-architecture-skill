@@ -241,6 +241,7 @@ Rules:
 - avoid network in unit tests
 - assert business behavior at use-case boundary
 - keep async tests deterministic using controlled stubs
+- test cancellation propagation for long-running use cases
 
 ```swift
 struct StubUserRepository: UserRepository {

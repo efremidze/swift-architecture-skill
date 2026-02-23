@@ -189,6 +189,7 @@ For transient failures, prefer fallback state over terminating the stream.
 
 Test stream behavior deterministically:
 - input -> expected output transitions
+- success path emits the expected state sequence
 - debounce/throttle behavior with controlled schedulers
 - cancellation behavior for replaced requests
 - error fallback behavior

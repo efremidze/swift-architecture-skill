@@ -81,6 +81,8 @@ Use both automated and manual checks:
 ```bash
 python -m skills_ref.cli validate ./swift-architecture-skill
 ./scripts/validate-testing-snippets.sh
+python3 ./scripts/validate-testing-quality.py
+./scripts/run-testing-benchmark-suite.py
 ```
 
 2. Complete manual review:
@@ -96,6 +98,8 @@ find . -name "*.md"
 grep -r "pattern" swift-architecture-skill/references/
 wc -l swift-architecture-skill/references/*.md
 ./scripts/validate-testing-snippets.sh
+python3 ./scripts/validate-testing-quality.py
+./scripts/run-testing-benchmark-suite.py
 ```
 
 ## Pull Request Checklist

@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "playbooks": [
+    {
+      "path": "swift-architecture-skill/references/mvvm.md",
+      "section_heading_regex": "^##\\s+Testing Expectations\\s*$"
+    },
+    {
+      "path": "swift-architecture-skill/references/mvi.md",
+      "section_heading_regex": "^##\\s+Testing Expectations\\s*$"
+    },
+    {
+      "path": "swift-architecture-skill/references/tca.md",
+      "section_heading_regex": "^##\\s+Testing with `TestStore`\\s*$"
+    },
+    {
+      "path": "swift-architecture-skill/references/clean-architecture.md",
+      "section_heading_regex": "^##\\s+Testing Strategy\\s*$"
+    },
+    {
+      "path": "swift-architecture-skill/references/viper.md",
+      "section_heading_regex": "^##\\s+Testing Strategy\\s*$"
+    },
+    {
+      "path": "swift-architecture-skill/references/reactive.md",
+      "section_heading_regex": "^##\\s+Testing Strategy\\s*$"
+    }
+  ],
+  "required_any_groups": [
+    [
+      "\\bsuccess\\b",
+      "\\bloaded\\b",
+      "returnsUser",
+      "showsUserName"
+    ],
+    [
+      "\\bfailure\\b",
+      "\\bfailed\\b",
+      "\\berror\\b"
+    ],
+    [
+      "\\bcancellation\\b",
+      "\\bstale\\b",
+      "\\bcancel\\w*\\b"
+    ],
+    [
+      "\\bstub\\w*\\b",
+      "\\bmock\\w*\\b",
+      "\\bfake\\w*\\b",
+      "\\bwithDependencies\\b",
+      "\\brepositor(y|ies)\\b"
+    ],
+    [
+      "\\bdeterministic\\b",
+      "\\bcontrolled\\b",
+      "\\bcontrollable\\b",
+      "\\bscheduler\\b",
+      "\\bclock\\b",
+      "avoid[^\\n]*sleep",
+      "without[^\\n]*sleep"
+    ]
+  ],
+  "required_patterns": [
+    {
+      "label": "Contains at least one Swift test snippet",
+      "regex": "```swift",
+      "scope": "section"
+    },
+    {
+      "label": "Contains at least two concrete tests",
+      "regex": "(?m)(func\\s+test\\w+|@Test)",
+      "scope": "section",
+      "min_count": 2
+    }
+  ]
+}

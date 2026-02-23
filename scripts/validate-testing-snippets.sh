@@ -2,11 +2,16 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PLAYBOOK_DIR="$ROOT_DIR/swift-architecture-skill/references"
+PLAYBOOK_DIR="${1:-$ROOT_DIR/swift-architecture-skill/references}"
 
 if ! command -v swiftc >/dev/null 2>&1; then
   echo "swiftc not found; skipping testing snippet validation."
   exit 0
+fi
+
+if [[ ! -d "$PLAYBOOK_DIR" ]]; then
+  echo "Playbook directory not found: $PLAYBOOK_DIR"
+  exit 1
 fi
 
 tmp_dir="$(mktemp -d)"

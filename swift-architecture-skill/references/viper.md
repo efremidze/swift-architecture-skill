@@ -273,6 +273,8 @@ Testing rules:
 - assert interactions and outputs, not concrete implementations
 - avoid network in unit tests
 - verify presenter handles success and failure states
+- test cancellation behavior when a newer load replaces an in-flight request
+- keep async tests deterministic with controlled stubs/clocks (avoid sleeps)
 
 ```swift
 @MainActor
