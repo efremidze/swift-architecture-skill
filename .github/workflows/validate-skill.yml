@@ -25,3 +25,13 @@ jobs:
       - name: Validate Skill
         run: |
           python -m skills_ref.cli validate ./swift-architecture-skill
+
+  validate-testing-snippets:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate Swift Testing Snippets
+        run: |
+          ./scripts/validate-testing-snippets.sh

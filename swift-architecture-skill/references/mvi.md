@@ -385,25 +385,79 @@ UIKit rules:
 - Verify cancellation and stale-response handling.
 - Assert state-machine behavior, not view details.
 
-Example first test:
+Example test suite:
 
 ```swift
+import XCTest
+
 struct StubCounterService: CounterServicing {
     func increment() async throws -> Int { 1 }
     func decrement() async throws -> Int { 0 }
     func reset() async throws -> Int { 0 }
 }
 
-func test_increment_setsLoading_andReturnsEffect() {
-    var state = CounterState()
-    let service = StubCounterService()
-    let effect = reduce(
-        state: &state,
-        intent: .incrementTapped,
-        service: service
-    )
-    XCTAssertTrue(state.isLoading)
-    XCTAssertNotNil(effect)
+final class CounterReducerTests: XCTestCase {
+    func test_intentIncrement_setsLoading_andReturnsEffect() {
+        var state = CounterState()
+        let service = StubCounterService()
+
+        let effect = reduce(
+            state: &state,
+            intent: .incrementTapped,
+            service: service
+        )
+
+        XCTAssertTrue(state.isLoading)
+        XCTAssertNotNil(effect)
+    }
+
+    func test_actionFailure_setsError_andStopsLoading() {
+        var state = CounterState(count: 3, isLoading: true, error: nil)
+
+        reduce(state: &state, action: .incrementResponse(.failure(TestError.offline)))
+
+        XCTAssertEqual(state.count, 3)
+        XCTAssertFalse(state.isLoading)
+        XCTAssertNotNil(state.error)
+    }
+}
+
+struct SearchState: Equatable {
+    var latestRequestID: UUID?
+    var results: [String] = []
+}
+
+enum SearchAction {
+    case response(requestID: UUID, Result<[String], Error>)
+}
+
+func reduce(state: inout SearchState, action: SearchAction) {
+    switch action {
+    case .response(let requestID, .success(let results)):
+        guard requestID == state.latestRequestID else { return }
+        state.results = results
+    case .response:
+        break
+    }
+}
+
+final class SearchReducerTests: XCTestCase {
+    func test_staleResponse_isIgnored() {
+        let latestID = UUID()
+        let staleID = UUID()
+        var state = SearchState(latestRequestID: latestID, results: ["current"])
+
+        reduce(
+            state: &state,
+            action: .response(requestID: staleID, .success(["old"]))
+        )
+
+        XCTAssertEqual(state.results, ["current"])
+    }
+}
+
+private enum TestError: Error {
+    case offline
 }
 ```
 

@@ -506,6 +506,104 @@ Test strategy:
 - Avoid sleep-based tests; use controllable stub responses.
 - If ViewModel is `@MainActor`, run assertions through `await MainActor.run`.
 
+```swift
+import XCTest
+
+struct FeedItem: Equatable {
+    let id: UUID
+    let title: String
+}
+
+struct FeedPage: Equatable {
+    let items: [FeedItem]
+}
+
+extension FeedItemViewData {
+    init(_ item: FeedItem) {
+        self.id = item.id
+        self.title = item.title
+    }
+}
+
+actor ControlledFeedRepository: FeedRepository {
+    private var continuations: [CheckedContinuation<FeedPage, Error>] = []
+
+    func fetchPage(cursor: String?) async throws -> FeedPage {
+        try await withCheckedThrowingContinuation { continuation in
+            continuations.append(continuation)
+        }
+    }
+
+    func resolveNext(with result: Result<FeedPage, Error>) {
+        guard !continuations.isEmpty else { return }
+        let continuation = continuations.removeFirst()
+        switch result {
+        case .success(let page):
+            continuation.resume(returning: page)
+        case .failure(let error):
+            continuation.resume(throwing: error)
+        }
+    }
+}
+
+@MainActor
+final class FeedViewModelTests: XCTestCase {
+    func test_load_success_setsLoadedAndMapsItems() async {
+        let repository = ControlledFeedRepository()
+        let sut = FeedViewModel(repository: repository)
+        let expected = FeedPage(items: [FeedItem(id: UUID(), title: "A")])
+
+        sut.load()
+        await repository.resolveNext(with: .success(expected))
+        await Task.yield()
+
+        XCTAssertEqual(sut.state.items.map(\.title), ["A"])
+        if case .loaded = sut.state.load {
+            // expected
+        } else {
+            XCTFail("Expected loaded state")
+        }
+    }
+
+    func test_load_failure_setsFailed() async {
+        let repository = ControlledFeedRepository()
+        let sut = FeedViewModel(repository: repository)
+
+        sut.load()
+        await repository.resolveNext(with: .failure(TestError.offline))
+        await Task.yield()
+
+        if case .failed = sut.state.load {
+            // expected
+        } else {
+            XCTFail("Expected failed state")
+        }
+    }
+
+    func test_load_cancellation_ignoresStaleResult() async {
+        let repository = ControlledFeedRepository()
+        let sut = FeedViewModel(repository: repository)
+
+        let stale = FeedPage(items: [FeedItem(id: UUID(), title: "stale")])
+        let latest = FeedPage(items: [FeedItem(id: UUID(), title: "latest")])
+
+        sut.load() // request A
+        sut.load() // request B cancels A
+
+        await repository.resolveNext(with: .success(stale))
+        await repository.resolveNext(with: .success(latest))
+        await Task.yield()
+        await Task.yield()
+
+        XCTAssertEqual(sut.state.items.map(\.title), ["latest"])
+    }
+}
+
+private enum TestError: Error {
+    case offline
+}
+```
+
 ## When to Prefer MVVM
 
 Prefer MVVM when:

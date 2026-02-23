@@ -21,10 +21,10 @@ When editing playbooks in `swift-architecture-skill/references/`:
 
 ### 3. Testing and Validation
 
-This repository contains documentation and skill definitions rather than executable code:
-- **No automated tests**: Changes should be validated through manual review
+This repository contains documentation and skill definitions rather than app code:
+- **Run automated validation**: `python -m skills_ref.cli validate ./swift-architecture-skill`
+- **Validate testing snippets**: `./scripts/validate-testing-snippets.sh`
 - **Check markdown formatting**: Ensure all `.md` files are properly formatted
-- **Verify code examples**: Code snippets in playbooks should be syntactically correct Swift
 - **Cross-reference consistency**: Ensure SKILL.md correctly references all playbooks
 
 ### 4. Adding New Architecture Patterns

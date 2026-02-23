@@ -26,6 +26,12 @@ import ComposableArchitecture
 
 @Reducer
 struct CounterFeature {
+  enum CancelID { case fact }
+
+  enum FactError: Error, Equatable {
+    case unavailable
+  }
+
   @ObservableState
   struct State: Equatable {
     var count = 0
@@ -37,7 +43,7 @@ struct CounterFeature {
     case incrementTapped
     case decrementTapped
     case factButtonTapped
-    case factResponse(String)
+    case factResponse(Result<String, FactError>)
     case alert(PresentationAction<Alert>)
 
     enum Alert: Equatable {}
@@ -60,13 +66,25 @@ struct CounterFeature {
         state.isLoading = true
         let n = state.count
         return .run { send in
-          let fact = await numberFact.fetch(n)
-          await send(.factResponse(fact))
+          do {
+            let fact = try await numberFact.fetch(n)
+            await send(.factResponse(.success(fact)))
+          } catch is CancellationError {
+            // Cancellation is expected when a new request replaces this one.
+          } catch {
+            await send(.factResponse(.failure(.unavailable)))
+          }
         }
+        .cancellable(id: CancelID.fact, cancelInFlight: true)
 
-      case .factResponse(let fact):
+      case .factResponse(.success(let fact)):
         state.isLoading = false
         state.alert = AlertState { TextState(fact) }
+        return .none
+
+      case .factResponse(.failure):
+        state.isLoading = false
+        state.alert = AlertState { TextState("Could not load fact.") }
         return .none
 
       case .alert:
@@ -207,7 +225,7 @@ Use `IdentifiedArrayOf` and `forEach` for collections with stable identity.
 
 ```swift
 struct NumberFactClient {
-  var fetch: @Sendable (Int) async -> String
+  var fetch: @Sendable (Int) async throws -> String
 }
 
 extension NumberFactClient: DependencyKey {
@@ -232,21 +250,7 @@ extension DependencyValues {
 
 Use `.run` for async work and route results back as actions.
 
-Add cancellation for re-entrant effects:
-
-```swift
-enum CancelID { case fact }
-
-case .factButtonTapped:
-  state.isLoading = true
-  let n = state.count
-  return .run { send in
-    let fact = await numberFact.fetch(n)
-    await send(.factResponse(fact))
-  }
-  .cancellable(id: CancelID.fact, cancelInFlight: true)
-```
-
+For re-entrant work, add cancellation (`.cancellable(id:cancelInFlight:)`) and map failures to explicit actions.
 If cancellation is not enough, add request versioning.
 
 ## Navigation Pattern
@@ -263,6 +267,7 @@ Keep navigation decisions in reducers and keep views declarative.
 ## Testing with `TestStore`
 
 Use `TestStore` for deterministic action/state assertions.
+Cover success, failure, and cancellation paths in async effects.
 
 ```swift
 import XCTest
@@ -279,22 +284,71 @@ final class CounterFeatureTests: XCTestCase {
       $0.count = 1
     }
   }
-}
-```
 
-Override dependencies for effect tests and assert follow-up actions.
+  func testFactSuccess() async {
+    let store = TestStore(initialState: CounterFeature.State()) {
+      CounterFeature()
+    } withDependencies: {
+      $0.numberFact.fetch = { _ in "42 is great" }
+    }
 
-```swift
-await store.withDependencies {
-  $0.numberFact.fetch = { _ in "42 is great" }
-} assert: { $0 }
+    await store.send(.factButtonTapped) {
+      $0.isLoading = true
+    }
+    await store.receive(.factResponse(.success("42 is great"))) {
+      $0.isLoading = false
+      $0.alert = AlertState { TextState("42 is great") }
+    }
+  }
 
-await store.send(.factButtonTapped) {
-  $0.isLoading = true
-}
-await store.receive(.factResponse("42 is great")) {
-  $0.isLoading = false
-  $0.alert = AlertState { TextState("42 is great") }
+  func testFactFailure() async {
+    let store = TestStore(initialState: CounterFeature.State()) {
+      CounterFeature()
+    } withDependencies: {
+      $0.numberFact.fetch = { _ in throw CounterFeature.FactError.unavailable }
+    }
+
+    await store.send(.factButtonTapped) {
+      $0.isLoading = true
+    }
+    await store.receive(.factResponse(.failure(.unavailable))) {
+      $0.isLoading = false
+      $0.alert = AlertState { TextState("Could not load fact.") }
+    }
+  }
+
+  func testFactCancellation_replacesInFlightRequest() async {
+    let clock = TestClock()
+
+    actor Sequence {
+      var values = ["first", "second"]
+      func next() -> String { values.removeFirst() }
+    }
+    let sequence = Sequence()
+
+    let store = TestStore(initialState: CounterFeature.State()) {
+      CounterFeature()
+    } withDependencies: {
+      $0.continuousClock = clock
+      $0.numberFact.fetch = { _ in
+        let value = await sequence.next()
+        try await clock.sleep(for: .seconds(1))
+        return value
+      }
+    }
+
+    await store.send(.factButtonTapped) {
+      $0.isLoading = true
+    }
+    await store.send(.factButtonTapped)
+
+    await clock.advance(by: .seconds(1))
+
+    await store.receive(.factResponse(.success("second"))) {
+      $0.isLoading = false
+      $0.alert = AlertState { TextState("second") }
+    }
+  }
 }
 ```
 
