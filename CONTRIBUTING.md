@@ -83,6 +83,7 @@ python -m skills_ref.cli validate ./swift-architecture-skill
 ./scripts/validate-testing-snippets.sh
 python3 ./scripts/validate-testing-quality.py
 ./scripts/run-testing-benchmark-suite.py
+python3 ./scripts/validate-architecture-consistency.py
 ```
 
 2. Complete manual review:
@@ -100,6 +101,7 @@ wc -l swift-architecture-skill/references/*.md
 ./scripts/validate-testing-snippets.sh
 python3 ./scripts/validate-testing-quality.py
 ./scripts/run-testing-benchmark-suite.py
+python3 ./scripts/validate-architecture-consistency.py
 ```
 
 ## Pull Request Checklist

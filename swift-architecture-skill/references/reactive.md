@@ -254,7 +254,7 @@ final class SearchViewModelTests: XCTestCase {
         cancellable.cancel()
     }
 
-    func test_switchToLatest_ignoresOlderInFlightResponse() {
+    func test_switchToLatest_ignoresStaleInFlightResponse() {
         let first = PassthroughSubject<[String], Error>()
         let second = PassthroughSubject<[String], Error>()
         let stubService = StubSearchService { query in

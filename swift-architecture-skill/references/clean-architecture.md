@@ -270,6 +270,28 @@ final class LoadUserTests: XCTestCase {
             XCTAssertTrue(error is TestError)
         }
     }
+
+    func test_execute_cancellationPropagates() async {
+        let sut = LoadUser(repository: BlockingUserRepository())
+        let task = Task { try await sut.execute(id: UUID()) }
+        task.cancel()
+
+        do {
+            _ = try await task.value
+            XCTFail("Expected cancellation")
+        } catch is CancellationError {
+            // expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+}
+
+actor BlockingUserRepository: UserRepository {
+    func fetch(id: UUID) async throws -> User {
+        try await Task.sleep(nanoseconds: 60_000_000_000)
+        return User(id: id, name: "")
+    }
 }
 
 private enum TestError: Error { case notFound }

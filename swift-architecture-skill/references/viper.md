@@ -276,6 +276,8 @@ Testing rules:
 - test cancellation behavior when a newer load replaces an in-flight request
 - keep async tests deterministic with controlled stubs/clocks (avoid sleeps)
 
+Use the cancellation-aware presenter from the "Concurrency and Cancellation" section for cancellation-path tests.
+
 ```swift
 @MainActor
 final class MockProfileView: ProfileView {
@@ -284,8 +286,8 @@ final class MockProfileView: ProfileView {
 }
 
 struct StubProfileInteractor: ProfileInteracting {
-    var result: Result<User, Error>
-    func loadUser() async throws -> User { try result.get() }
+    var load: () async throws -> User
+    func loadUser() async throws -> User { try await load() }
 }
 
 final class SpyProfileRouter: ProfileRouting {
@@ -299,7 +301,7 @@ final class ProfilePresenterTests: XCTestCase {
         let user = User(id: UUID(), name: "Alice")
         let view = MockProfileView()
         let presenter = ProfilePresenter(
-            interactor: StubProfileInteractor(result: .success(user)),
+            interactor: StubProfileInteractor(load: { user }),
             router: SpyProfileRouter()
         )
         presenter.view = view
@@ -312,7 +314,7 @@ final class ProfilePresenterTests: XCTestCase {
     func test_load_failure_showsEmptyName() async {
         let view = MockProfileView()
         let presenter = ProfilePresenter(
-            interactor: StubProfileInteractor(result: .failure(TestError.notFound)),
+            interactor: StubProfileInteractor(load: { throw TestError.notFound }),
             router: SpyProfileRouter()
         )
         presenter.view = view
@@ -325,13 +327,27 @@ final class ProfilePresenterTests: XCTestCase {
     func test_didTapSettings_routesToSettings() {
         let router = SpyProfileRouter()
         let presenter = ProfilePresenter(
-            interactor: StubProfileInteractor(result: .success(User(id: UUID(), name: ""))),
+            interactor: StubProfileInteractor(load: { User(id: UUID(), name: "") }),
             router: router
         )
 
         presenter.didTapSettings()
 
         XCTAssertTrue(router.didShowSettings)
+    }
+
+    func test_load_cancellation_doesNotOverwriteExistingName() async {
+        let view = MockProfileView()
+        view.shownName = "Current"
+        let presenter = ProfilePresenter(
+            interactor: StubProfileInteractor(load: { throw CancellationError() }),
+            router: SpyProfileRouter()
+        )
+        presenter.view = view
+
+        await presenter.load()
+
+        XCTAssertEqual(view.shownName, "Current")
     }
 }
 

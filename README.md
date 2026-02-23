@@ -114,6 +114,7 @@ python -m skills_ref.cli validate ./swift-architecture-skill
 ./scripts/validate-testing-snippets.sh
 python3 ./scripts/validate-testing-quality.py
 ./scripts/run-testing-benchmark-suite.py
+python3 ./scripts/validate-architecture-consistency.py
 ```
 
 Benchmark fixtures live in `quality/benchmarks/` and are used to verify validator precision against curated external-style cases.
