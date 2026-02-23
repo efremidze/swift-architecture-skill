@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import re
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,14 +26,45 @@ def run_command(cmd: List[str]) -> Tuple[bool, str]:
     return result.returncode == 0, output
 
 
+def evaluate_architecture_assertions(case: Dict, content: str) -> Tuple[bool, str]:
+    assertions = case.get("architecture_assertions", [])
+    if not assertions:
+        return True, ""
+
+    failures: List[str] = []
+    for assertion in assertions:
+        label = assertion["label"]
+        pattern = assertion["regex"]
+        expect_match = bool(assertion.get("expect_match", True))
+
+        flags = re.MULTILINE
+        if assertion.get("ignore_case", True):
+            flags |= re.IGNORECASE
+        if assertion.get("dotall", False):
+            flags |= re.DOTALL
+
+        matched = re.search(pattern, content, flags=flags) is not None
+        if matched != expect_match:
+            expectation = "match" if expect_match else "no match"
+            failures.append(f"{label}: expected {expectation} for /{pattern}/")
+
+    return (len(failures) == 0, "\n".join(failures))
+
+
 def evaluate_case(
     case: Dict,
     default_heading_regex: str,
     base_contract: Dict,
-) -> Tuple[bool, bool, str, str]:
+) -> Tuple[bool, bool, bool, str, str, str]:
     source = ROOT / case["file"]
     if not source.exists():
-        return False, False, f"Missing case file: {source}", f"Missing case file: {source}"
+        missing = f"Missing case file: {source}"
+        return False, False, False, missing, missing, missing
+
+    source_content = source.read_text(encoding="utf-8")
+    architecture_passed, architecture_output = evaluate_architecture_assertions(
+        case, source_content
+    )
 
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
@@ -68,7 +100,14 @@ def evaluate_case(
             ]
         )
 
-    return syntax_passed, semantic_passed, syntax_output, semantic_output
+    return (
+        syntax_passed,
+        semantic_passed,
+        architecture_passed,
+        syntax_output,
+        semantic_output,
+        architecture_output,
+    )
 
 
 def main() -> int:
@@ -110,19 +149,45 @@ def main() -> int:
         case_id = case["id"]
         expect_syntax = bool(case["expect_syntax"])
         expect_semantic = bool(case["expect_semantic"])
-        syntax_ok, semantic_ok, syntax_output, semantic_output = evaluate_case(
+        has_arch_assertions = bool(case.get("architecture_assertions"))
+        expect_architecture: Optional[bool] = None
+        if has_arch_assertions:
+            expect_architecture = bool(case.get("expect_architecture", True))
+
+        (
+            syntax_ok,
+            semantic_ok,
+            architecture_ok,
+            syntax_output,
+            semantic_output,
+            architecture_output,
+        ) = evaluate_case(
             case, default_heading_regex, base_contract
         )
 
         syntax_match = syntax_ok == expect_syntax
         semantic_match = semantic_ok == expect_semantic
-        status = "PASS" if syntax_match and semantic_match else "FAIL"
+        architecture_match = True
+        if expect_architecture is not None:
+            architecture_match = architecture_ok == expect_architecture
 
-        print(
+        status = (
+            "PASS"
+            if syntax_match and semantic_match and architecture_match
+            else "FAIL"
+        )
+
+        line = (
             f"- {status} {case_id}: "
             f"syntax={syntax_ok} (expected {expect_syntax}), "
             f"semantic={semantic_ok} (expected {expect_semantic})"
         )
+        if expect_architecture is not None:
+            line += (
+                f", architecture={architecture_ok} "
+                f"(expected {expect_architecture})"
+            )
+        print(line)
 
         if not syntax_match:
             failures += 1
@@ -134,6 +199,12 @@ def main() -> int:
             failures += 1
             print("  Semantic validator output:")
             for line in semantic_output.splitlines()[:10]:
+                print(f"    {line}")
+
+        if not architecture_match:
+            failures += 1
+            print("  Architecture assertions output:")
+            for line in architecture_output.splitlines()[:10]:
                 print(f"    {line}")
 
     if failures:

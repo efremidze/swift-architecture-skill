@@ -21,6 +21,84 @@
       "expect_semantic": true
     },
     {
+      "id": "tca-cancel-id-good",
+      "file": "quality/benchmarks/cases/tca-cancel-id-good.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": true,
+      "architecture_assertions": [
+        {
+          "label": "Uses TCA cancellable with explicit CancelID",
+          "regex": "\\.cancellable\\(id:\\s*CancelID\\.[A-Za-z0-9_]+,\\s*cancelInFlight:\\s*true\\)"
+        },
+        {
+          "label": "Has cancellation-focused test",
+          "regex": "(?m)func\\s+test\\w*cancel\\w+"
+        }
+      ]
+    },
+    {
+      "id": "tca-missing-cancel-id-should-fail-architecture",
+      "file": "quality/benchmarks/cases/tca-missing-cancel-id-should-fail-architecture.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": false,
+      "architecture_assertions": [
+        {
+          "label": "Uses TCA cancellable with explicit CancelID",
+          "regex": "\\.cancellable\\(id:\\s*CancelID\\.[A-Za-z0-9_]+,\\s*cancelInFlight:\\s*true\\)"
+        },
+        {
+          "label": "Has cancellation-focused test",
+          "regex": "(?m)func\\s+test\\w*cancel\\w+"
+        }
+      ]
+    },
+    {
+      "id": "mvvm-stale-overwrite-good",
+      "file": "quality/benchmarks/cases/mvvm-stale-overwrite-good.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": true,
+      "architecture_assertions": [
+        {
+          "label": "Triggers two sequential loads for stale overwrite scenario",
+          "regex": "sut\\.load\\(\\)\\s*// request A[\\s\\S]*sut\\.load\\(\\)\\s*// request B",
+          "dotall": true
+        },
+        {
+          "label": "Asserts latest result wins",
+          "regex": "stale-overwrite-assert:\\s*latest\\s*wins"
+        },
+        {
+          "label": "Has cancellation or stale-focused test",
+          "regex": "(?m)func\\s+test\\w*(cancel|stale)\\w+"
+        }
+      ]
+    },
+    {
+      "id": "mvvm-missing-stale-overwrite-should-fail-architecture",
+      "file": "quality/benchmarks/cases/mvvm-missing-stale-overwrite-should-fail-architecture.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": false,
+      "architecture_assertions": [
+        {
+          "label": "Triggers two sequential loads for stale overwrite scenario",
+          "regex": "sut\\.load\\(\\)\\s*// request A[\\s\\S]*sut\\.load\\(\\)\\s*// request B",
+          "dotall": true
+        },
+        {
+          "label": "Asserts latest result wins",
+          "regex": "stale-overwrite-assert:\\s*latest\\s*wins"
+        },
+        {
+          "label": "Has cancellation or stale-focused test",
+          "regex": "(?m)func\\s+test\\w*(cancel|stale)\\w+"
+        }
+      ]
+    },
+    {
       "id": "missing-failure-should-fail",
       "file": "quality/benchmarks/cases/missing-failure-should-fail.md",
       "expect_syntax": true,

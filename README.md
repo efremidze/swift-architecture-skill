@@ -117,7 +117,7 @@ python3 ./scripts/validate-testing-quality.py
 python3 ./scripts/validate-architecture-consistency.py
 ```
 
-Benchmark fixtures live in `quality/benchmarks/` and are used to verify validator precision against curated external-style cases.
+Benchmark fixtures live in `quality/benchmarks/` and are used to verify validator precision against curated external-style cases, including architecture-specific assertions.
 
 ## Other Skills
 
