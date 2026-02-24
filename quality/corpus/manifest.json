@@ -1,0 +1,69 @@
+{
+    "version": 1,
+    "default_section_heading_regex": "^##\\s+Testing Strategy\\s*$",
+    "cases": [
+        {
+            "id": "tca-effect-cancellation-real-good",
+            "file": "quality/corpus/cases/tca-effect-cancellation-real-good.md",
+            "expect_syntax": true,
+            "expect_semantic": true,
+            "expect_architecture": true,
+            "architecture_assertions": [
+                {
+                    "label": "Uses cancellable cancel-in-flight in TCA effect",
+                    "regex": "\\.cancellable\\(id:\\s*CancelID\\(\\),\\s*cancelInFlight:\\s*true\\)"
+                },
+                {
+                    "label": "Has explicit cancellation-named test",
+                    "regex": "(?m)func\\s+test\\w*cancel\\w+"
+                }
+            ]
+        },
+        {
+            "id": "tca-effect-cancellation-isolation-real",
+            "file": "quality/corpus/cases/tca-effect-cancellation-isolation-real-good.md",
+            "expect_syntax": true,
+            "expect_semantic": false,
+            "expect_architecture": true,
+            "architecture_assertions": [
+                {
+                    "label": "Uses explicit CancelID with cancelInFlight",
+                    "regex": "\\.cancellable\\(id:\\s*CancelID\\.longLiving,\\s*cancelInFlight:\\s*true\\)"
+                },
+                {
+                    "label": "Includes stop/cancel action",
+                    "regex": "return\\s+\\.cancel\\(id:\\s*CancelID\\.longLiving\\)"
+                }
+            ]
+        },
+        {
+            "id": "rx-switchlatest-real-architecture",
+            "file": "quality/corpus/cases/rx-switchlatest-real-architecture.md",
+            "expect_syntax": true,
+            "expect_semantic": false,
+            "expect_architecture": true,
+            "architecture_assertions": [
+                {
+                    "label": "Uses deterministic TestScheduler",
+                    "regex": "TestScheduler\\(initialClock:\\s*0\\)"
+                },
+                {
+                    "label": "Uses switchLatest replacement operator",
+                    "regex": "switchLatest\\(\\)"
+                }
+            ]
+        },
+        {
+            "id": "rx-blocking-real-weak",
+            "file": "quality/corpus/cases/rx-blocking-real-weak.md",
+            "expect_syntax": true,
+            "expect_semantic": false
+        },
+        {
+            "id": "swift-testing-clock-real-weak",
+            "file": "quality/corpus/cases/swift-testing-clock-real-weak.md",
+            "expect_syntax": true,
+            "expect_semantic": false
+        }
+    ]
+}
