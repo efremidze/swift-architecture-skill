@@ -110,6 +110,7 @@ final class ProfilePresenter {
     private let interactor: ProfileInteracting
     private let router: ProfileRouting
     private var loadTask: Task<Void, Never>?
+    private var latestLoadRequestID: UUID?
 
     init(interactor: ProfileInteracting, router: ProfileRouting) {
         self.interactor = interactor
@@ -117,6 +118,8 @@ final class ProfilePresenter {
     }
 
     func load() {
+        let requestID = UUID()
+        latestLoadRequestID = requestID
         loadTask?.cancel()
         view?.showLoading(true)
 
@@ -124,14 +127,16 @@ final class ProfilePresenter {
             do {
                 let user = try await interactor.loadUser()
                 try Task.checkCancellation()
+                guard latestLoadRequestID == requestID else { return }
                 view?.show(profile: ProfileViewData(user: user))
-                view?.showLoading(false)
             } catch is CancellationError {
-                view?.showLoading(false)
+                // Cancelled by a newer load request.
             } catch {
-                view?.showLoading(false)
+                guard latestLoadRequestID == requestID else { return }
                 view?.showError(message: "Failed to load profile. Please try again.")
             }
+            guard latestLoadRequestID == requestID else { return }
+            view?.showLoading(false)
         }
     }
 
@@ -331,6 +336,7 @@ final class ProfilePresenter {
     private let interactor: ProfileInteracting
     private let router: ProfileRouting
     private var loadTask: Task<Void, Never>?
+    private var latestLoadRequestID: UUID?
 
     init(interactor: ProfileInteracting, router: ProfileRouting) {
         self.interactor = interactor
@@ -338,18 +344,23 @@ final class ProfilePresenter {
     }
 
     func load() {
+        let requestID = UUID()
+        latestLoadRequestID = requestID
         loadTask?.cancel()
         view?.showLoading(true)
         loadTask = Task {
             do {
                 let user = try await interactor.loadUser()
                 try Task.checkCancellation()
+                guard latestLoadRequestID == requestID else { return }
                 view?.show(profile: ProfileViewData(user: user))
             } catch is CancellationError {
                 // Cancelled by a newer load request.
             } catch {
+                guard latestLoadRequestID == requestID else { return }
                 view?.showError(message: "Failed to load profile. Please try again.")
             }
+            guard latestLoadRequestID == requestID else { return }
             view?.showLoading(false)
         }
     }
@@ -367,6 +378,7 @@ final class ProfilePresenter {
 Rules:
 - cancel in-flight tasks before issuing new requests
 - handle `CancellationError` explicitly to avoid stale UI updates
+- gate UI updates by request identity so only the latest request can update view state
 - cancel all tasks on module teardown
 - keep presenter intent methods synchronous (`func load()`), and manage async tasks internally
 
