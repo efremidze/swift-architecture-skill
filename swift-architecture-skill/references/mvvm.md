@@ -176,6 +176,39 @@ enum FeedAssembly {
 }
 ```
 
+`FeedAssembly.makeViewModel()` keeps feature wiring obvious, but can become limiting as apps grow. A common evolution path is an app-level dependency container (composition root) that owns shared dependency graphs.
+
+```swift
+protocol AppDependencies {
+    var feedRepository: FeedRepository { get }
+}
+
+struct LiveDependencies: AppDependencies {
+    private let api: APIClient
+
+    init(api: APIClient) {
+        self.api = api
+    }
+
+    var feedRepository: FeedRepository {
+        LiveFeedRepository(api: api)
+    }
+}
+
+@MainActor
+final class AppContainer {
+    private let dependencies: AppDependencies
+
+    init(dependencies: AppDependencies) {
+        self.dependencies = dependencies
+    }
+
+    func makeFeedViewModel() -> FeedViewModel {
+        FeedViewModel(repository: dependencies.feedRepository)
+    }
+}
+```
+
 ## View Guidance
 
 - Bind to ViewModel state only.
@@ -219,7 +252,14 @@ Keep routing decisions testable and decoupled from presentation APIs: ViewModel 
 
 ### SwiftUI Navigation (iOS 16+ / `NavigationStack`)
 
-Model destinations as an enum and drive `NavigationStack` from ViewModel path state. Prefer stable IDs over list-specific `ViewData`.
+Model destinations as an enum. Prefer stable IDs over list-specific `ViewData`.
+
+Path ownership is a real tradeoff:
+- ViewModel-owned path: simplest end-to-end SwiftUI wiring, but mixes data/loading state with navigation state.
+- View-owned path: keeps ViewModel state focused on data/loading, but requires an intent API so route decisions stay testable.
+- Router-owned path: best for multi-screen flows and deep links, with extra types/wiring cost.
+
+The examples below show ViewModel-owned and router-owned patterns.
 
 ```swift
 enum FeedDestination: Hashable {
@@ -229,7 +269,7 @@ enum FeedDestination: Hashable {
 }
 ```
 
-ViewModel exposes a navigation path:
+Option A: ViewModel-owned path.
 
 ```swift
 @MainActor
@@ -276,6 +316,47 @@ struct FeedView: View {
                 }
             }
             .task { viewModel.onAppear() }
+        }
+    }
+}
+```
+
+Option B: dedicated router keeps `FeedState` focused on presentation data/loading.
+
+```swift
+@MainActor
+@Observable
+final class FeedRouter {
+    var path: [FeedDestination] = []
+
+    func push(_ destination: FeedDestination) {
+        path.append(destination)
+    }
+}
+
+@MainActor
+@Observable
+final class FeedViewModel {
+    private(set) var state = FeedState()
+
+    func destinationForItem(_ item: FeedItemViewData) -> FeedDestination {
+        .detail(id: item.id)
+    }
+}
+
+struct FeedView: View {
+    @State private var viewModel: FeedViewModel
+    @State private var router = FeedRouter()
+
+    var body: some View {
+        @Bindable var router = router
+
+        NavigationStack(path: $router.path) {
+            List(viewModel.state.items) { item in
+                Button(item.title) {
+                    router.push(viewModel.destinationForItem(item))
+                }
+            }
         }
     }
 }
@@ -491,7 +572,53 @@ final class AppRouter {
 
 5. Heavy work on main actor:
 - Smell: decoding or expensive mapping in main-actor methods.
-- Fix: move heavy work to non-main contexts; assign final state on main actor.
+- Fix: move heavy CPU work off-main; assign final state on main actor.
+
+```swift
+// Anti-pattern: expensive mapping runs on @MainActor.
+@MainActor
+func load() {
+    loadTask?.cancel()
+    state.load = .loading
+
+    loadTask = Task {
+        do {
+            let page = try await repository.fetchPage(cursor: nil)
+            state.items = page.items.map(FeedItemViewData.init) // can hitch UI for large pages
+            state.load = .loaded(())
+        } catch is CancellationError {
+            // Ignore cancellation.
+        } catch {
+            state.load = .failed(error.localizedDescription)
+        }
+    }
+}
+
+// Better: do CPU-heavy mapping off actor, then commit state on @MainActor.
+@MainActor
+func load() {
+    loadTask?.cancel()
+    state.load = .loading
+
+    loadTask = Task {
+        do {
+            let page = try await repository.fetchPage(cursor: nil)
+            let mappedItems = try await Task.detached(priority: .userInitiated) {
+                page.items.map(FeedItemViewData.init)
+            }.value
+            try Task.checkCancellation()
+            state.items = mappedItems
+            state.load = .loaded(())
+        } catch is CancellationError {
+            // Ignore cancellation.
+        } catch {
+            state.load = .failed(error.localizedDescription)
+        }
+    }
+}
+```
+
+If mapping is small but reused, extract it into a pure helper (`static`/`nonisolated`) for testability; if it is expensive, run it off actor (`Task.detached` or a background service).
 
 ## Testing Expectations
 
@@ -608,9 +735,11 @@ private enum TestError: Error {
 
 Prefer MVVM when:
 - screen-level state management is the primary concern
-- team wants low-ceremony state handling
+- team wants explicit View/ViewModel boundaries without introducing a full reducer/store framework
 - feature complexity is moderate and does not require strict unidirectional flow
-- rapid iteration and low ceremony are valued
+- the team accepts moderate structure (for example, `State`, `ViewData`, assembly/router types) in exchange for clarity and testability
+
+MVVM is often lower ceremony than TCA/VIPER, but not "no ceremony." A strict MVVM style can introduce several files per feature; scale file splitting to actual complexity instead of applying every type up front.
 
 Prefer MVI/TCA when:
 - deterministic state-machine modeling is required
