@@ -16,7 +16,7 @@ Dependency direction:
 
 ## Feature Structure
 
-Prefer vertical feature slices with clear boundaries:
+Prefer vertical feature slices with clear boundaries. Treat this layout as illustrative, not a required file checklist for every feature:
 
 ```text
 App/
@@ -618,7 +618,7 @@ func load() {
 }
 ```
 
-If mapping is small but reused, extract it into a pure helper (`static`/`nonisolated`) for testability; if it is expensive, run it off actor (`Task.detached` or a background service).
+If mapping is small but reused, extract it into a pure helper (`static`/`nonisolated`) for testability; if it is expensive, run it off actor (`Task.detached` or a background service). Under strict concurrency (Swift 6), ensure detached-task captures/results are `Sendable`, or move the work behind a background actor/service boundary.
 
 ## Testing Expectations
 
