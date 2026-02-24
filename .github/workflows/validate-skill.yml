@@ -59,6 +59,29 @@ jobs:
         run: |
           ./scripts/run-testing-benchmark-suite.py
 
+  validate-benchmark-coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Validate Benchmark Coverage
+        run: |
+          python3 ./scripts/validate-benchmark-coverage.py
+
+  validate-realworld-corpus:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Run Real-World Corpus Eval
+        run: |
+          python3 ./scripts/run-realworld-corpus-eval.py
+
   validate-architecture-consistency:
     runs-on: ubuntu-latest
 

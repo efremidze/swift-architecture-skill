@@ -26,6 +26,8 @@ This repository contains documentation and skill definitions rather than app cod
 - **Validate testing snippets**: `./scripts/validate-testing-snippets.sh`
 - **Validate testing quality contract**: `python3 ./scripts/validate-testing-quality.py`
 - **Run external benchmark suite**: `./scripts/run-testing-benchmark-suite.py`
+- **Validate benchmark architecture coverage**: `python3 ./scripts/validate-benchmark-coverage.py`
+- **Run real-world corpus eval**: `python3 ./scripts/run-realworld-corpus-eval.py`
 - **Validate architecture consistency**: `python3 ./scripts/validate-architecture-consistency.py`
 - **Check markdown formatting**: Ensure all `.md` files are properly formatted
 - **Cross-reference consistency**: Ensure SKILL.md correctly references all playbooks

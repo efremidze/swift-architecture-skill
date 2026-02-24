@@ -83,6 +83,8 @@ python -m skills_ref.cli validate ./swift-architecture-skill
 ./scripts/validate-testing-snippets.sh
 python3 ./scripts/validate-testing-quality.py
 ./scripts/run-testing-benchmark-suite.py
+python3 ./scripts/validate-benchmark-coverage.py
+python3 ./scripts/run-realworld-corpus-eval.py
 python3 ./scripts/validate-architecture-consistency.py
 ```
 
@@ -101,6 +103,8 @@ wc -l swift-architecture-skill/references/*.md
 ./scripts/validate-testing-snippets.sh
 python3 ./scripts/validate-testing-quality.py
 ./scripts/run-testing-benchmark-suite.py
+python3 ./scripts/validate-benchmark-coverage.py
+python3 ./scripts/run-realworld-corpus-eval.py
 python3 ./scripts/validate-architecture-consistency.py
 ```
 

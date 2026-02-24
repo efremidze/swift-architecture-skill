@@ -9,4 +9,5 @@ This suite is inspired by testing patterns from primary sources:
 - Clean Architecture dependency boundaries: https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
 
 Cases are intentionally minimized and adapted into neutral benchmark fixtures for validator evaluation.
-Architecture-specific fixtures also assert pattern-level expectations (for example: TCA cancel IDs and MVVM stale-overwrite protections).
+Architecture-specific fixtures assert pattern-level expectations across all supported architectures:
+MVVM stale-overwrite protections, MVI request ID gating, TCA cancel IDs, Clean use-case boundaries, VIPER presenter wiring, and Reactive switchLatest behavior.

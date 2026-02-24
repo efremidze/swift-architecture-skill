@@ -26,16 +26,24 @@ def run_command(cmd: List[str]) -> Tuple[bool, str]:
     return result.returncode == 0, output
 
 
+def extract_swift_blocks(markdown: str) -> str:
+    blocks = re.findall(r"```swift\s*\n(.*?)```", markdown, flags=re.DOTALL)
+    return "\n\n".join(blocks)
+
+
 def evaluate_architecture_assertions(case: Dict, content: str) -> Tuple[bool, str]:
     assertions = case.get("architecture_assertions", [])
     if not assertions:
         return True, ""
 
+    swift_content = extract_swift_blocks(content)
     failures: List[str] = []
     for assertion in assertions:
         label = assertion["label"]
         pattern = assertion["regex"]
         expect_match = bool(assertion.get("expect_match", True))
+        scope = assertion.get("scope", "swift")
+        target = content if scope == "content" else swift_content
 
         flags = re.MULTILINE
         if assertion.get("ignore_case", True):
@@ -43,7 +51,11 @@ def evaluate_architecture_assertions(case: Dict, content: str) -> Tuple[bool, st
         if assertion.get("dotall", False):
             flags |= re.DOTALL
 
-        matched = re.search(pattern, content, flags=flags) is not None
+        try:
+            matched = re.search(pattern, target, flags=flags) is not None
+        except re.error as exc:
+            failures.append(f"{label}: invalid regex /{pattern}/ ({exc})")
+            continue
         if matched != expect_match:
             expectation = "match" if expect_match else "no match"
             failures.append(f"{label}: expected {expectation} for /{pattern}/")
