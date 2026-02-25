@@ -48,7 +48,7 @@ final class SearchReducerTests: XCTestCase {
         XCTAssertNotNil(state.errorMessage)
     }
 
-    func test_staleResponse_cancelledRequest_isIgnored() {
+    func test_staleResponse_cancelledRequest_isAppliedWithoutRequestIDGate() {
         let latestID = UUID()
         let staleID = UUID()
         var state = SearchState(latestRequestID: latestID, results: ["current"])

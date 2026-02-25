@@ -85,6 +85,12 @@ def parse_readme_supported_slugs(readme_text: str) -> Tuple[Set[str], List[str]]
     errors: List[str] = []
     matches = re.findall(r"^- \*\*(.+?)\*\* -", readme_text, flags=re.MULTILINE)
     slugs: Set[str] = set()
+    unknown_named = sorted(set(matches) - set(README_NAME_TO_SLUG.keys()))
+    if unknown_named:
+        errors.append(
+            "README.md: unknown supported architecture entries: "
+            + ", ".join(unknown_named)
+        )
     for name in matches:
         if name not in README_NAME_TO_SLUG:
             continue

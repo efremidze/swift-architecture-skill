@@ -14,12 +14,25 @@ final class AsyncFeatureTests: XCTestCase {
         XCTAssertEqual(1, 1)
     }
 
-    func test_failure_throwsExpectedError() async {
-        XCTAssertTrue(true)
+    func test_failure_throwsExpectedError() async throws {
+        do {
+            try await failingOperation()
+            XCTFail("Expected error")
+        } catch {
+            XCTAssertEqual(error as? TestError, .expected)
+        }
     }
 
     func test_cancellation_doesNotOverwriteState() async {
         XCTAssertTrue(true)
     }
+}
+
+private enum TestError: Error, Equatable {
+    case expected
+}
+
+private func failingOperation() async throws {
+    throw TestError.expected
 }
 ```

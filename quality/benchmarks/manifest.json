@@ -66,7 +66,7 @@
       "architecture_assertions": [
         {
           "label": "Triggers two sequential loads for stale overwrite scenario",
-          "regex": "sut\\.load\\(\\)\\s*// request A[\\s\\S]*sut\\.load\\(\\)\\s*// request B",
+          "regex": "sut\\.load\\(\\)\\s*// request A.*sut\\.load\\(\\)\\s*// request B",
           "dotall": true
         },
         {
@@ -89,7 +89,7 @@
       "architecture_assertions": [
         {
           "label": "Triggers two sequential loads for stale overwrite scenario",
-          "regex": "sut\\.load\\(\\)\\s*// request A[\\s\\S]*sut\\.load\\(\\)\\s*// request B",
+          "regex": "sut\\.load\\(\\)\\s*// request A.*sut\\.load\\(\\)\\s*// request B",
           "dotall": true
         },
         {
@@ -286,7 +286,8 @@
       "id": "syntax-broken-should-fail-syntax-only",
       "file": "quality/benchmarks/cases/syntax-broken-should-fail-syntax-only.md",
       "expect_syntax": false,
-      "expect_semantic": true
+      "expect_semantic": true,
+      "description": "Intentional mismatch: semantic checks operate on testing-strategy text patterns and can still pass even when Swift syntax parsing fails."
     }
   ]
 }

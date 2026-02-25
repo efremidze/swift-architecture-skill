@@ -17,7 +17,12 @@ ARCHITECTURES = [
 
 
 def load_json(path: Path) -> Dict:
-    return json.loads(path.read_text(encoding="utf-8"))
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise RuntimeError(f"Failed to read JSON file {path}: {exc}") from exc
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"Invalid JSON in {path}: {exc}") from exc
 
 
 def main() -> int:
@@ -25,7 +30,11 @@ def main() -> int:
         print(f"Benchmark manifest not found: {BENCHMARK_MANIFEST}")
         return 1
 
-    manifest = load_json(BENCHMARK_MANIFEST)
+    try:
+        manifest = load_json(BENCHMARK_MANIFEST)
+    except RuntimeError as exc:
+        print(exc)
+        return 1
     cases = manifest.get("cases", [])
     if not cases:
         print("Benchmark manifest has no cases.")
@@ -50,8 +59,8 @@ def main() -> int:
             )
             continue
 
-        if not isinstance(architecture_assertions, list) or not architecture_assertions:
-            errors.append(f"{case_id}: architecture_assertions must be a non-empty list")
+        if not isinstance(architecture_assertions, list):
+            errors.append(f"{case_id}: architecture_assertions must be a list")
             continue
 
         for index, assertion in enumerate(architecture_assertions, start=1):

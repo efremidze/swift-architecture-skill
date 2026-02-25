@@ -74,7 +74,7 @@
     },
     {
       "label": "Contains a cancellation or stale-response focused test",
-      "regex": "(?m)func\\s+test\\w*(cancel|stale)\\w+",
+      "regex": "(?mi)func\\s+test\\w*(cancel|stale)\\w+",
       "scope": "section",
       "min_count": 1
     }

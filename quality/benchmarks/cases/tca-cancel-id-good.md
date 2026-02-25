@@ -20,7 +20,7 @@ struct Feature {
 
     enum Action: Equatable {
         case loadTapped
-        case loadResponse(Result<String, Error>)
+        case loadResponse(Result<String, TestError>)
     }
 
     @Dependency(\.client) var client
@@ -35,7 +35,7 @@ struct Feature {
                         let value = try await client.fetch()
                         await send(.loadResponse(.success(value)))
                     } catch {
-                        await send(.loadResponse(.failure(error)))
+                        await send(.loadResponse(.failure(.failed)))
                     }
                 }
                 .cancellable(id: CancelID.load, cancelInFlight: true)
@@ -60,5 +60,9 @@ final class FeatureTests: XCTestCase {
     func test_load_cancellation_replacesInFlightRequest() async {
         XCTAssertTrue(true)
     }
+}
+
+private enum TestError: Error, Equatable {
+    case failed
 }
 ```

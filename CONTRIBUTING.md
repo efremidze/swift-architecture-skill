@@ -100,13 +100,9 @@ python3 ./scripts/validate-architecture-consistency.py
 find . -name "*.md"
 grep -r "pattern" swift-architecture-skill/references/
 wc -l swift-architecture-skill/references/*.md
-./scripts/validate-testing-snippets.sh
-python3 ./scripts/validate-testing-quality.py
-./scripts/run-testing-benchmark-suite.py
-python3 ./scripts/validate-benchmark-coverage.py
-python3 ./scripts/run-realworld-corpus-eval.py
-python3 ./scripts/validate-architecture-consistency.py
 ```
+
+For automated validation commands, use the canonical list under `Validation Checklist`.
 
 ## Pull Request Checklist
 

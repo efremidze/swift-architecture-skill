@@ -15,7 +15,7 @@
                 },
                 {
                     "label": "Has explicit cancellation-named test",
-                    "regex": "(?m)func\\s+test\\w*cancel\\w+"
+                    "regex": "(?mi)func\\s+test\\w*cancel\\w+"
                 }
             ]
         },

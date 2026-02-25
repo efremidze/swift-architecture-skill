@@ -27,21 +27,24 @@ final class SearchViewModelTests: XCTestCase {
         let scheduler = DispatchQueue.test
         let first = PassthroughSubject<[String], Error>()
         let second = PassthroughSubject<[String], Error>()
+        var values: [[String]] = []
 
         let upstream = PassthroughSubject<AnyPublisher<[String], Error>, Never>()
         let cancellable = upstream
             .flatMap { $0 }
-            .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+            .sink(receiveCompletion: { _ in }, receiveValue: { values.append($0) })
 
-        upstream.send(first.eraseToAnyPublisher())
-        upstream.send(second.eraseToAnyPublisher())
+        scheduler.schedule {
+            upstream.send(first.eraseToAnyPublisher())
+            upstream.send(second.eraseToAnyPublisher())
 
-        first.send(["stale"])
-        second.send(["latest"])
+            first.send(["stale"])
+            second.send(["latest"])
+        }
         scheduler.advance()
 
         _ = cancellable
-        XCTAssertTrue(true)
+        XCTAssertEqual(values, [["stale"], ["latest"]])
     }
 }
 ```

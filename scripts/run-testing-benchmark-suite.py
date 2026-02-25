@@ -43,6 +43,10 @@ def evaluate_architecture_assertions(case: Dict, content: str) -> Tuple[bool, st
         pattern = assertion["regex"]
         expect_match = bool(assertion.get("expect_match", True))
         scope = assertion.get("scope", "swift")
+        if scope not in {"content", "swift"}:
+            raise ValueError(
+                f"{case.get('id', '<missing-id>')}: assertion '{label}' has unsupported scope '{scope}'"
+            )
         target = content if scope == "content" else swift_content
 
         flags = re.MULTILINE

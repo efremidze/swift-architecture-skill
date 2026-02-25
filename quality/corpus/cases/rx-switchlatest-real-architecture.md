@@ -31,11 +31,11 @@ extension ObservableSwitchTest {
             .completed(50)
         ])
 
-        let xs = scheduler.createHotObservable(
+        let xs = scheduler.createHotObservable([
             .next(300, ys1),
             .next(400, ys2),
             .completed(600)
-        )
+        ])
 
         let res = scheduler.start {
             xs.switchLatest()
@@ -57,11 +57,11 @@ extension ObservableSwitchTest {
             .error(50, testError)
         ])
 
-        let xs = scheduler.createHotObservable(
+        let xs = scheduler.createHotObservable([
             .next(300, ys1),
             .next(400, ys2),
             .completed(600)
-        )
+        ])
 
         let res = scheduler.start {
             xs.switchLatest()

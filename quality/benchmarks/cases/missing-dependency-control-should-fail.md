@@ -14,7 +14,8 @@ final class MissingDependencyControlTests: XCTestCase {
     }
 
     func test_failure_path() {
-        XCTAssertTrue(true)
+        let now = Date()
+        XCTAssertEqual(now, now.addingTimeInterval(1))
     }
 
     func test_cancellation_path() {

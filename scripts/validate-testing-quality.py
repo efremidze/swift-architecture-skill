@@ -49,6 +49,11 @@ def validate_playbook(contract: Dict, playbook: Dict) -> List[str]:
 
     content = path.read_text(encoding="utf-8")
     heading_regex = playbook.get("section_heading_regex", r"^##\s+Testing")
+    try:
+        re.compile(heading_regex)
+    except re.error as err:
+        return [f"{relative_path}: invalid section_heading_regex: {err}"]
+
     section = extract_section(content, heading_regex)
     if section is None:
         return [f"{relative_path}: testing section not found (regex: {heading_regex})"]

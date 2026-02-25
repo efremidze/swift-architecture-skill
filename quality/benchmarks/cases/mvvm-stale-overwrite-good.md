@@ -22,12 +22,10 @@ final class FeedViewModelTests: XCTestCase {
         let stale = ["stale"]
         let latest = ["latest"]
 
-        let sut = FeedViewModel(repository: StubRepository())
-        sut.load() // request A
-        sut.load() // request B
+        let sut = FeedViewModel(repository: StubRepository(sequence: [stale, latest]))
+        await sut.load() // request A
+        await sut.load() // request B
 
-        _ = stale
-        _ = latest
         // stale-overwrite-assert: latest wins
         XCTAssertEqual(sut.state.items.map(\.title), ["latest"])
     }

@@ -10,14 +10,17 @@ import XCTest
 
 final class NondeterministicSleepTests: XCTestCase {
     func test_success_path() {
+        Thread.sleep(forTimeInterval: 0.01)
         XCTAssertTrue(true)
     }
 
     func test_failure_path() {
+        Thread.sleep(forTimeInterval: 0.01)
         XCTAssertTrue(true)
     }
 
     func test_cancellation_path() {
+        Thread.sleep(forTimeInterval: 0.01)
         XCTAssertTrue(true)
     }
 }

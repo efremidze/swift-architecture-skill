@@ -273,6 +273,10 @@ final class LoadUserTests: XCTestCase {
 
     func test_execute_cancellationPropagates() async {
         let sut = LoadUser(repository: BlockingUserRepository())
+        // Deterministic because this test class is @MainActor:
+        // Task { ... } inherits main-actor isolation and does not start executing
+        // until the main actor yields at await task.value, so cancellation is
+        // observed immediately. Without @MainActor this pattern is racy.
         let task = Task { try await sut.execute(id: UUID()) }
         task.cancel()
 
@@ -287,9 +291,9 @@ final class LoadUserTests: XCTestCase {
     }
 }
 
-actor BlockingUserRepository: UserRepository {
+private actor BlockingUserRepository: UserRepository {
     func fetch(id: UUID) async throws -> User {
-        try await Task.sleep(nanoseconds: 60_000_000_000)
+        try await Task.sleep(for: .seconds(60))
         return User(id: id, name: "")
     }
 }

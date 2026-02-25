@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import sys
 import subprocess
 from pathlib import Path
 
@@ -17,7 +18,7 @@ def main() -> int:
         return 1
 
     result = subprocess.run(
-        ["python3", str(RUNNER), "--manifest", str(MANIFEST)],
+        [sys.executable, str(RUNNER), "--manifest", str(MANIFEST)],
         cwd=str(ROOT),
     )
     return result.returncode

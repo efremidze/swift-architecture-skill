@@ -32,8 +32,12 @@ enum Loadable<Value: Equatable>: Equatable {
 }
 
 struct CounterState: Equatable {
-    var count = 0
-    var load: Loadable<Void> = .idle
+    var load: Loadable<Int> = .idle
+
+    var count: Int {
+        guard case .loaded(let value) = load else { return 0 }
+        return value
+    }
 }
 ```
 
@@ -69,18 +73,15 @@ Action reducer for completing async transitions:
 func reduce(state: inout CounterState, action: CounterAction) {
     switch action {
     case .incrementResponse(.success(let value)):
-        state.count = value
-        state.load = .loaded(())
+        state.load = .loaded(value)
     case .incrementResponse(.failure(let error)):
         state.load = .failed(error.localizedDescription)
     case .decrementResponse(.success(let value)):
-        state.count = value
-        state.load = .loaded(())
+        state.load = .loaded(value)
     case .decrementResponse(.failure(let error)):
         state.load = .failed(error.localizedDescription)
     case .resetResponse(.success(let value)):
-        state.count = value
-        state.load = .loaded(())
+        state.load = .loaded(value)
     case .resetResponse(.failure(let error)):
         state.load = .failed(error.localizedDescription)
     }
@@ -196,6 +197,26 @@ func run(_ effect: CounterEffect, service: CounterServicing) async -> CounterAct
             return .resetResponse(.failure(error))
         }
     }
+}
+```
+
+Adapter pattern for wiring the pure `reduce/run` pair into `Store`:
+
+```swift
+@MainActor
+func makeCounterStore(service: CounterServicing) -> Store<CounterState, CounterIntent, CounterAction> {
+    Store(
+        initial: CounterState(),
+        reduceIntent: { state, intent in
+            guard let effect = reduce(state: &state, intent: intent) else { return nil }
+            return .run {
+                await run(effect, service: service)
+            }
+        },
+        reduceAction: { state, action in
+            reduce(state: &state, action: action)
+        }
+    )
 }
 ```
 
@@ -459,16 +480,12 @@ final class CounterReducerTests: XCTestCase {
             service: service
         )
 
-        if case .loading = state.load {
-            // expected
-        } else {
-            XCTFail("Expected loading state")
-        }
+        XCTAssertEqual(state.load, .loading)
         XCTAssertNotNil(effect)
     }
 
     func test_actionFailure_setsError_andStopsLoading() {
-        var state = CounterState(count: 3, load: .loading)
+        var state = CounterState(load: .loaded(3))
 
         reduce(state: &state, action: .incrementResponse(.failure(TestError.offline)))
 
@@ -501,6 +518,18 @@ func reduce(state: inout SearchState, action: SearchAction) {
 }
 
 final class SearchReducerTests: XCTestCase {
+    func test_matchingLatestRequest_updatesResults() {
+        let requestID = UUID()
+        var state = SearchState(latestRequestID: requestID, results: [])
+
+        reduce(
+            state: &state,
+            action: .response(requestID: requestID, .success(["new"]))
+        )
+
+        XCTAssertEqual(state.results, ["new"])
+    }
+
     func test_staleResponse_isIgnored() {
         let latestID = UUID()
         let staleID = UUID()

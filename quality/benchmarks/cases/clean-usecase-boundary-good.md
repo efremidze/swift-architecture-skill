@@ -73,7 +73,7 @@ final class LoadUserTests: XCTestCase {
 
 actor BlockingUserRepository: UserRepository {
     func fetch(id: UUID) async throws -> User {
-        try await Task.sleep(nanoseconds: 60_000_000_000)
+        await Task.yield()
         return User(id: id, name: "")
     }
 }

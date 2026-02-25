@@ -73,6 +73,20 @@ while IFS= read -r file; do
       printf '%s\n' "$line" >> "$current_block_file"
     fi
   done < "$file"
+
+  if [[ "$in_swift_block" -eq 1 ]]; then
+    in_swift_block=0
+    total_blocks=$((total_blocks + 1))
+
+    filtered_file="$current_block_file.filtered.swift"
+    sed '/^[[:space:]]*import[[:space:]]\+/d' "$current_block_file" > "$filtered_file"
+
+    if ! swiftc -frontend -parse "$filtered_file" >/dev/null 2>"$filtered_file.err"; then
+      echo "Unclosed Swift fence in testing section: $file"
+      sed 's/^/  /' "$filtered_file.err"
+      failed_blocks=$((failed_blocks + 1))
+    fi
+  fi
 done < <(find "$PLAYBOOK_DIR" -name "*.md" | sort)
 
 if [[ "$total_blocks" -eq 0 ]]; then

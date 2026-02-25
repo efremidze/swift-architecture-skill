@@ -34,7 +34,19 @@ final class FeatureTests: XCTestCase {
     }
 
     func test_cancellation_replacesInFlightRequest() async {
-        XCTAssertTrue(true)
+        var callCount = 0
+        let store = TestStore(initialState: Feature.State()) {
+            Feature()
+        } withDependencies: {
+            $0.client.fetch = { _ in
+                callCount += 1
+                return callCount == 1 ? "first" : "second"
+            }
+        }
+
+        await store.send(.loadTapped)
+        await store.send(.loadTapped)
+        await store.receive(.loadResponse(.success("second")))
     }
 }
 
