@@ -17,7 +17,7 @@ def main() -> int:
         return 1
 
     result = subprocess.run(
-        [str(RUNNER), "--manifest", str(MANIFEST)],
+        ["python3", str(RUNNER), "--manifest", str(MANIFEST)],
         cwd=str(ROOT),
     )
     return result.returncode
