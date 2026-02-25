@@ -11,7 +11,8 @@ import XCTest
 
 final class AsyncFeatureTests: XCTestCase {
     func test_success_returnsValue() async throws {
-        XCTAssertEqual(1, 1)
+        let value = try await successfulOperation()
+        XCTAssertEqual(value, 42)
     }
 
     func test_failure_throwsExpectedError() async throws {
@@ -24,7 +25,17 @@ final class AsyncFeatureTests: XCTestCase {
     }
 
     func test_cancellation_doesNotOverwriteState() async {
-        XCTAssertTrue(true)
+        let task = Task { try await cancellableOperation() }
+        task.cancel()
+
+        do {
+            _ = try await task.value
+            XCTFail("Expected cancellation")
+        } catch is CancellationError {
+            XCTAssertTrue(true)
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
     }
 }
 
@@ -34,5 +45,14 @@ private enum TestError: Error, Equatable {
 
 private func failingOperation() async throws {
     throw TestError.expected
+}
+
+private func successfulOperation() async throws -> Int {
+    42
+}
+
+private func cancellableOperation() async throws -> Int {
+    try await Task.sleep(for: .seconds(1))
+    return 0
 }
 ```

@@ -14,6 +14,7 @@ DEFAULT_MANIFEST = ROOT / "quality" / "benchmarks" / "manifest.json"
 BASE_CONTRACT = ROOT / "quality" / "testing-quality-contract.json"
 SYNTAX_VALIDATOR = ROOT / "scripts" / "validate-testing-snippets.sh"
 SEMANTIC_VALIDATOR = ROOT / "scripts" / "validate-testing-quality.py"
+COMMAND_TIMEOUT_SECONDS = 30
 
 
 def load_json(path: Path) -> Dict:
@@ -21,9 +22,21 @@ def load_json(path: Path) -> Dict:
 
 
 def run_command(cmd: List[str]) -> Tuple[bool, str]:
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    output = (result.stdout + result.stderr).strip()
-    return result.returncode == 0, output
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=COMMAND_TIMEOUT_SECONDS,
+        )
+        output = (result.stdout + result.stderr).strip()
+        return result.returncode == 0, output
+    except subprocess.TimeoutExpired:
+        command_text = " ".join(cmd)
+        return (
+            False,
+            f"Command timed out after {COMMAND_TIMEOUT_SECONDS}s: {command_text}",
+        )
 
 
 def extract_swift_blocks(markdown: str) -> str:
@@ -44,9 +57,10 @@ def evaluate_architecture_assertions(case: Dict, content: str) -> Tuple[bool, st
         expect_match = bool(assertion.get("expect_match", True))
         scope = assertion.get("scope", "swift")
         if scope not in {"content", "swift"}:
-            raise ValueError(
+            failures.append(
                 f"{case.get('id', '<missing-id>')}: assertion '{label}' has unsupported scope '{scope}'"
             )
+            continue
         target = content if scope == "content" else swift_content
 
         flags = re.MULTILINE

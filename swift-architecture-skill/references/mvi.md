@@ -489,7 +489,7 @@ final class CounterReducerTests: XCTestCase {
 
         reduce(state: &state, action: .incrementResponse(.failure(TestError.offline)))
 
-        XCTAssertEqual(state.count, 3)
+        XCTAssertEqual(state.count, 0)
         if case .failed = state.load {
             // expected
         } else {

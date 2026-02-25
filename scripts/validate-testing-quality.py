@@ -73,9 +73,20 @@ def validate_playbook(contract: Dict, playbook: Dict) -> List[str]:
         pattern = requirement["regex"]
         scope = requirement.get("scope", "section")
         min_count = int(requirement.get("min_count", 1))
+        if scope not in {"section", "file"}:
+            errors.append(
+                f"{relative_path}: {label} (invalid scope '{scope}', expected 'section' or 'file')"
+            )
+            continue
 
         target = section if scope == "section" else content
-        count = count_matches(pattern, target)
+        try:
+            count = count_matches(pattern, target)
+        except re.error as err:
+            errors.append(
+                f"{relative_path}: {label} (invalid regex /{pattern}/ for {scope} scope: {err})"
+            )
+            continue
         if count < min_count:
             errors.append(
                 f"{relative_path}: {label} (found {count}, expected >= {min_count})"

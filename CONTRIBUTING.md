@@ -90,9 +90,9 @@ python3 ./scripts/validate-architecture-consistency.py
 
 2. Complete manual review:
 
-1. Markdown formatting is clean and readable
-2. Cross-file references are correct (`SKILL.md` and `selection-guide.md` stay in sync)
-3. New guidance is specific enough for an agent to apply directly
+   1. Markdown formatting is clean and readable
+   2. Cross-file references are correct (`SKILL.md` and `selection-guide.md` stay in sync)
+   3. New guidance is specific enough for an agent to apply directly
 
 ## Useful Commands
 

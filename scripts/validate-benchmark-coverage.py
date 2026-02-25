@@ -64,6 +64,11 @@ def main() -> int:
             continue
 
         for index, assertion in enumerate(architecture_assertions, start=1):
+            if not isinstance(assertion, dict):
+                errors.append(
+                    f"{case_id}: assertion {index} malformed (expected object)"
+                )
+                continue
             if not assertion.get("label"):
                 errors.append(f"{case_id}: assertion {index} missing label")
             if not assertion.get("regex"):
