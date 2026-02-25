@@ -7,6 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 RUNNER = ROOT / "scripts" / "run-testing-benchmark-suite.py"
 MANIFEST = ROOT / "quality" / "corpus" / "manifest.json"
+TIMEOUT_SECONDS = 300
 
 
 def main() -> int:
@@ -17,11 +18,16 @@ def main() -> int:
         print(f"Manifest not found: {MANIFEST}")
         return 1
 
-    result = subprocess.run(
-        [sys.executable, str(RUNNER), "--manifest", str(MANIFEST)],
-        cwd=str(ROOT),
-    )
-    return result.returncode
+    try:
+        result = subprocess.run(
+            [sys.executable, str(RUNNER), "--manifest", str(MANIFEST)],
+            cwd=str(ROOT),
+            timeout=TIMEOUT_SECONDS,
+        )
+        return result.returncode
+    except subprocess.TimeoutExpired:
+        print(f"Corpus evaluation timed out after {TIMEOUT_SECONDS} seconds")
+        return 1
 
 
 if __name__ == "__main__":
