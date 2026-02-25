@@ -24,10 +24,20 @@ Core rules:
 - Store canonical state, not redundant derived values.
 
 ```swift
+enum Loadable<Value: Equatable>: Equatable {
+    case idle
+    case loading
+    case loaded(Value)
+    case failed(String)
+}
+
 struct CounterState: Equatable {
-    var count = 0
-    var isLoading = false
-    var error: String?
+    var load: Loadable<Int> = .idle
+
+    var count: Int {
+        guard case .loaded(let value) = load else { return 0 }
+        return value
+    }
 }
 ```
 
@@ -63,26 +73,17 @@ Action reducer for completing async transitions:
 func reduce(state: inout CounterState, action: CounterAction) {
     switch action {
     case .incrementResponse(.success(let value)):
-        state.count = value
-        state.isLoading = false
-        state.error = nil
+        state.load = .loaded(value)
     case .incrementResponse(.failure(let error)):
-        state.isLoading = false
-        state.error = error.localizedDescription
+        state.load = .failed(error.localizedDescription)
     case .decrementResponse(.success(let value)):
-        state.count = value
-        state.isLoading = false
-        state.error = nil
+        state.load = .loaded(value)
     case .decrementResponse(.failure(let error)):
-        state.isLoading = false
-        state.error = error.localizedDescription
+        state.load = .failed(error.localizedDescription)
     case .resetResponse(.success(let value)):
-        state.count = value
-        state.isLoading = false
-        state.error = nil
+        state.load = .loaded(value)
     case .resetResponse(.failure(let error)):
-        state.isLoading = false
-        state.error = error.localizedDescription
+        state.load = .failed(error.localizedDescription)
     }
 }
 ```
@@ -120,7 +121,7 @@ func reduce(
 ) -> Effect<CounterAction>? {
     switch intent {
     case .incrementTapped:
-        state.isLoading = true
+        state.load = .loading
         return .run {
             do {
                 let value = try await service.increment()
@@ -130,7 +131,7 @@ func reduce(
             }
         }
     case .decrementTapped:
-        state.isLoading = true
+        state.load = .loading
         return .run {
             do {
                 let value = try await service.decrement()
@@ -140,7 +141,7 @@ func reduce(
             }
         }
     case .resetTapped:
-        state.isLoading = true
+        state.load = .loading
         return .run {
             do {
                 let value = try await service.reset()
@@ -153,11 +154,78 @@ func reduce(
 }
 ```
 
+This signature is a pragmatic shortcut: passing `service` into `reduce` keeps call sites simple, but the reducer is environment-coupled. If you want stricter MVI purity, make `reduce` return effect descriptors and run them outside the reducer.
+
+```swift
+enum CounterEffect {
+    case increment
+    case decrement
+    case reset
+}
+
+func reduce(state: inout CounterState, intent: CounterIntent) -> CounterEffect? {
+    switch intent {
+    case .incrementTapped:
+        state.load = .loading
+        return .increment
+    case .decrementTapped:
+        state.load = .loading
+        return .decrement
+    case .resetTapped:
+        state.load = .loading
+        return .reset
+    }
+}
+
+func run(_ effect: CounterEffect, service: CounterServicing) async -> CounterAction {
+    do {
+        switch effect {
+        case .increment:
+            return .incrementResponse(.success(try await service.increment()))
+        case .decrement:
+            return .decrementResponse(.success(try await service.decrement()))
+        case .reset:
+            return .resetResponse(.success(try await service.reset()))
+        }
+    } catch {
+        switch effect {
+        case .increment:
+            return .incrementResponse(.failure(error))
+        case .decrement:
+            return .decrementResponse(.failure(error))
+        case .reset:
+            return .resetResponse(.failure(error))
+        }
+    }
+}
+```
+
+Adapter pattern for wiring the pure `reduce/run` pair into `Store`:
+
+```swift
+@MainActor
+func makeCounterStore(service: CounterServicing) -> Store<CounterState, CounterIntent, CounterAction> {
+    Store(
+        initial: CounterState(),
+        reduceIntent: { state, intent in
+            guard let effect = reduce(state: &state, intent: intent) else { return nil }
+            return .run {
+                await run(effect, service: service)
+            }
+        },
+        reduceAction: { state, action in
+            reduce(state: &state, action: action)
+        }
+    )
+}
+```
+
 ## Store Pattern
 
 - Keep store on main actor for UI mutation safety.
 - Receive `Intent`, run reducer, execute `Effect`, dispatch `Action`.
 - Add cancellation and request versioning for concurrent requests.
+- Map all expected service failures to explicit failure actions; `onUnexpectedError` should be a bug hook, not a business-error path.
 
 ```swift
 @MainActor
@@ -174,7 +242,7 @@ final class Store<State, Intent, Action>: ObservableObject {
         reduceIntent: @escaping (inout State, Intent) -> Effect<Action>?,
         reduceAction: @escaping (inout State, Action) -> Void,
         onUnexpectedError: @escaping @MainActor (Error) -> Void = { error in
-            assertionFailure("Unhandled effect error: \(error)")
+            assertionFailure("Unexpected unmodeled effect error: \(error)")
         }
     ) {
         self.state = initial
@@ -225,7 +293,7 @@ final class Store<State, Intent, Action>: ObservableObject {
 }
 ```
 
-Map expected service failures to explicit failure actions; reserve `onUnexpectedError` for true fallthrough faults.
+Map expected service failures to explicit failure actions; reserve `onUnexpectedError` for true fallthrough faults (for example decoding bugs, violated invariants, or effect wiring mistakes). If this handler fires for normal API failures, treat that as a modeling bug and add an explicit failure action path.
 
 ## Composed Reducers
 
@@ -282,6 +350,8 @@ extension Effect {
 }
 ```
 
+Composition tradeoff: a single app-wide `AppIntent`/`AppAction` can become deeply nested as feature count grows. Prefer feature-scoped stores where practical, and compose only at flow boundaries (for example tab root, checkout flow, onboarding) instead of forcing one global mega-enum.
+
 ## View Guidance
 
 - Render `store.state` only.
@@ -297,7 +367,7 @@ struct CounterView: View {
     var body: some View {
         VStack {
             Text("Count: \(store.state.count)")
-            if store.state.isLoading { ProgressView() }
+            if case .loading = store.state.load { ProgressView() }
             Button("+") { store.send(.incrementTapped) }
             Button("-") { store.send(.decrementTapped) }
             Button("Reset") { store.send(.resetTapped) }
@@ -305,6 +375,8 @@ struct CounterView: View {
     }
 }
 ```
+
+If you target iOS 17+ for SwiftUI-first features, you can replace `ObservableObject`/`@Published` stores with `@Observable` stores (as in the MVVM playbook) and use `@State` + `@Bindable` in views. Keep `ObservableObject` when the same store must expose Combine publishers to UIKit.
 
 ### UIKit Integration
 
@@ -383,27 +455,97 @@ UIKit rules:
 - Unit test intent reducer transitions.
 - Unit test action reducer success/failure transitions.
 - Verify cancellation and stale-response handling.
+- Keep tests deterministic with controlled services, schedulers, or clocks.
 - Assert state-machine behavior, not view details.
 
-Example first test:
+Example test suite:
 
 ```swift
+import XCTest
+
 struct StubCounterService: CounterServicing {
     func increment() async throws -> Int { 1 }
     func decrement() async throws -> Int { 0 }
     func reset() async throws -> Int { 0 }
 }
 
-func test_increment_setsLoading_andReturnsEffect() {
-    var state = CounterState()
-    let service = StubCounterService()
-    let effect = reduce(
-        state: &state,
-        intent: .incrementTapped,
-        service: service
-    )
-    XCTAssertTrue(state.isLoading)
-    XCTAssertNotNil(effect)
+final class CounterReducerTests: XCTestCase {
+    func test_intentIncrement_setsLoading_andReturnsEffect() {
+        var state = CounterState()
+        let service = StubCounterService()
+
+        let effect = reduce(
+            state: &state,
+            intent: .incrementTapped,
+            service: service
+        )
+
+        XCTAssertEqual(state.load, .loading)
+        XCTAssertNotNil(effect)
+    }
+
+    func test_actionFailure_setsError_andStopsLoading() {
+        var state = CounterState(load: .loaded(3))
+
+        reduce(state: &state, action: .incrementResponse(.failure(TestError.offline)))
+
+        XCTAssertEqual(state.count, 0)
+        if case .failed = state.load {
+            // expected
+        } else {
+            XCTFail("Expected failed state")
+        }
+    }
+}
+
+struct SearchState: Equatable {
+    var latestRequestID: UUID?
+    var results: [String] = []
+}
+
+enum SearchAction {
+    case response(requestID: UUID, Result<[String], Error>)
+}
+
+func reduce(state: inout SearchState, action: SearchAction) {
+    switch action {
+    case .response(let requestID, .success(let results)):
+        guard requestID == state.latestRequestID else { return }
+        state.results = results
+    case .response:
+        break
+    }
+}
+
+final class SearchReducerTests: XCTestCase {
+    func test_matchingLatestRequest_updatesResults() {
+        let requestID = UUID()
+        var state = SearchState(latestRequestID: requestID, results: [])
+
+        reduce(
+            state: &state,
+            action: .response(requestID: requestID, .success(["new"]))
+        )
+
+        XCTAssertEqual(state.results, ["new"])
+    }
+
+    func test_staleResponse_isIgnored() {
+        let latestID = UUID()
+        let staleID = UUID()
+        var state = SearchState(latestRequestID: latestID, results: ["current"])
+
+        reduce(
+            state: &state,
+            action: .response(requestID: staleID, .success(["old"]))
+        )
+
+        XCTAssertEqual(state.results, ["current"])
+    }
+}
+
+private enum TestError: Error {
+    case offline
 }
 ```
 

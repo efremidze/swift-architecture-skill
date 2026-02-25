@@ -189,6 +189,7 @@ For transient failures, prefer fallback state over terminating the stream.
 
 Test stream behavior deterministically:
 - input -> expected output transitions
+- success path emits the expected state sequence
 - debounce/throttle behavior with controlled schedulers
 - cancellation behavior for replaced requests
 - error fallback behavior
@@ -206,7 +207,7 @@ import XCTest
 final class SearchViewModelTests: XCTestCase {
     func test_queryEmitsResults() {
         let subject = PassthroughSubject<[String], Error>()
-        let stubService = StubSearchService(subject: subject)
+        let stubService = StubSearchService { _ in subject.eraseToAnyPublisher() }
         // Requires Point-Free's CombineSchedulers package.
         let scheduler = DispatchQueue.test
         let vm = SearchViewModel(service: stubService, scheduler: scheduler.eraseToAnyScheduler())
@@ -231,13 +232,74 @@ final class SearchViewModelTests: XCTestCase {
         XCTAssertEqual(collected, [["SwiftUI", "Swift"]])
         cancellable.cancel()
     }
+
+    func test_errorFallsBackToEmptyResults() {
+        let subject = PassthroughSubject<[String], Error>()
+        let stubService = StubSearchService { _ in subject.eraseToAnyPublisher() }
+        let scheduler = DispatchQueue.test
+        let vm = SearchViewModel(service: stubService, scheduler: scheduler.eraseToAnyScheduler())
+
+        var collected: [[String]] = []
+        let cancellable = vm.$results
+            .dropFirst()
+            .sink { collected.append($0) }
+
+        vm.query = "swift"
+        scheduler.advance(by: .milliseconds(300))
+
+        subject.send(completion: .failure(TestError.offline))
+        scheduler.advance()
+
+        XCTAssertEqual(collected, [[]])
+        cancellable.cancel()
+    }
+
+    func test_switchToLatest_ignoresStaleInFlightResponse() {
+        let first = PassthroughSubject<[String], Error>()
+        let second = PassthroughSubject<[String], Error>()
+        let stubService = StubSearchService { query in
+            switch query {
+            case "sw":
+                return first.eraseToAnyPublisher()
+            case "swift":
+                return second.eraseToAnyPublisher()
+            default:
+                return Empty<[String], Error>().eraseToAnyPublisher()
+            }
+        }
+        let scheduler = DispatchQueue.test
+        let vm = SearchViewModel(service: stubService, scheduler: scheduler.eraseToAnyScheduler())
+
+        var collected: [[String]] = []
+        let cancellable = vm.$results
+            .dropFirst()
+            .sink { collected.append($0) }
+
+        vm.query = "sw"
+        scheduler.advance(by: .milliseconds(300))
+
+        vm.query = "swift"
+        scheduler.advance(by: .milliseconds(300))
+
+        // This should be ignored because a newer query replaced the subscription.
+        first.send(["stale"])
+        second.send(["fresh"])
+        scheduler.advance()
+
+        XCTAssertEqual(collected, [["fresh"]])
+        cancellable.cancel()
+    }
 }
 
 struct StubSearchService: SearchService {
-    let subject: PassthroughSubject<[String], Error>
+    let searchHandler: (String) -> AnyPublisher<[String], Error>
     func search(_ query: String) -> AnyPublisher<[String], Error> {
-        subject.eraseToAnyPublisher()
+        searchHandler(query)
     }
+}
+
+private enum TestError: Error {
+    case offline
 }
 ```
 
