@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Dict, List
 
 
-ROOT = Path(__file__).resolve().parents[1]
-BENCHMARK_MANIFEST = ROOT / "quality" / "benchmarks" / "manifest.json"
+ROOT = Path(__file__).resolve().parents[2]
+BENCHMARK_MANIFEST = ROOT / "evals" / "benchmarks" / "manifest.json"
 ARCHITECTURES = [
     "mvvm",
     "mvi",

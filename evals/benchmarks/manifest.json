@@ -4,26 +4,26 @@
   "cases": [
     {
       "id": "tca-official-style-good",
-      "file": "quality/benchmarks/cases/tca-official-style-good.md",
+      "file": "evals/benchmarks/cases/tca-official-style-good.md",
       "expect_syntax": true,
       "expect_semantic": true
     },
     {
       "id": "reactive-switchtolatest-good",
-      "file": "quality/benchmarks/cases/reactive-switchtolatest-good.md",
+      "file": "evals/benchmarks/cases/reactive-switchtolatest-good.md",
       "expect_syntax": true,
       "expect_semantic": true
     },
     {
       "id": "xctest-async-good",
-      "file": "quality/benchmarks/cases/xctest-async-good.md",
+      "file": "evals/benchmarks/cases/xctest-async-good.md",
       "expect_syntax": true,
       "expect_semantic": true
     },
     {
       "id": "tca-cancel-id-good",
       "architecture": "tca",
-      "file": "quality/benchmarks/cases/tca-cancel-id-good.md",
+      "file": "evals/benchmarks/cases/tca-cancel-id-good.md",
       "expect_syntax": true,
       "expect_semantic": true,
       "expect_architecture": true,
@@ -41,7 +41,7 @@
     {
       "id": "tca-missing-cancel-id-should-fail-architecture",
       "architecture": "tca",
-      "file": "quality/benchmarks/cases/tca-missing-cancel-id-should-fail-architecture.md",
+      "file": "evals/benchmarks/cases/tca-missing-cancel-id-should-fail-architecture.md",
       "expect_syntax": true,
       "expect_semantic": true,
       "expect_architecture": false,
@@ -59,7 +59,7 @@
     {
       "id": "mvvm-stale-overwrite-good",
       "architecture": "mvvm",
-      "file": "quality/benchmarks/cases/mvvm-stale-overwrite-good.md",
+      "file": "evals/benchmarks/cases/mvvm-stale-overwrite-good.md",
       "expect_syntax": true,
       "expect_semantic": true,
       "expect_architecture": true,
@@ -82,7 +82,7 @@
     {
       "id": "mvvm-missing-stale-overwrite-should-fail-architecture",
       "architecture": "mvvm",
-      "file": "quality/benchmarks/cases/mvvm-missing-stale-overwrite-should-fail-architecture.md",
+      "file": "evals/benchmarks/cases/mvvm-missing-stale-overwrite-should-fail-architecture.md",
       "expect_syntax": true,
       "expect_semantic": true,
       "expect_architecture": false,
@@ -105,7 +105,7 @@
     {
       "id": "mvi-request-id-good",
       "architecture": "mvi",
-      "file": "quality/benchmarks/cases/mvi-request-id-good.md",
+      "file": "evals/benchmarks/cases/mvi-request-id-good.md",
       "expect_syntax": true,
       "expect_semantic": true,
       "expect_architecture": true,
@@ -123,7 +123,7 @@
     {
       "id": "mvi-missing-request-id-should-fail-architecture",
       "architecture": "mvi",
-      "file": "quality/benchmarks/cases/mvi-missing-request-id-should-fail-architecture.md",
+      "file": "evals/benchmarks/cases/mvi-missing-request-id-should-fail-architecture.md",
       "expect_syntax": true,
       "expect_semantic": true,
       "expect_architecture": false,
@@ -141,7 +141,7 @@
     {
       "id": "clean-usecase-boundary-good",
       "architecture": "clean-architecture",
-      "file": "quality/benchmarks/cases/clean-usecase-boundary-good.md",
+      "file": "evals/benchmarks/cases/clean-usecase-boundary-good.md",
       "expect_syntax": true,
       "expect_semantic": true,
       "expect_architecture": true,
@@ -159,7 +159,7 @@
     {
       "id": "clean-missing-usecase-boundary-should-fail-architecture",
       "architecture": "clean-architecture",
-      "file": "quality/benchmarks/cases/clean-missing-usecase-boundary-should-fail-architecture.md",
+      "file": "evals/benchmarks/cases/clean-missing-usecase-boundary-should-fail-architecture.md",
       "expect_syntax": true,
       "expect_semantic": true,
       "expect_architecture": false,
@@ -177,7 +177,7 @@
     {
       "id": "viper-presenter-wiring-good",
       "architecture": "viper",
-      "file": "quality/benchmarks/cases/viper-presenter-wiring-good.md",
+      "file": "evals/benchmarks/cases/viper-presenter-wiring-good.md",
       "expect_syntax": true,
       "expect_semantic": true,
       "expect_architecture": true,
@@ -195,7 +195,7 @@
     {
       "id": "viper-missing-presenter-wiring-should-fail-architecture",
       "architecture": "viper",
-      "file": "quality/benchmarks/cases/viper-missing-presenter-wiring-should-fail-architecture.md",
+      "file": "evals/benchmarks/cases/viper-missing-presenter-wiring-should-fail-architecture.md",
       "expect_syntax": true,
       "expect_semantic": true,
       "expect_architecture": false,
@@ -213,7 +213,7 @@
     {
       "id": "reactive-switchlatest-architecture-good",
       "architecture": "reactive",
-      "file": "quality/benchmarks/cases/reactive-switchlatest-architecture-good.md",
+      "file": "evals/benchmarks/cases/reactive-switchlatest-architecture-good.md",
       "expect_syntax": true,
       "expect_semantic": true,
       "expect_architecture": true,
@@ -231,7 +231,7 @@
     {
       "id": "reactive-missing-switchlatest-should-fail-architecture",
       "architecture": "reactive",
-      "file": "quality/benchmarks/cases/reactive-missing-switchlatest-should-fail-architecture.md",
+      "file": "evals/benchmarks/cases/reactive-missing-switchlatest-should-fail-architecture.md",
       "expect_syntax": true,
       "expect_semantic": true,
       "expect_architecture": false,
@@ -248,43 +248,43 @@
     },
     {
       "id": "missing-failure-should-fail",
-      "file": "quality/benchmarks/cases/missing-failure-should-fail.md",
+      "file": "evals/benchmarks/cases/missing-failure-should-fail.md",
       "expect_syntax": true,
       "expect_semantic": false
     },
     {
       "id": "missing-cancellation-should-fail",
-      "file": "quality/benchmarks/cases/missing-cancellation-should-fail.md",
+      "file": "evals/benchmarks/cases/missing-cancellation-should-fail.md",
       "expect_syntax": true,
       "expect_semantic": false
     },
     {
       "id": "missing-dependency-control-should-fail",
-      "file": "quality/benchmarks/cases/missing-dependency-control-should-fail.md",
+      "file": "evals/benchmarks/cases/missing-dependency-control-should-fail.md",
       "expect_syntax": true,
       "expect_semantic": false
     },
     {
       "id": "nondeterministic-sleep-should-fail",
-      "file": "quality/benchmarks/cases/nondeterministic-sleep-should-fail.md",
+      "file": "evals/benchmarks/cases/nondeterministic-sleep-should-fail.md",
       "expect_syntax": true,
       "expect_semantic": false
     },
     {
       "id": "too-few-tests-should-fail",
-      "file": "quality/benchmarks/cases/too-few-tests-should-fail.md",
+      "file": "evals/benchmarks/cases/too-few-tests-should-fail.md",
       "expect_syntax": true,
       "expect_semantic": false
     },
     {
       "id": "no-swift-snippet-should-fail",
-      "file": "quality/benchmarks/cases/no-swift-snippet-should-fail.md",
+      "file": "evals/benchmarks/cases/no-swift-snippet-should-fail.md",
       "expect_syntax": false,
       "expect_semantic": false
     },
     {
       "id": "syntax-broken-should-fail-syntax-only",
-      "file": "quality/benchmarks/cases/syntax-broken-should-fail-syntax-only.md",
+      "file": "evals/benchmarks/cases/syntax-broken-should-fail-syntax-only.md",
       "expect_syntax": false,
       "expect_semantic": true,
       "description": "Intentional mismatch: semantic checks operate on testing-strategy text patterns and can still pass even when Swift syntax parsing fails."
