@@ -37,48 +37,17 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Calculate next version tag
-        id: bump
-        run: |
-          git fetch --tags
-          latest_tag="$(git tag --list 'v*' --sort=-v:refname | head -n1)"
-          if [ -z "$latest_tag" ]; then
-            latest_tag="v0.0.0"
-          fi
-
-          version="${latest_tag#v}"
-          IFS='.' read -r major minor patch <<< "$version"
-
-          case "${{ inputs.bump }}" in
-            major)
-              major=$((major + 1))
-              minor=0
-              patch=0
-              ;;
-            minor)
-              minor=$((minor + 1))
-              patch=0
-              ;;
-            patch)
-              patch=$((patch + 1))
-              ;;
-            *)
-              echo "Invalid bump: ${{ inputs.bump }}"
-              exit 1
-              ;;
-          esac
-
-          next_tag="v${major}.${minor}.${patch}"
-          echo "next_tag=$next_tag" >> "$GITHUB_OUTPUT"
-          echo "Next tag: $next_tag"
-
-      - name: Create and push tag
-        run: |
-          git tag -a "${{ steps.bump.outputs.next_tag }}" -m "chore(release): ${{ steps.bump.outputs.next_tag }}"
-          git push origin "${{ steps.bump.outputs.next_tag }}"
+      - name: Bump and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          release_branches: main
+          default_bump: ${{ inputs.bump }}
+          tag_prefix: v
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.bump.outputs.next_tag }}
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
           generate_release_notes: true
