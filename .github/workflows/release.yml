@@ -46,6 +46,17 @@ jobs:
           default_bump: ${{ inputs.bump }}
           tag_prefix: v
 
+      - name: Sync .claude-plugin versions
+        env:
+          NEW_TAG: ${{ steps.tag_version.outputs.new_tag }}
+        run: |
+          NEW_VERSION="${NEW_TAG#v}"
+          jq --arg v "$NEW_VERSION" '.version = $v' .claude-plugin/plugin.json > /tmp/plugin.json && mv /tmp/plugin.json .claude-plugin/plugin.json
+          jq --arg v "$NEW_VERSION" '.version = $v | .plugins[0].version = $v' .claude-plugin/marketplace.json > /tmp/marketplace.json && mv /tmp/marketplace.json .claude-plugin/marketplace.json
+          git add .claude-plugin/plugin.json .claude-plugin/marketplace.json
+          git commit -m "chore(release): sync .claude-plugin versions to ${NEW_VERSION}" || true
+          git push
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
