@@ -9,11 +9,11 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 
-ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_MANIFEST = ROOT / "evals" / "benchmarks" / "manifest.json"
-BASE_CONTRACT = ROOT / "evals" / "contract.json"
-SYNTAX_VALIDATOR = ROOT / "scripts" / "validate" / "testing-snippets.sh"
-SEMANTIC_VALIDATOR = ROOT / "scripts" / "validate" / "testing-quality.py"
+ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_MANIFEST = ROOT / "tooling" / "evals" / "benchmarks" / "manifest.json"
+BASE_CONTRACT = ROOT / "tooling" / "evals" / "contract.json"
+SYNTAX_VALIDATOR = ROOT / "tooling" / "scripts" / "validate" / "testing-snippets.sh"
+SEMANTIC_VALIDATOR = ROOT / "tooling" / "scripts" / "validate" / "testing-quality.py"
 COMMAND_TIMEOUT_SECONDS = 30
 
 

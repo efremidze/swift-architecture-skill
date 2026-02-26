@@ -4,9 +4,9 @@ import subprocess
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[2]
-RUNNER = ROOT / "scripts" / "run" / "benchmarks.py"
-MANIFEST = ROOT / "evals" / "corpus" / "manifest.json"
+ROOT = Path(__file__).resolve().parents[3]
+RUNNER = ROOT / "tooling" / "scripts" / "run" / "benchmarks.py"
+MANIFEST = ROOT / "tooling" / "evals" / "corpus" / "manifest.json"
 TIMEOUT_SECONDS = 300
 
 

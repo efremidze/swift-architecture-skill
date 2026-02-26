@@ -8,9 +8,9 @@ Check whether the skill catches architecture/code smells and proposes concrete, 
 
 ## Layout
 
-- `evals/cases.json`: all eval cases in one file
-- `evals/rubric.md`: manual scoring rubric
-- `scripts/run/evals.sh`: runner
+- `tooling/evals/cases.json`: all eval cases in one file
+- `tooling/evals/rubric.md`: manual scoring rubric
+- `tooling/scripts/run/evals.sh`: runner
 
 ## Case Format (`cases.json`)
 
@@ -29,10 +29,10 @@ Each case includes:
 1. Prepare a run package (manual mode):
 
 ```bash
-./scripts/run/evals.sh
+./tooling/scripts/run/evals.sh
 ```
 
-This creates `evals/runs/<timestamp>/` with:
+This creates `tooling/evals/runs/<timestamp>/` with:
 
 - `packet.md` (all prompts)
 - `responses/<id>.md`
@@ -42,7 +42,7 @@ This creates `evals/runs/<timestamp>/` with:
 2. Optional: run with a command that reads stdin and writes stdout:
 
 ```bash
-./scripts/run/evals.sh --cmd "your-command-here"
+./tooling/scripts/run/evals.sh --cmd "your-command-here"
 ```
 
 The command is executed per case as:
@@ -54,7 +54,7 @@ bash -lc "$CMD" < prompt_text > responses/<id>.md
 3. Grade a completed run:
 
 ```bash
-./scripts/run/evals.sh --grade-only --run-dir evals/runs/<timestamp>
+./tooling/scripts/run/evals.sh --grade-only --run-dir tooling/evals/runs/<timestamp>
 ```
 
 ## Scoring Guidance

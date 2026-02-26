@@ -4,12 +4,12 @@ from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 REFERENCES_DIR = ROOT / "swift-architecture-skill" / "references"
 SKILL_PATH = ROOT / "swift-architecture-skill" / "SKILL.md"
 SELECTION_GUIDE_PATH = REFERENCES_DIR / "selection-guide.md"
 README_PATH = ROOT / "README.md"
-QUALITY_CONTRACT_PATH = ROOT / "evals" / "contract.json"
+QUALITY_CONTRACT_PATH = ROOT / "tooling" / "evals" / "contract.json"
 
 
 SELECTION_HEADER_TO_SLUG: Dict[str, str] = {

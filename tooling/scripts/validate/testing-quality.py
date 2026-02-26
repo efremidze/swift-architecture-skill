@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 
-ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_CONTRACT_PATH = ROOT / "evals" / "contract.json"
+ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_CONTRACT_PATH = ROOT / "tooling" / "evals" / "contract.json"
 
 
 def read_contract(contract_path: Path) -> Dict:
