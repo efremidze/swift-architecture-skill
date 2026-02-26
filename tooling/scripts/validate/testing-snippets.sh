@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../" && pwd)"
 PLAYBOOK_DIR="${1:-$ROOT_DIR/swift-architecture-skill/references}"
 
 if ! command -v swiftc >/dev/null 2>&1; then

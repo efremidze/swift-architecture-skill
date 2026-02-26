@@ -80,12 +80,12 @@ Use both automated and manual checks:
 
 ```bash
 python -m skills_ref.cli validate ./swift-architecture-skill
-./scripts/validate-testing-snippets.sh
-python3 ./scripts/validate-testing-quality.py
-./scripts/run-testing-benchmark-suite.py
-python3 ./scripts/validate-benchmark-coverage.py
-python3 ./scripts/run-realworld-corpus-eval.py
-python3 ./scripts/validate-architecture-consistency.py
+./tooling/scripts/validate/testing-snippets.sh
+python3 ./tooling/scripts/validate/testing-quality.py
+./tooling/scripts/run/benchmarks.py
+python3 ./tooling/scripts/validate/benchmark-coverage.py
+python3 ./tooling/scripts/run/corpus.py
+python3 ./tooling/scripts/validate/architecture.py
 ```
 
 2. Complete manual review:

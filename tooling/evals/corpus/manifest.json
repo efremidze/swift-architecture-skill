@@ -4,7 +4,7 @@
     "cases": [
         {
             "id": "tca-effect-cancellation-real-good",
-            "file": "quality/corpus/cases/tca-effect-cancellation-real-good.md",
+            "file": "tooling/evals/corpus/cases/tca-effect-cancellation-real-good.md",
             "expect_syntax": true,
             "expect_semantic": true,
             "expect_architecture": true,
@@ -21,7 +21,7 @@
         },
         {
             "id": "tca-effect-cancellation-isolation-real",
-            "file": "quality/corpus/cases/tca-effect-cancellation-isolation-real-good.md",
+            "file": "tooling/evals/corpus/cases/tca-effect-cancellation-isolation-real-good.md",
             "expect_syntax": true,
             "expect_semantic": false,
             "expect_architecture": true,
@@ -38,7 +38,7 @@
         },
         {
             "id": "rx-switchlatest-real-architecture",
-            "file": "quality/corpus/cases/rx-switchlatest-real-architecture.md",
+            "file": "tooling/evals/corpus/cases/rx-switchlatest-real-architecture.md",
             "expect_syntax": true,
             "expect_semantic": false,
             "expect_architecture": true,
@@ -55,13 +55,13 @@
         },
         {
             "id": "rx-blocking-real-weak",
-            "file": "quality/corpus/cases/rx-blocking-real-weak.md",
+            "file": "tooling/evals/corpus/cases/rx-blocking-real-weak.md",
             "expect_syntax": true,
             "expect_semantic": false
         },
         {
             "id": "swift-testing-clock-real-weak",
-            "file": "quality/corpus/cases/swift-testing-clock-real-weak.md",
+            "file": "tooling/evals/corpus/cases/swift-testing-clock-real-weak.md",
             "expect_syntax": true,
             "expect_semantic": false
         }

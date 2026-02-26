@@ -23,12 +23,12 @@ When editing playbooks in `swift-architecture-skill/references/`:
 
 This repository contains documentation and skill definitions rather than app code:
 - **Run automated validation**: `python -m skills_ref.cli validate ./swift-architecture-skill`
-- **Validate testing snippets**: `./scripts/validate-testing-snippets.sh`
-- **Validate testing quality contract**: `python3 ./scripts/validate-testing-quality.py`
-- **Run external benchmark suite**: `./scripts/run-testing-benchmark-suite.py`
-- **Validate benchmark architecture coverage**: `python3 ./scripts/validate-benchmark-coverage.py`
-- **Run real-world corpus eval**: `python3 ./scripts/run-realworld-corpus-eval.py`
-- **Validate architecture consistency**: `python3 ./scripts/validate-architecture-consistency.py`
+- **Validate testing snippets**: `./tooling/scripts/validate/testing-snippets.sh`
+- **Validate testing quality contract**: `python3 ./tooling/scripts/validate/testing-quality.py`
+- **Run external benchmark suite**: `./tooling/scripts/run/benchmarks.py`
+- **Validate benchmark architecture coverage**: `python3 ./tooling/scripts/validate/benchmark-coverage.py`
+- **Run real-world corpus eval**: `python3 ./tooling/scripts/run/corpus.py`
+- **Validate architecture consistency**: `python3 ./tooling/scripts/validate/architecture.py`
 - **Check markdown formatting**: Ensure all `.md` files are properly formatted
 - **Cross-reference consistency**: Ensure SKILL.md correctly references all playbooks
 

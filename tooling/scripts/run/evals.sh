@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CASES_FILE="$ROOT_DIR/.evals/cases.json"
-RUNS_DIR="$ROOT_DIR/.evals/runs"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+CASES_FILE="$ROOT_DIR/tooling/evals/cases.json"
+RUNS_DIR="$ROOT_DIR/tooling/evals/runs"
 RUN_DIR=""
 CMD=""
 GRADE_ONLY=0
@@ -11,8 +11,8 @@ GRADE_ONLY=0
 usage() {
   cat <<USAGE
 Usage:
-  ./scripts/run-skill-evals.sh [--cmd "<command>"] [--run-dir <path>]
-  ./scripts/run-skill-evals.sh --grade-only --run-dir <path>
+  ./tooling/scripts/run/evals.sh [--cmd "<command>"] [--run-dir <path>]
+  ./tooling/scripts/run/evals.sh --grade-only --run-dir <path>
 
 Options:
   --cmd         Command that reads prompt from stdin and writes response to stdout.
@@ -30,7 +30,7 @@ create_scorecard() {
   cat > "$file" <<SCORE
 # Scorecard: $case_id
 
-Use \`.evals/rubric.md\` for definitions.
+Use \`tooling/evals/rubric.md\` for definitions.
 
 - [ ] \`smell_detection\` (0/1)
 - [ ] \`architecture_fit\` (0/1)
@@ -144,7 +144,7 @@ fi
 
 run_cases_file="$RUN_DIR/cases.json"
 if [[ ! -f "$run_cases_file" ]]; then
-  echo "Run has no cases.json; using current .evals/cases.json for grading." >&2
+  echo "Run has no cases.json; using current tooling/evals/cases.json for grading." >&2
   run_cases_file="$CASES_FILE"
 fi
 
@@ -254,4 +254,4 @@ done < <(jq -c '.cases[]' "$run_cases_file")
 
 echo "Wrote: $summary_file"
 echo "Keyword pass: $pass_cases/$total_cases"
-echo "Use scorecards/ + .evals/rubric.md for final manual verdict."
+echo "Use scorecards/ + tooling/evals/rubric.md for final manual verdict."

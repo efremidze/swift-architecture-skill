@@ -34,7 +34,7 @@ jobs:
 
       - name: Validate Swift Testing Snippets
         run: |
-          ./scripts/validate-testing-snippets.sh
+          ./tooling/scripts/validate/testing-snippets.sh
 
   validate-testing-quality:
     runs-on: ubuntu-latest
@@ -47,7 +47,7 @@ jobs:
 
       - name: Validate Testing Quality Contract
         run: |
-          python3 ./scripts/validate-testing-quality.py
+          python3 ./tooling/scripts/validate/testing-quality.py
 
   validate-testing-benchmarks:
     runs-on: macos-latest
@@ -57,7 +57,7 @@ jobs:
 
       - name: Run Testing Benchmark Suite
         run: |
-          ./scripts/run-testing-benchmark-suite.py
+          ./tooling/scripts/run/benchmarks.py
 
   validate-benchmark-coverage:
     runs-on: ubuntu-latest
@@ -70,7 +70,7 @@ jobs:
 
       - name: Validate Benchmark Coverage
         run: |
-          python3 ./scripts/validate-benchmark-coverage.py
+          python3 ./tooling/scripts/validate/benchmark-coverage.py
 
   validate-realworld-corpus:
     runs-on: macos-latest
@@ -83,7 +83,7 @@ jobs:
 
       - name: Run Real-World Corpus Eval
         run: |
-          python3 ./scripts/run-realworld-corpus-eval.py
+          python3 ./tooling/scripts/run/corpus.py
 
   validate-architecture-consistency:
     runs-on: ubuntu-latest
@@ -96,4 +96,4 @@ jobs:
 
       - name: Validate Architecture Consistency
         run: |
-          python3 ./scripts/validate-architecture-consistency.py
+          python3 ./tooling/scripts/validate/architecture.py
