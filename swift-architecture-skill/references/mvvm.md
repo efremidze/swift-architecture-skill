@@ -222,6 +222,10 @@ SwiftUI view with `@Observable` ViewModel (iOS 17+):
 struct FeedView: View {
     @State private var viewModel: FeedViewModel
 
+    init(viewModel: FeedViewModel) {
+        _viewModel = State(wrappedValue: viewModel)
+    }
+
     var body: some View {
         List(viewModel.state.items, id: \.id) { item in
             Text(item.title)
@@ -236,6 +240,10 @@ SwiftUI view with `ObservableObject` ViewModel (iOS 16 and earlier):
 ```swift
 struct FeedView: View {
     @StateObject private var viewModel: FeedViewModel
+
+    init(viewModel: FeedViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
 
     var body: some View {
         List(viewModel.state.items, id: \.id) { item in

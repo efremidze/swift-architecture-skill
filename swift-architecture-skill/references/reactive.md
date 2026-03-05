@@ -66,14 +66,14 @@ import Combine
 import UIKit
 
 @MainActor
-final class SearchPresenter {
+final class SearchPresenter<S: Scheduler> where S.SchedulerTimeType == DispatchQueue.SchedulerTimeType {
     let state = CurrentValueSubject<SearchResultState, Never>(.loaded([]))
     private let query = PassthroughSubject<String, Never>()
     private var cancellables = Set<AnyCancellable>()
 
-    init(service: SearchService) {
+    init(service: SearchService, scheduler: S) {
         query
-            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+            .debounce(for: .milliseconds(300), scheduler: scheduler)
             .removeDuplicates()
             .map { value in
                 service.search(value)
@@ -88,11 +88,13 @@ final class SearchPresenter {
     func queryChanged(_ text: String) { query.send(text) }
 }
 
+// In production, pass DispatchQueue.main as the scheduler.
+
 final class SearchViewController: UIViewController, UISearchBarDelegate {
-    private let presenter: SearchPresenter
+    private let presenter: SearchPresenter<DispatchQueue>
     private var cancellables = Set<AnyCancellable>()
 
-    init(presenter: SearchPresenter) {
+    init(presenter: SearchPresenter<DispatchQueue>) {
         self.presenter = presenter
         super.init(nibName: nil, bundle: nil)
     }
