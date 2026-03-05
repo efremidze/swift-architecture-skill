@@ -24,6 +24,14 @@
     {
       "path": "swift-architecture-skill/references/reactive.md",
       "section_heading_regex": "^##\\s+Testing Strategy\\s*$"
+    },
+    {
+      "path": "swift-architecture-skill/references/mvp.md",
+      "section_heading_regex": "^##\\s+Testing Strategy\\s*$"
+    },
+    {
+      "path": "swift-architecture-skill/references/coordinator.md",
+      "section_heading_regex": "^##\\s+Testing Strategy\\s*$"
     }
   ],
   "required_any_groups": [

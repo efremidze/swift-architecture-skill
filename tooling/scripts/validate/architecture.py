@@ -19,6 +19,8 @@ SELECTION_HEADER_TO_SLUG: Dict[str, str] = {
     "Clean": "clean-architecture",
     "VIPER": "viper",
     "Reactive": "reactive",
+    "MVP": "mvp",
+    "Coordinator": "coordinator",
 }
 
 README_NAME_TO_SLUG: Dict[str, str] = {
@@ -28,6 +30,8 @@ README_NAME_TO_SLUG: Dict[str, str] = {
     "Clean Architecture": "clean-architecture",
     "VIPER": "viper",
     "Reactive": "reactive",
+    "MVP": "mvp",
+    "Coordinator": "coordinator",
 }
 
 

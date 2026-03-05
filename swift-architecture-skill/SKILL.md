@@ -36,6 +36,8 @@ Architecture reference mapping:
 - Clean Architecture → `references/clean-architecture.md`
 - VIPER → `references/viper.md`
 - Reactive → `references/reactive.md`
+- MVP → `references/mvp.md`
+- Coordinator → `references/coordinator.md`
 
 ### Step 3: Analyze Existing Codebase (When Applicable)
 
