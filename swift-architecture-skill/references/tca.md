@@ -329,7 +329,6 @@ final class CounterFeatureTests: XCTestCase {
     let store = TestStore(initialState: CounterFeature.State()) {
       CounterFeature()
     } withDependencies: {
-      $0.continuousClock = clock
       $0.numberFact.fetch = { _ in
         let value = await sequence.next()
         try await clock.sleep(for: .seconds(1))

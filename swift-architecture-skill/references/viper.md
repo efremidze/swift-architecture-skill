@@ -327,53 +327,7 @@ struct AppRootView: View {
 
 ## Concurrency and Cancellation
 
-When Presenter coordinates async work, track active tasks and cancel stale requests.
-
-```swift
-@MainActor
-final class ProfilePresenter {
-    weak var view: ProfileView?
-    private let interactor: ProfileInteracting
-    private let router: ProfileRouting
-    private var loadTask: Task<Void, Never>?
-    private var latestLoadRequestID: UUID?
-
-    init(interactor: ProfileInteracting, router: ProfileRouting) {
-        self.interactor = interactor
-        self.router = router
-    }
-
-    func load() {
-        let requestID = UUID()
-        latestLoadRequestID = requestID
-        loadTask?.cancel()
-        view?.showLoading(true)
-        loadTask = Task {
-            do {
-                let user = try await interactor.loadUser()
-                try Task.checkCancellation()
-                guard latestLoadRequestID == requestID else { return }
-                view?.show(profile: ProfileViewData(user: user))
-            } catch is CancellationError {
-                // Cancelled by a newer load request.
-            } catch {
-                guard latestLoadRequestID == requestID else { return }
-                view?.showError(message: "Failed to load profile. Please try again.")
-            }
-            guard latestLoadRequestID == requestID else { return }
-            view?.showLoading(false)
-        }
-    }
-
-    func didTapSettings() {
-        router.showSettings()
-    }
-
-    deinit {
-        loadTask?.cancel()
-    }
-}
-```
+When Presenter coordinates async work, track active tasks and cancel stale requests. The `ProfilePresenter` shown in the Wiring Pattern section above already implements the full cancellation strategy — it holds a `loadTask: Task<Void, Never>?`, a `latestLoadRequestID: UUID?`, and handles `CancellationError` explicitly to guard against stale UI updates.
 
 Rules:
 - cancel in-flight tasks before issuing new requests
