@@ -2,9 +2,10 @@
 
 ## Testing Strategy
 
-Test coordinator routing by inspecting navigation state changes directly.
-Use a spy router or observe the coordinator's path/sheet properties.
-Cover destination appending, popping, sheet presentation, and cancellation-safe state on unknown inputs.
+Test coordinator routing by inspecting navigation state changes directly using a
+MockCoordinatorDelegate stub to capture callbacks without sleeps or real UIKit dependencies.
+Cover success destination appending, failure on empty-path pops, and cancellation-safe
+pop operations that remove the last route. All tests are deterministic and synchronous.
 
 ```swift
 import XCTest
@@ -19,6 +20,10 @@ enum AppSheet: Identifiable {
     var id: String { "\(self)" }
 }
 
+protocol CoordinatorDelegate: AnyObject {
+    func coordinatorDidNavigate(to destination: AppDestination)
+}
+
 @MainActor
 protocol Coordinator: AnyObject {
     var childCoordinators: [any Coordinator] { get set }
@@ -30,11 +35,14 @@ final class AppCoordinator: Coordinator {
     var childCoordinators: [any Coordinator] = []
     var path: [AppDestination] = []
     var sheet: AppSheet?
+    weak var delegate: CoordinatorDelegate?
 
     func start() {}
 
     func showProfile(userID: UUID) {
-        path.append(.profile(userID))
+        let destination = AppDestination.profile(userID)
+        path.append(destination)
+        delegate?.coordinatorDidNavigate(to: destination)
     }
 
     func pop() {
@@ -52,17 +60,37 @@ final class AppCoordinator: Coordinator {
 }
 
 @MainActor
+final class MockCoordinatorDelegate: CoordinatorDelegate {
+    var navigatedDestinations: [AppDestination] = []
+    func coordinatorDidNavigate(to destination: AppDestination) {
+        navigatedDestinations.append(destination)
+    }
+}
+
+@MainActor
 final class AppCoordinatorTests: XCTestCase {
-    func test_showProfile_appendsDestination() {
+    func test_showProfile_success_appendsDestinationAndNotifiesDelegate() {
         let coordinator = AppCoordinator()
+        let mock = MockCoordinatorDelegate()
+        coordinator.delegate = mock
         let id = UUID()
 
         coordinator.showProfile(userID: id)
 
         XCTAssertEqual(coordinator.path, [.profile(id)])
+        XCTAssertEqual(mock.navigatedDestinations, [.profile(id)])
     }
 
-    func test_pop_removesLastDestination() {
+    func test_pop_onEmptyPath_failure_doesNotModifyPath() {
+        let coordinator = AppCoordinator()
+        XCTAssertTrue(coordinator.path.isEmpty)
+
+        coordinator.pop()
+
+        XCTAssertTrue(coordinator.path.isEmpty)
+    }
+
+    func test_cancelNavigation_pop_removesLastDestination() {
         let coordinator = AppCoordinator()
         let firstID = UUID()
         let secondID = UUID()
@@ -92,15 +120,6 @@ final class AppCoordinatorTests: XCTestCase {
         coordinator.dismissSheet()
 
         XCTAssertNil(coordinator.sheet)
-    }
-
-    func test_pop_onEmptyPath_doesNotCrash() {
-        let coordinator = AppCoordinator()
-        XCTAssertTrue(coordinator.path.isEmpty)
-
-        coordinator.pop()
-
-        XCTAssertTrue(coordinator.path.isEmpty)
     }
 }
 ```
