@@ -14,14 +14,14 @@ This Agent Skill helps you design and implement the right architecture pattern f
 
 ## Supported Architectures
 
+- **MVP** - Model-View-Presenter pattern
 - **MVVM** - Model-View-ViewModel pattern
 - **MVI** - Model-View-Intent pattern
 - **TCA** - The Composable Architecture
 - **Clean Architecture** - Layered architecture with dependency inversion
 - **VIPER** - View-Interactor-Presenter-Entity-Router pattern
-- **Reactive** - Combine/RxSwift patterns
-- **MVP** - Model-View-Presenter pattern
 - **Coordinator** - Navigation flow decoupling pattern
+- **Reactive** - Combine/RxSwift patterns
 
 ## Quick Start
 
