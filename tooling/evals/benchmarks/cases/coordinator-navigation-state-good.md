@@ -24,7 +24,7 @@ protocol UserRepository {
 
 struct StubUserRepository: UserRepository {
     func fetchCurrentUser() async throws -> User {
-        User(id: UUID(), name: "Stub")
+        User(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!, name: "Stub")
     }
 }
 
@@ -151,7 +151,7 @@ final class AppCoordinatorTests: XCTestCase {
         XCTAssertTrue(coordinator.path.isEmpty)
     }
 
-    func test_pop_cancellation_onEmptyPath_doesNotCrash() {
+    func test_pop_onEmptyPath_doesNotCrash() {
         let coordinator = makeCoordinator()
         XCTAssertTrue(coordinator.path.isEmpty)
 
@@ -160,7 +160,7 @@ final class AppCoordinatorTests: XCTestCase {
         XCTAssertTrue(coordinator.path.isEmpty)
     }
 
-    func test_addChild_retainsChildCoordinatorUntilRemoved() {
+    func test_cancelChildFlow_removesChildCoordinator() {
         let coordinator = makeCoordinator()
         let child = ChildFlowCoordinator()
 
