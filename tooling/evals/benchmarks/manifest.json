@@ -296,7 +296,7 @@
         },
         {
           "label": "Uses AppCoordinator in tests",
-          "regex": "AppCoordinator\\(\\)"
+          "regex": "AppCoordinator\\("
         }
       ]
     },
@@ -314,7 +314,7 @@
         },
         {
           "label": "Uses AppCoordinator in tests",
-          "regex": "AppCoordinator\\(\\)"
+          "regex": "AppCoordinator\\("
         }
       ]
     },
