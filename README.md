@@ -20,6 +20,8 @@ This Agent Skill helps you design and implement the right architecture pattern f
 - **Clean Architecture** - Layered architecture with dependency inversion
 - **VIPER** - View-Interactor-Presenter-Entity-Router pattern
 - **Reactive** - Combine/RxSwift patterns
+- **MVP** - Model-View-Presenter pattern
+- **Coordinator** - Navigation flow decoupling pattern
 
 ## Quick Start
 
@@ -103,6 +105,8 @@ swift-architecture-skill/
     clean-architecture.md     # Clean Architecture playbook
     viper.md                  # VIPER playbook
     reactive.md               # Reactive (Combine/RxSwift) playbook
+    mvp.md                    # MVP playbook
+    coordinator.md            # Coordinator pattern playbook
 ```
 
 ## Other Skills
