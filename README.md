@@ -1,60 +1,47 @@
 # Swift Architecture Skill
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![GitHub Release](https://img.shields.io/github/v/release/efremidze/swift-architecture-skill)](https://github.com/efremidze/swift-architecture-skill/releases)
 
-An [Agent Skill](https://github.com/agentskills/agentskills) that provides architecture guidance for Swift, SwiftUI, and UIKit iOS development.
+Architecture guidance for AI coding tools — choose and apply the right Swift architecture for SwiftUI/UIKit features with concrete patterns, anti-pattern fixes, testing strategy, and review checklists.
 
-## Overview
+Supports the [Agent Skills open format](https://agentskills.io/home).
 
-This Agent Skill helps you design and implement the right architecture pattern for your iOS project.
+## Features
 
-- **Architecture selection**: Describe your feature or module and the skill picks the right pattern based on your UI stack, state complexity, and existing conventions. Name a pattern explicitly and it validates the fit before you commit.
+- **Architecture selection**: Describe your feature or module and the skill selects the right pattern based on UI stack, state complexity, and existing conventions. If you name a pattern, it validates fit before you commit.
+- **Dedicated playbooks**: Each architecture has its own reference with code patterns, anti-pattern fixes, testing strategy, and a PR review checklist. Guidance stays scoped to your task.
+- **SwiftUI and UIKit**: Every playbook covers both stacks and calls out where they differ, using modern async/await and actor-based concurrency patterns.
 
-- **Dedicated playbooks**: Each architecture has its own reference covering code patterns, anti-patterns with fixes, testing strategies, and a PR review checklist — scoped to your task, not a full reference dump.
-
-- **SwiftUI and UIKit**: Every playbook addresses both stacks with concrete guidance on where they diverge, using modern async/await and actors throughout.
+The skill reads your task context, routes through `selection-guide.md`, and loads the matching playbook.
 
 ## Supported Architectures
 
-- **MVP** - Model-View-Presenter pattern
-- **MVVM** - Model-View-ViewModel pattern
-- **MVI** - Model-View-Intent pattern
-- **TCA** - The Composable Architecture
-- **Clean Architecture** - Layered architecture with dependency inversion
-- **VIPER** - View-Interactor-Presenter-Entity-Router pattern
-- **Coordinator** - Navigation flow decoupling pattern
-- **Reactive** - Combine/RxSwift patterns
+- **MVP** - Model-View-Presenter pattern ([playbook](swift-architecture-skill/references/mvp.md))
+- **MVVM** - Model-View-ViewModel pattern ([playbook](swift-architecture-skill/references/mvvm.md))
+- **MVI** - Model-View-Intent pattern ([playbook](swift-architecture-skill/references/mvi.md))
+- **TCA** - The Composable Architecture ([playbook](swift-architecture-skill/references/tca.md))
+- **Clean Architecture** - Layered architecture with dependency inversion ([playbook](swift-architecture-skill/references/clean-architecture.md))
+- **VIPER** - View-Interactor-Presenter-Entity-Router pattern ([playbook](swift-architecture-skill/references/viper.md))
+- **Coordinator** - Navigation flow decoupling pattern ([playbook](swift-architecture-skill/references/coordinator.md))
+- **Reactive** - Combine/RxSwift patterns ([playbook](swift-architecture-skill/references/reactive.md))
+
+When no architecture is specified, the skill routes through [`references/selection-guide.md`](swift-architecture-skill/references/selection-guide.md) to infer the best fit based on feature type, UI stack, and team constraints.
 
 ## Quick Start
 
-Install with a single command:
+### Option A: `skills.sh` (Recommended)
 
 ```bash
 npx skills add https://github.com/efremidze/swift-architecture-skill --skill swift-architecture-skill
 ```
 
-Then use it in your AI assistant:
-> Review my SwiftUI view for state management issues
+Then ask your agent:
 
-[View on skills.sh →](https://skills.sh/efremidze/swift-architecture-skill/swift-architecture-skill)
+> Use `swift-architecture-skill` to recommend and scaffold architecture for this feature.
 
-## How to Install
-
-### Option A: Using `skills.sh` (recommended)
-
-Install this skill with:
-
-```bash
-npx skills add https://github.com/efremidze/swift-architecture-skill --skill swift-architecture-skill
-```
-
-Then use it in your agent:
-
-```bash
-Use `swift-architecture-skill` to recommend the best architecture for this feature.
-```
+[View this skill on skills.sh](https://skills.sh/efremidze/swift-architecture-skill/swift-architecture-skill)
 
 ### Option B: Claude Code Plugin
-
-For personal usage in Claude Code:
 
 1. Add the marketplace:
 
@@ -68,7 +55,7 @@ For personal usage in Claude Code:
 /plugin install swift-architecture-skill@swift-architecture-skill
 ```
 
-Or configure for your team in `.claude/settings.json`:
+For team setup, add this to `.claude/settings.json`:
 
 ```json
 {
@@ -89,35 +76,59 @@ Or configure for your team in `.claude/settings.json`:
 ### Option C: Manual Install
 
 1. Clone this repository.
-2. Install or symlink `swift-architecture-skill/` to your tool's skills directory.
-3. Use your AI tool and ask it to use `swift-architecture-skill`.
+2. Copy or symlink `swift-architecture-skill/` into your tool's skills directory.
+3. Ask your AI assistant to use `swift-architecture-skill` for architecture tasks.
+
+## Example Prompts
+
+```text
+I'm building a SwiftUI feed with pagination, pull-to-refresh, and live updates.
+Which architecture should I use and why?
+```
+
+```text
+Use swift-architecture-skill to review this ViewModel for MVVM violations
+and suggest concrete fixes.
+```
+
+```text
+Help me migrate this 500-line UIViewController to Clean Architecture
+incrementally, with tests at each step.
+```
 
 ## Skill Structure
 
-```bash
+```text
 swift-architecture-skill/
-  SKILL.md                    # Skill definition and workflow
+  SKILL.md                       # Routing logic and output requirements
+  agents/
+    openai.yaml                  # Interface metadata for skill-capable tools
   references/
-    selection-guide.md        # Architecture decision framework
-    mvvm.md                   # MVVM pattern playbook
-    mvi.md                    # MVI pattern playbook
-    tca.md                    # TCA playbook
-    clean-architecture.md     # Clean Architecture playbook
-    viper.md                  # VIPER playbook
-    reactive.md               # Reactive (Combine/RxSwift) playbook
-    mvp.md                    # MVP playbook
-    coordinator.md            # Coordinator pattern playbook
+    selection-guide.md           # Decision framework across architectures
+    mvp.md                       # MVP playbook
+    mvvm.md                      # MVVM playbook
+    mvi.md                       # MVI playbook
+    tca.md                       # TCA playbook
+    clean-architecture.md        # Clean Architecture playbook
+    viper.md                     # VIPER playbook
+    coordinator.md               # Coordinator playbook
+    reactive.md                  # Reactive (Combine/RxSwift) playbook
 ```
 
-## Other Skills
+Each playbook follows a consistent contract:
+- overview and when to use it
+- core concepts and implementation patterns
+- anti-patterns with direct fixes
+- testing strategy
+- PR review checklist
+
+## Related Skills
 
 - [swift-patterns-skill](https://github.com/efremidze/swift-patterns-skill)
 
 ## Contributing
 
-Contributions are welcome! This repository follows the [Agent Skills open format](https://agentskills.io/home), which has specific structural requirements.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on improving the skill content and reference files.
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for structure and quality requirements.
 
 ## License
 
