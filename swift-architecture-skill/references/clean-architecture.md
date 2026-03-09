@@ -241,6 +241,7 @@ Rules:
 - avoid network in unit tests
 - assert business behavior at use-case boundary
 - keep async tests deterministic using controlled stubs
+- test cancellation propagation for long-running use cases
 
 ```swift
 struct StubUserRepository: UserRepository {
@@ -268,6 +269,32 @@ final class LoadUserTests: XCTestCase {
         } catch {
             XCTAssertTrue(error is TestError)
         }
+    }
+
+    func test_execute_cancellationPropagates() async {
+        let sut = LoadUser(repository: BlockingUserRepository())
+        // Deterministic because this test class is @MainActor:
+        // Task { ... } inherits main-actor isolation and does not start executing
+        // until the main actor yields at await task.value, so cancellation is
+        // observed immediately. Without @MainActor this pattern is racy.
+        let task = Task { try await sut.execute(id: UUID()) }
+        task.cancel()
+
+        do {
+            _ = try await task.value
+            XCTFail("Expected cancellation")
+        } catch is CancellationError {
+            // expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+}
+
+private actor BlockingUserRepository: UserRepository {
+    func fetch(id: UUID) async throws -> User {
+        try await Task.sleep(for: .seconds(60))
+        return User(id: id, name: "")
     }
 }
 

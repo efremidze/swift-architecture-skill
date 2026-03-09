@@ -25,3 +25,75 @@ jobs:
       - name: Validate Skill
         run: |
           python -m skills_ref.cli validate ./swift-architecture-skill
+
+  validate-testing-snippets:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate Swift Testing Snippets
+        run: |
+          ./tooling/scripts/validate/testing-snippets.sh
+
+  validate-testing-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Validate Testing Quality Contract
+        run: |
+          python3 ./tooling/scripts/validate/testing-quality.py
+
+  validate-testing-benchmarks:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Run Testing Benchmark Suite
+        run: |
+          ./tooling/scripts/run/benchmarks.py
+
+  validate-benchmark-coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Validate Benchmark Coverage
+        run: |
+          python3 ./tooling/scripts/validate/benchmark-coverage.py
+
+  validate-realworld-corpus:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Run Real-World Corpus Eval
+        run: |
+          python3 ./tooling/scripts/run/corpus.py
+
+  validate-architecture-consistency:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Validate Architecture Consistency
+        run: |
+          python3 ./tooling/scripts/validate/architecture.py

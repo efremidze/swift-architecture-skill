@@ -72,14 +72,27 @@ Content expectations:
 - Effects handle their own errors and map to explicit failure actions
 - Comments only for non-obvious architectural decisions
 
-## Validation Checklist (Manual)
+## Validation Checklist
 
-There are no automated tests in this repository. Validate changes by review:
+Use both automated and manual checks:
 
-1. Markdown formatting is clean and readable
-2. Swift code samples are syntactically valid
-3. Cross-file references are correct (`SKILL.md` and `selection-guide.md` stay in sync)
-4. New guidance is specific enough for an agent to apply directly
+1. Run automated validators:
+
+```bash
+python -m skills_ref.cli validate ./swift-architecture-skill
+./tooling/scripts/validate/testing-snippets.sh
+python3 ./tooling/scripts/validate/testing-quality.py
+./tooling/scripts/run/benchmarks.py
+python3 ./tooling/scripts/validate/benchmark-coverage.py
+python3 ./tooling/scripts/run/corpus.py
+python3 ./tooling/scripts/validate/architecture.py
+```
+
+2. Complete manual review:
+
+   1. Markdown formatting is clean and readable
+   2. Cross-file references are correct (`SKILL.md` and `selection-guide.md` stay in sync)
+   3. New guidance is specific enough for an agent to apply directly
 
 ## Useful Commands
 
@@ -88,6 +101,8 @@ find . -name "*.md"
 grep -r "pattern" swift-architecture-skill/references/
 wc -l swift-architecture-skill/references/*.md
 ```
+
+For automated validation commands, use the canonical list under `Validation Checklist`.
 
 ## Pull Request Checklist
 

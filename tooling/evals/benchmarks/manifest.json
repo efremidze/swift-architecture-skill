@@ -1,0 +1,293 @@
+{
+  "version": 1,
+  "default_section_heading_regex": "^##\\s+Testing Strategy\\s*$",
+  "cases": [
+    {
+      "id": "tca-official-style-good",
+      "file": "tooling/evals/benchmarks/cases/tca-official-style-good.md",
+      "expect_syntax": true,
+      "expect_semantic": true
+    },
+    {
+      "id": "reactive-switchtolatest-good",
+      "file": "tooling/evals/benchmarks/cases/reactive-switchtolatest-good.md",
+      "expect_syntax": true,
+      "expect_semantic": true
+    },
+    {
+      "id": "xctest-async-good",
+      "file": "tooling/evals/benchmarks/cases/xctest-async-good.md",
+      "expect_syntax": true,
+      "expect_semantic": true
+    },
+    {
+      "id": "tca-cancel-id-good",
+      "architecture": "tca",
+      "file": "tooling/evals/benchmarks/cases/tca-cancel-id-good.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": true,
+      "architecture_assertions": [
+        {
+          "label": "Uses TCA cancellable with explicit CancelID",
+          "regex": "\\.cancellable\\(id:\\s*CancelID(\\.[A-Za-z0-9_]+|\\(\\)),\\s*cancelInFlight:\\s*true\\)"
+        },
+        {
+          "label": "Has cancellation-focused test",
+          "regex": "(?m)func\\s+test\\w*cancel\\w+"
+        }
+      ]
+    },
+    {
+      "id": "tca-missing-cancel-id-should-fail-architecture",
+      "architecture": "tca",
+      "file": "tooling/evals/benchmarks/cases/tca-missing-cancel-id-should-fail-architecture.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": false,
+      "architecture_assertions": [
+        {
+          "label": "Uses TCA cancellable with explicit CancelID",
+          "regex": "\\.cancellable\\(id:\\s*CancelID(\\.[A-Za-z0-9_]+|\\(\\)),\\s*cancelInFlight:\\s*true\\)"
+        },
+        {
+          "label": "Has cancellation-focused test",
+          "regex": "(?m)func\\s+test\\w*cancel\\w+"
+        }
+      ]
+    },
+    {
+      "id": "mvvm-stale-overwrite-good",
+      "architecture": "mvvm",
+      "file": "tooling/evals/benchmarks/cases/mvvm-stale-overwrite-good.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": true,
+      "architecture_assertions": [
+        {
+          "label": "Triggers two sequential loads for stale overwrite scenario",
+          "regex": "sut\\.load\\(\\)\\s*// request A.*sut\\.load\\(\\)\\s*// request B",
+          "dotall": true
+        },
+        {
+          "label": "Asserts latest result wins",
+          "regex": "XCTAssertEqual\\(sut\\.state\\.items\\.map\\(\\\\\\.title\\),\\s*\\[\\\"latest\\\"\\]\\)"
+        },
+        {
+          "label": "Has cancellation or stale-focused test",
+          "regex": "(?m)func\\s+test\\w*(cancel|stale)\\w+"
+        }
+      ]
+    },
+    {
+      "id": "mvvm-missing-stale-overwrite-should-fail-architecture",
+      "architecture": "mvvm",
+      "file": "tooling/evals/benchmarks/cases/mvvm-missing-stale-overwrite-should-fail-architecture.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": false,
+      "architecture_assertions": [
+        {
+          "label": "Triggers two sequential loads for stale overwrite scenario",
+          "regex": "sut\\.load\\(\\)\\s*// request A.*sut\\.load\\(\\)\\s*// request B",
+          "dotall": true
+        },
+        {
+          "label": "Asserts latest result wins",
+          "regex": "XCTAssertEqual\\(sut\\.state\\.items\\.map\\(\\\\\\.title\\),\\s*\\[\\\"latest\\\"\\]\\)"
+        },
+        {
+          "label": "Has cancellation or stale-focused test",
+          "regex": "(?m)func\\s+test\\w*(cancel|stale)\\w+"
+        }
+      ]
+    },
+    {
+      "id": "mvi-request-id-good",
+      "architecture": "mvi",
+      "file": "tooling/evals/benchmarks/cases/mvi-request-id-good.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": true,
+      "architecture_assertions": [
+        {
+          "label": "Guards reducer responses by latest request ID",
+          "regex": "guard\\s+requestID\\s*==\\s*state\\.latestRequestID\\s+else\\s*\\{\\s*return\\s*\\}"
+        },
+        {
+          "label": "Tracks latestRequestID in state",
+          "regex": "latestRequestID"
+        }
+      ]
+    },
+    {
+      "id": "mvi-missing-request-id-should-fail-architecture",
+      "architecture": "mvi",
+      "file": "tooling/evals/benchmarks/cases/mvi-missing-request-id-should-fail-architecture.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": false,
+      "architecture_assertions": [
+        {
+          "label": "Guards reducer responses by latest request ID",
+          "regex": "guard\\s+requestID\\s*==\\s*state\\.latestRequestID\\s+else\\s*\\{\\s*return\\s*\\}"
+        },
+        {
+          "label": "Tracks latestRequestID in state",
+          "regex": "latestRequestID"
+        }
+      ]
+    },
+    {
+      "id": "clean-usecase-boundary-good",
+      "architecture": "clean-architecture",
+      "file": "tooling/evals/benchmarks/cases/clean-usecase-boundary-good.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": true,
+      "architecture_assertions": [
+        {
+          "label": "Tests use case boundary instead of data layer directly",
+          "regex": "LoadUser\\(repository:"
+        },
+        {
+          "label": "Uses repository protocol stub",
+          "regex": "struct\\s+StubUserRepository\\s*:\\s*UserRepository"
+        }
+      ]
+    },
+    {
+      "id": "clean-missing-usecase-boundary-should-fail-architecture",
+      "architecture": "clean-architecture",
+      "file": "tooling/evals/benchmarks/cases/clean-missing-usecase-boundary-should-fail-architecture.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": false,
+      "architecture_assertions": [
+        {
+          "label": "Tests use case boundary instead of data layer directly",
+          "regex": "LoadUser\\(repository:"
+        },
+        {
+          "label": "Uses repository protocol stub",
+          "regex": "struct\\s+StubUserRepository\\s*:\\s*UserRepository"
+        }
+      ]
+    },
+    {
+      "id": "viper-presenter-wiring-good",
+      "architecture": "viper",
+      "file": "tooling/evals/benchmarks/cases/viper-presenter-wiring-good.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": true,
+      "architecture_assertions": [
+        {
+          "label": "Tests presenter with mocked collaborators",
+          "regex": "ProfilePresenter\\("
+        },
+        {
+          "label": "Binds presenter view in test",
+          "regex": "presenter\\.view\\s*=\\s*view"
+        }
+      ]
+    },
+    {
+      "id": "viper-missing-presenter-wiring-should-fail-architecture",
+      "architecture": "viper",
+      "file": "tooling/evals/benchmarks/cases/viper-missing-presenter-wiring-should-fail-architecture.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": false,
+      "architecture_assertions": [
+        {
+          "label": "Tests presenter with mocked collaborators",
+          "regex": "ProfilePresenter\\("
+        },
+        {
+          "label": "Binds presenter view in test",
+          "regex": "presenter\\.view\\s*=\\s*view"
+        }
+      ]
+    },
+    {
+      "id": "reactive-switchlatest-architecture-good",
+      "architecture": "reactive",
+      "file": "tooling/evals/benchmarks/cases/reactive-switchlatest-architecture-good.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": true,
+      "architecture_assertions": [
+        {
+          "label": "Uses deterministic reactive scheduler",
+          "regex": "DispatchQueue\\.test"
+        },
+        {
+          "label": "Uses switchToLatest to prevent stale overwrite",
+          "regex": "\\.switchToLatest\\(\\)"
+        }
+      ]
+    },
+    {
+      "id": "reactive-missing-switchlatest-should-fail-architecture",
+      "architecture": "reactive",
+      "file": "tooling/evals/benchmarks/cases/reactive-missing-switchlatest-should-fail-architecture.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": false,
+      "architecture_assertions": [
+        {
+          "label": "Uses deterministic reactive scheduler",
+          "regex": "DispatchQueue\\.test"
+        },
+        {
+          "label": "Uses switchToLatest to prevent stale overwrite",
+          "regex": "\\.switchToLatest\\(\\)"
+        }
+      ]
+    },
+    {
+      "id": "missing-failure-should-fail",
+      "file": "tooling/evals/benchmarks/cases/missing-failure-should-fail.md",
+      "expect_syntax": true,
+      "expect_semantic": false
+    },
+    {
+      "id": "missing-cancellation-should-fail",
+      "file": "tooling/evals/benchmarks/cases/missing-cancellation-should-fail.md",
+      "expect_syntax": true,
+      "expect_semantic": false
+    },
+    {
+      "id": "missing-dependency-control-should-fail",
+      "file": "tooling/evals/benchmarks/cases/missing-dependency-control-should-fail.md",
+      "expect_syntax": true,
+      "expect_semantic": false
+    },
+    {
+      "id": "nondeterministic-sleep-should-fail",
+      "file": "tooling/evals/benchmarks/cases/nondeterministic-sleep-should-fail.md",
+      "expect_syntax": true,
+      "expect_semantic": false
+    },
+    {
+      "id": "too-few-tests-should-fail",
+      "file": "tooling/evals/benchmarks/cases/too-few-tests-should-fail.md",
+      "expect_syntax": true,
+      "expect_semantic": false
+    },
+    {
+      "id": "no-swift-snippet-should-fail",
+      "file": "tooling/evals/benchmarks/cases/no-swift-snippet-should-fail.md",
+      "expect_syntax": false,
+      "expect_semantic": false
+    },
+    {
+      "id": "syntax-broken-should-fail-syntax-only",
+      "file": "tooling/evals/benchmarks/cases/syntax-broken-should-fail-syntax-only.md",
+      "expect_syntax": false,
+      "expect_semantic": true,
+      "description": "Intentional mismatch: semantic checks operate on testing-strategy text patterns and can still pass even when Swift syntax parsing fails."
+    }
+  ]
+}

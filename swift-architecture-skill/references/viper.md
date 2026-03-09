@@ -37,7 +37,7 @@ Keep one VIPER module per feature to prevent cross-feature leakage.
 - Render data provided by Presenter.
 - Forward user inputs (`didTap...`, `didAppear`, text changes).
 - Avoid direct service/repository access.
-- In SwiftUI, use an adapter (`ObservableObject`) that forwards to Presenter.
+- In SwiftUI, use an adapter (`@Observable` on iOS 17+ or `ObservableObject` when Combine/UIKit interop is needed) that forwards to Presenter.
 
 ### Presenter
 
@@ -62,6 +62,27 @@ Keep one VIPER module per feature to prevent cross-feature leakage.
 
 - Represent domain data and business invariants.
 - Avoid UI and framework coupling where possible.
+- Keep display formatting out of `Entity`; Presenter maps entity -> display model.
+
+```swift
+struct User: Equatable {
+    let id: UUID
+    let name: String
+    let isPremium: Bool
+}
+
+struct ProfileViewData: Equatable {
+    let displayName: String
+    let badgeText: String?
+}
+
+extension ProfileViewData {
+    init(user: User) {
+        self.displayName = user.name
+        self.badgeText = user.isPremium ? "Premium" : nil
+    }
+}
+```
 
 ## Wiring Pattern
 
@@ -70,7 +91,9 @@ Use boundary protocols and directional references.
 ```swift
 @MainActor
 protocol ProfileView: AnyObject {
-    func show(name: String)
+    func showLoading(_ isLoading: Bool)
+    func show(profile: ProfileViewData)
+    func showError(message: String)
 }
 
 protocol ProfileInteracting {
@@ -86,23 +109,43 @@ final class ProfilePresenter {
     weak var view: ProfileView?
     private let interactor: ProfileInteracting
     private let router: ProfileRouting
+    private var loadTask: Task<Void, Never>?
+    private var latestLoadRequestID: UUID?
 
     init(interactor: ProfileInteracting, router: ProfileRouting) {
         self.interactor = interactor
         self.router = router
     }
 
-    func load() async {
-        do {
-            let user = try await interactor.loadUser()
-            view?.show(name: user.name)
-        } catch {
-            view?.show(name: "")
+    func load() {
+        let requestID = UUID()
+        latestLoadRequestID = requestID
+        loadTask?.cancel()
+        view?.showLoading(true)
+
+        loadTask = Task {
+            do {
+                let user = try await interactor.loadUser()
+                try Task.checkCancellation()
+                guard latestLoadRequestID == requestID else { return }
+                view?.show(profile: ProfileViewData(user: user))
+            } catch is CancellationError {
+                // Cancelled by a newer load request.
+            } catch {
+                guard latestLoadRequestID == requestID else { return }
+                view?.showError(message: "Failed to load profile. Please try again.")
+            }
+            guard latestLoadRequestID == requestID else { return }
+            view?.showLoading(false)
         }
     }
 
     func didTapSettings() {
         router.showSettings()
+    }
+
+    deinit {
+        loadTask?.cancel()
     }
 }
 ```
@@ -144,6 +187,7 @@ SwiftUI integration option:
 - keep Presenter/Interactor/Router unchanged
 - wrap SwiftUI feature view in `UIHostingController`
 - bridge Presenter output through a small adapter object
+- for pure SwiftUI apps, inject a SwiftUI router object instead of requiring `UINavigationController`
 
 ```swift
 import SwiftUI
@@ -152,17 +196,28 @@ import UIKit
 @MainActor
 final class ProfileViewAdapter: ObservableObject, ProfileView {
     @Published private(set) var name = ""
+    @Published private(set) var isLoading = false
+    @Published private(set) var errorMessage: String?
     private let presenter: ProfilePresenter
 
     init(presenter: ProfilePresenter) {
         self.presenter = presenter
     }
 
-    func show(name: String) {
-        self.name = name
+    func showLoading(_ isLoading: Bool) {
+        self.isLoading = isLoading
     }
 
-    func load() async { await presenter.load() }
+    func show(profile: ProfileViewData) {
+        self.name = profile.displayName
+        self.errorMessage = nil
+    }
+
+    func showError(message: String) {
+        self.errorMessage = message
+    }
+
+    func load() { presenter.load() }
     func didTapSettings() { presenter.didTapSettings() }
 }
 
@@ -172,9 +227,13 @@ struct ProfileScreen: View {
     var body: some View {
         VStack {
             Text(adapter.name)
+            if adapter.isLoading { ProgressView() }
+            if let errorMessage = adapter.errorMessage {
+                Text(errorMessage)
+            }
             Button("Settings") { adapter.didTapSettings() }
         }
-        .task { await adapter.load() }
+        .task { adapter.load() }
     }
 }
 
@@ -193,52 +252,89 @@ enum ProfileModuleSwiftUI {
 }
 ```
 
-## Concurrency and Cancellation
-
-When Presenter coordinates async work, track active tasks and cancel stale requests.
+Pure SwiftUI app option (no `UINavigationController`):
 
 ```swift
+import SwiftUI
+
+enum AppDestination: Hashable {
+    case settings
+}
+
 @MainActor
-final class ProfilePresenter {
-    weak var view: ProfileView?
-    private let interactor: ProfileInteracting
-    private let router: ProfileRouting
-    private var loadTask: Task<Void, Never>?
+@Observable
+final class AppRouter {
+    var path: [AppDestination] = []
 
-    init(interactor: ProfileInteracting, router: ProfileRouting) {
-        self.interactor = interactor
-        self.router = router
+    func push(_ destination: AppDestination) {
+        path.append(destination)
+    }
+}
+
+@MainActor
+final class ProfileSwiftUIRouter: ProfileRouting {
+    private let appRouter: AppRouter
+
+    init(appRouter: AppRouter) {
+        self.appRouter = appRouter
     }
 
-    func load() async {
-        loadTask?.cancel()
-        loadTask = Task {
-            do {
-                let user = try await interactor.loadUser()
-                view?.show(name: user.name)
-            } catch is CancellationError {
-                // Cancelled by a newer load request.
-            } catch {
-                view?.show(name: "")
-            }
-        }
-        await loadTask?.value
+    func showSettings() {
+        appRouter.push(.settings)
     }
+}
 
-    func didTapSettings() {
-        router.showSettings()
-    }
-
-    deinit {
-        loadTask?.cancel()
+enum ProfileModulePureSwiftUI {
+    @MainActor
+    static func build(
+        userRepository: UserRepository,
+        appRouter: AppRouter
+    ) -> ProfileScreen {
+        let interactor = ProfileInteractor(repository: userRepository)
+        let router = ProfileSwiftUIRouter(appRouter: appRouter)
+        let presenter = ProfilePresenter(interactor: interactor, router: router)
+        let adapter = ProfileViewAdapter(presenter: presenter)
+        presenter.view = adapter
+        return ProfileScreen(adapter: adapter)
     }
 }
 ```
 
+At app root, bind the shared router path to `NavigationStack`:
+
+```swift
+struct AppRootView: View {
+    @State private var appRouter = AppRouter()
+
+    var body: some View {
+        @Bindable var appRouter = appRouter
+
+        NavigationStack(path: $appRouter.path) {
+            ProfileModulePureSwiftUI.build(
+                userRepository: LiveUserRepository(),
+                appRouter: appRouter
+            )
+            .navigationDestination(for: AppDestination.self) { destination in
+                switch destination {
+                case .settings:
+                    SettingsView()
+                }
+            }
+        }
+    }
+}
+```
+
+## Concurrency and Cancellation
+
+When Presenter coordinates async work, track active tasks and cancel stale requests. The `ProfilePresenter` shown in the Wiring Pattern section above already implements the full cancellation strategy — it holds a `loadTask: Task<Void, Never>?`, a `latestLoadRequestID: UUID?`, and handles `CancellationError` explicitly to guard against stale UI updates.
+
 Rules:
 - cancel in-flight tasks before issuing new requests
 - handle `CancellationError` explicitly to avoid stale UI updates
+- gate UI updates by request identity so only the latest request can update view state
 - cancel all tasks on module teardown
+- keep presenter intent methods synchronous (`func load()`), and manage async tasks internally
 
 ## Anti-Patterns and Fixes
 
@@ -273,17 +369,33 @@ Testing rules:
 - assert interactions and outputs, not concrete implementations
 - avoid network in unit tests
 - verify presenter handles success and failure states
+- verify Presenter-to-View error contract (`showError(message:)`) for failure paths
+- test cancellation behavior when a newer load replaces an in-flight request
+- keep async tests deterministic with controlled stubs/clocks (avoid sleeps)
+
+Use the cancellation-aware presenter from the "Concurrency and Cancellation" section for cancellation-path tests.
 
 ```swift
 @MainActor
 final class MockProfileView: ProfileView {
     var shownName: String?
-    func show(name: String) { shownName = name }
+    var shownError: String?
+    var isLoading = false
+
+    func showLoading(_ isLoading: Bool) { self.isLoading = isLoading }
+
+    func show(profile: ProfileViewData) {
+        shownName = profile.displayName
+    }
+
+    func showError(message: String) {
+        shownError = message
+    }
 }
 
 struct StubProfileInteractor: ProfileInteracting {
-    var result: Result<User, Error>
-    func loadUser() async throws -> User { try result.get() }
+    var load: () async throws -> User
+    func loadUser() async throws -> User { try await load() }
 }
 
 final class SpyProfileRouter: ProfileRouting {
@@ -294,42 +406,59 @@ final class SpyProfileRouter: ProfileRouting {
 @MainActor
 final class ProfilePresenterTests: XCTestCase {
     func test_load_success_showsUserName() async {
-        let user = User(id: UUID(), name: "Alice")
+        let user = User(id: UUID(), name: "Alice", isPremium: false)
         let view = MockProfileView()
         let presenter = ProfilePresenter(
-            interactor: StubProfileInteractor(result: .success(user)),
+            interactor: StubProfileInteractor(load: { user }),
             router: SpyProfileRouter()
         )
         presenter.view = view
 
-        await presenter.load()
+        presenter.load()
+        await Task.yield()
 
         XCTAssertEqual(view.shownName, "Alice")
     }
 
-    func test_load_failure_showsEmptyName() async {
+    func test_load_failure_showsError() async {
         let view = MockProfileView()
         let presenter = ProfilePresenter(
-            interactor: StubProfileInteractor(result: .failure(TestError.notFound)),
+            interactor: StubProfileInteractor(load: { throw TestError.notFound }),
             router: SpyProfileRouter()
         )
         presenter.view = view
 
-        await presenter.load()
+        presenter.load()
+        await Task.yield()
 
-        XCTAssertEqual(view.shownName, "")
+        XCTAssertEqual(view.shownError, "Failed to load profile. Please try again.")
     }
 
     func test_didTapSettings_routesToSettings() {
         let router = SpyProfileRouter()
         let presenter = ProfilePresenter(
-            interactor: StubProfileInteractor(result: .success(User(id: UUID(), name: ""))),
+            interactor: StubProfileInteractor(load: { User(id: UUID(), name: "", isPremium: false) }),
             router: router
         )
 
         presenter.didTapSettings()
 
         XCTAssertTrue(router.didShowSettings)
+    }
+
+    func test_load_cancellation_doesNotOverwriteExistingName() async {
+        let view = MockProfileView()
+        view.shownName = "Current"
+        let presenter = ProfilePresenter(
+            interactor: StubProfileInteractor(load: { throw CancellationError() }),
+            router: SpyProfileRouter()
+        )
+        presenter.view = view
+
+        presenter.load()
+        await Task.yield()
+
+        XCTAssertEqual(view.shownName, "Current")
     }
 }
 
@@ -339,13 +468,17 @@ private enum TestError: Error { case notFound }
 ## When to Prefer VIPER
 
 Prefer VIPER when:
-- feature boundaries must be very explicit
-- team needs strict role separation
-- UIKit-heavy codebase benefits from modularized presentation flow
+- multiple teams need independently owned feature modules with explicit boundaries
+- strict role separation reduces architecture drift in long-lived codebases
+- interactor-level business rules must be testable without booting UI screens
+- modular compilation and clear dependency direction are high priorities
+- UIKit-heavy codebase benefits from router-driven assembly/navigation
 
 Prefer lighter patterns when:
 - app is small or prototyping quickly
-- ceremony cost outweighs architecture benefit
+- ceremony cost outweighs boundary/testability benefits
+
+Compared with organized MVVM, VIPER usually adds more setup but enforces role boundaries more strongly at scale, especially when teams and modules are decoupled.
 
 ## PR Review Checklist
 

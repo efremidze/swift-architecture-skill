@@ -21,10 +21,15 @@ When editing playbooks in `swift-architecture-skill/references/`:
 
 ### 3. Testing and Validation
 
-This repository contains documentation and skill definitions rather than executable code:
-- **No automated tests**: Changes should be validated through manual review
+This repository contains documentation and skill definitions rather than app code:
+- **Run automated validation**: `python -m skills_ref.cli validate ./swift-architecture-skill`
+- **Validate testing snippets**: `./tooling/scripts/validate/testing-snippets.sh`
+- **Validate testing quality contract**: `python3 ./tooling/scripts/validate/testing-quality.py`
+- **Run external benchmark suite**: `./tooling/scripts/run/benchmarks.py`
+- **Validate benchmark architecture coverage**: `python3 ./tooling/scripts/validate/benchmark-coverage.py`
+- **Run real-world corpus eval**: `python3 ./tooling/scripts/run/corpus.py`
+- **Validate architecture consistency**: `python3 ./tooling/scripts/validate/architecture.py`
 - **Check markdown formatting**: Ensure all `.md` files are properly formatted
-- **Verify code examples**: Code snippets in playbooks should be syntactically correct Swift
 - **Cross-reference consistency**: Ensure SKILL.md correctly references all playbooks
 
 ### 4. Adding New Architecture Patterns
