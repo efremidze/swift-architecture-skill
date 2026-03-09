@@ -92,21 +92,6 @@ Help me migrate this 500-line UIViewController to Clean Architecture
 incrementally, with tests at each step.
 ```
 
-## What You Get
-
-- architecture fit-check for explicit requests (`fit` vs `mismatch` + rationale)
-- feature-scoped file/module structure and dependency boundaries
-- async/await + actor-aware implementation guidance
-- anti-pattern detection with direct "instead of X, do Y" fixes
-- architecture-specific testing strategy and PR review checklist
-
-## How the Skill Works
-
-1. Analyzes task context: feature type, scope, UI stack, team constraints.
-2. Selects or validates architecture using `references/selection-guide.md`.
-3. Loads the matching playbook and generates implementation-ready guidance.
-4. Ends with a checklist tailored to the chosen architecture.
-
 ## Skill Structure
 
 ```text
