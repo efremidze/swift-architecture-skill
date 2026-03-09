@@ -12,6 +12,8 @@ This skill helps agents choose and apply the right Swift architecture for real f
 - **Dedicated playbooks**: Each architecture has its own reference with code patterns, anti-pattern fixes, testing strategy, and a PR review checklist. Guidance stays scoped to your task.
 - **SwiftUI and UIKit**: Every playbook covers both stacks and calls out where they differ, using modern async/await and actor-based concurrency patterns.
 
+The skill reads your task context, routes through `selection-guide.md`, and loads the matching playbook.
+
 ## Supported Architectures
 
 - **MVP** - Model-View-Presenter pattern ([playbook](swift-architecture-skill/references/mvp.md))
