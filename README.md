@@ -1,7 +1,6 @@
 # Swift Architecture Skill
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![GitHub Release](https://img.shields.io/github/v/release/efremidze/swift-architecture-skill)](https://github.com/efremidze/swift-architecture-skill/releases)
-[![GitHub Stars](https://img.shields.io/github/stars/efremidze/swift-architecture-skill?style=flat)](https://github.com/efremidze/swift-architecture-skill/stargazers)
 
 Architecture guidance for AI coding tools that support the [Agent Skills open format](https://agentskills.io/home).
 
