@@ -16,12 +16,14 @@ This skill helps agents choose and apply the right Swift architecture for real f
 
 ## Supported Architectures
 
-- **MVVM** - Observable state, protocol-based dependency injection ([playbook](swift-architecture-skill/references/mvvm.md))
-- **MVI** - Unidirectional flow, immutable state transitions ([playbook](swift-architecture-skill/references/mvi.md))
-- **TCA** - Reducers, effects, composition-first modularity ([playbook](swift-architecture-skill/references/tca.md))
-- **Clean Architecture** - Layered boundaries and dependency inversion ([playbook](swift-architecture-skill/references/clean-architecture.md))
-- **VIPER** - Strict separation for large, modular teams ([playbook](swift-architecture-skill/references/viper.md))
-- **Reactive** - Combine/RxSwift stream-driven design ([playbook](swift-architecture-skill/references/reactive.md))
+- **MVP** - Model-View-Presenter pattern ([playbook](swift-architecture-skill/references/mvp.md))
+- **MVVM** - Model-View-ViewModel pattern ([playbook](swift-architecture-skill/references/mvvm.md))
+- **MVI** - Model-View-Intent pattern ([playbook](swift-architecture-skill/references/mvi.md))
+- **TCA** - The Composable Architecture ([playbook](swift-architecture-skill/references/tca.md))
+- **Clean Architecture** - Layered architecture with dependency inversion ([playbook](swift-architecture-skill/references/clean-architecture.md))
+- **VIPER** - View-Interactor-Presenter-Entity-Router pattern ([playbook](swift-architecture-skill/references/viper.md))
+- **Coordinator** - Navigation flow decoupling pattern ([playbook](swift-architecture-skill/references/coordinator.md))
+- **Reactive** - Combine/RxSwift patterns ([playbook](swift-architecture-skill/references/reactive.md))
 
 ## Quick Start
 
@@ -116,11 +118,13 @@ swift-architecture-skill/
     openai.yaml                  # Interface metadata for skill-capable tools
   references/
     selection-guide.md           # Decision framework across architectures
+    mvp.md                       # MVP playbook
     mvvm.md                      # MVVM playbook
     mvi.md                       # MVI playbook
     tca.md                       # TCA playbook
     clean-architecture.md        # Clean Architecture playbook
     viper.md                     # VIPER playbook
+    coordinator.md               # Coordinator playbook
     reactive.md                  # Reactive (Combine/RxSwift) playbook
 ```
 
