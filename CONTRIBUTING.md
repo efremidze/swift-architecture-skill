@@ -24,6 +24,8 @@ swift-architecture-skill/
     clean-architecture.md
     viper.md
     reactive.md
+    mvp.md
+    coordinator.md
 ```
 
 ## What Good Contributions Look Like

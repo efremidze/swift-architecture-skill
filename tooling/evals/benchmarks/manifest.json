@@ -247,6 +247,78 @@
       ]
     },
     {
+      "id": "mvp-presenter-wiring-good",
+      "architecture": "mvp",
+      "file": "tooling/evals/benchmarks/cases/mvp-presenter-wiring-good.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": true,
+      "architecture_assertions": [
+        {
+          "label": "Tests presenter with mocked view",
+          "regex": "ProfilePresenter\\("
+        },
+        {
+          "label": "Binds presenter view in test",
+          "regex": "presenter\\.view\\s*=\\s*view"
+        }
+      ]
+    },
+    {
+      "id": "mvp-missing-presenter-wiring-should-fail-architecture",
+      "architecture": "mvp",
+      "file": "tooling/evals/benchmarks/cases/mvp-missing-presenter-wiring-should-fail-architecture.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": false,
+      "architecture_assertions": [
+        {
+          "label": "Tests presenter with mocked view",
+          "regex": "ProfilePresenter\\("
+        },
+        {
+          "label": "Binds presenter view in test",
+          "regex": "presenter\\.view\\s*=\\s*view"
+        }
+      ]
+    },
+    {
+      "id": "coordinator-navigation-state-good",
+      "architecture": "coordinator",
+      "file": "tooling/evals/benchmarks/cases/coordinator-navigation-state-good.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": true,
+      "architecture_assertions": [
+        {
+          "label": "Tests coordinator path changes",
+          "regex": "coordinator\\.path"
+        },
+        {
+          "label": "Uses AppCoordinator in tests",
+          "regex": "AppCoordinator\\("
+        }
+      ]
+    },
+    {
+      "id": "coordinator-missing-navigation-state-should-fail-architecture",
+      "architecture": "coordinator",
+      "file": "tooling/evals/benchmarks/cases/coordinator-missing-navigation-state-should-fail-architecture.md",
+      "expect_syntax": true,
+      "expect_semantic": true,
+      "expect_architecture": false,
+      "architecture_assertions": [
+        {
+          "label": "Tests coordinator path changes",
+          "regex": "coordinator\\.path"
+        },
+        {
+          "label": "Uses AppCoordinator in tests",
+          "regex": "AppCoordinator\\("
+        }
+      ]
+    },
+    {
       "id": "missing-failure-should-fail",
       "file": "tooling/evals/benchmarks/cases/missing-failure-should-fail.md",
       "expect_syntax": true,

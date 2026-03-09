@@ -4,18 +4,18 @@ Use this reference when the user asks for an architecture recommendation.
 
 ## Decision Matrix
 
-| Factor | MVVM | MVI | TCA | Clean | VIPER | Reactive |
-|--------|------|-----|-----|-------|-------|----------|
-| State complexity | Low–Med | High | High | Med–High | Med | Med |
-| Unidirectional flow | Optional | Strict | Strict | N/A | N/A | Stream-based |
-| Composition / modularity | Feature-level | Feature-level | Strong (Scope/forEach) | Layer-level | Module-level | Operator-level |
-| Testing determinism | Good | Very high | Very high (TestStore) | Good | Good | Good (with schedulers) |
-| Boilerplate | Low | Medium | Medium–High | Medium–High | High | Low–Medium |
-| SwiftUI fit | Excellent | Good | Excellent | Good | Fair (UIKit-native) | Good |
-| UIKit fit | Good | Good | Good | Good | Excellent | Good |
-| Team learning curve | Low | Medium | High | Medium | Medium–High | Medium |
-| Async/effect orchestration | Manual | Structured | Built-in | Manual | Manual | Operator-driven |
-| Framework dependency | None | None | swift-composable-architecture | None | None | Combine or RxSwift |
+| Factor | MVVM | MVI | TCA | Clean | VIPER | Reactive | MVP | Coordinator |
+|--------|------|-----|-----|-------|-------|----------|-----|-------------|
+| State complexity | Low–Med | High | High | Med–High | Med | Med | Low–Med | N/A (navigation layer) |
+| Unidirectional flow | Optional | Strict | Strict | N/A | N/A | Stream-based | Optional | N/A |
+| Composition / modularity | Feature-level | Feature-level | Strong (Scope/forEach) | Layer-level | Module-level | Operator-level | Feature-level | Flow-level |
+| Testing determinism | Good | Very high | Very high (TestStore) | Good | Good | Good (with schedulers) | Good | Good |
+| Boilerplate | Low | Medium | Medium–High | Medium–High | High | Low–Medium | Medium | Low–Medium |
+| SwiftUI fit | Excellent | Good | Excellent | Good | Fair (UIKit-native) | Good | Fair | Good |
+| UIKit fit | Good | Good | Good | Good | Excellent | Good | Excellent | Excellent |
+| Team learning curve | Low | Medium | High | Medium | Medium–High | Medium | Low | Low |
+| Async/effect orchestration | Manual | Structured | Built-in | Manual | Manual | Operator-driven | Manual | N/A |
+| Framework dependency | None | None | swift-composable-architecture | None | None | Combine or RxSwift | None | None |
 
 ## UI Stack Nuance by Architecture
 
@@ -25,6 +25,8 @@ Use this reference when the user asks for an architecture recommendation.
 - **Clean Architecture**: Domain/data stay the same; only presentation adapters differ.
 - **VIPER**: UIKit-native fit; SwiftUI usually uses an adapter plus `UIHostingController`.
 - **Reactive**: SwiftUI keeps pipelines in observable models; UIKit keeps them in Presenter/ViewModel.
+- **MVP**: UIKit-native fit; Presenter drives passive View via protocol commands; SwiftUI uses an observable adapter.
+- **Coordinator**: Works with both stacks; UIKit uses `UINavigationController` wrapper; SwiftUI models navigation as value-type state bound to `NavigationStack`.
 
 ## Quick Decision Flow
 
@@ -47,7 +49,15 @@ Use this reference when the user asks for an architecture recommendation.
    YES -> VIPER (references/viper.md)
    NO  -> Continue
 
-5. Default recommendation:
+5. Is the primary goal decoupling navigation from screens (deep linking, reusable flows)?
+   YES -> Coordinator (references/coordinator.md) — pair with a presentation pattern below
+   NO  -> Continue
+
+6. Is UIKit the primary stack and a fully passive View with zero logic desired?
+   YES -> MVP (references/mvp.md)
+   NO  -> Continue
+
+7. Default recommendation:
    -> MVVM (references/mvvm.md)
 ```
 
@@ -79,6 +89,16 @@ Use these request signals:
 - "streams", "Combine", "RxSwift", "real-time", "search"
 - feature behavior is event-pipeline driven (typeahead, WebSocket, live feeds)
 
+### Signals pointing to MVP
+- "passive view", "presenter drives view", "UIKit without observable state"
+- migrating from MVC with minimal framework changes
+- team prefers explicit command-dispatch over state binding
+
+### Signals pointing to Coordinator
+- "navigation", "deep linking", "flow", "routing", "decouple navigation"
+- multiple screens need to be reused across different flows
+- view controllers or ViewModels currently contain push/present calls
+
 ## Validating User-Requested Architectures
 
 When the user pre-selects an architecture, validate it before finalizing:
@@ -104,6 +124,9 @@ Some projects use multiple patterns. Common valid combinations:
 - **Clean Architecture + MVVM**: Clean layers for domain/data, MVVM for presentation
 - **Clean Architecture + TCA**: Clean layers for domain/data, TCA for feature presentation
 - **VIPER + Reactive**: VIPER module structure with reactive Interactors
+- **MVVM + Coordinator**: MVVM for screen-level state, Coordinator for navigation flows
+- **MVP + Coordinator**: MVP for presentation logic, Coordinator for navigation and routing
+- **Clean Architecture + MVP**: Clean layers for domain/data, MVP for presentation
 
 When combining, clarify which pattern governs which layer and keep boundaries consistent.
 

@@ -13,6 +13,8 @@ ARCHITECTURES = [
     "clean-architecture",
     "viper",
     "reactive",
+    "mvp",
+    "coordinator",
 ]
 
 
