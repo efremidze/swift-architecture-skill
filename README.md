@@ -23,6 +23,8 @@ This skill helps agents choose and apply the right Swift architecture for real f
 - **Coordinator** - Navigation flow decoupling pattern ([playbook](swift-architecture-skill/references/coordinator.md))
 - **Reactive** - Combine/RxSwift patterns ([playbook](swift-architecture-skill/references/reactive.md))
 
+When no architecture is specified, the skill routes through [`references/selection-guide.md`](swift-architecture-skill/references/selection-guide.md) to infer the best fit based on feature type, UI stack, and team constraints.
+
 ## Quick Start
 
 ### Option A: `skills.sh` (Recommended)
