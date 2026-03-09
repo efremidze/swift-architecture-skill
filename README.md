@@ -2,9 +2,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![GitHub Release](https://img.shields.io/github/v/release/efremidze/swift-architecture-skill)](https://github.com/efremidze/swift-architecture-skill/releases)
 
-Architecture guidance for AI coding tools that support the [Agent Skills open format](https://agentskills.io/home).
+Architecture guidance for AI coding tools — choose and apply the right Swift architecture for SwiftUI/UIKit features with concrete patterns, anti-pattern fixes, testing strategy, and review checklists.
 
-This skill helps agents choose and apply the right Swift architecture for real feature work in SwiftUI/UIKit codebases with concrete implementation patterns, anti-pattern fixes, testing strategy, and review checklists.
+Supports the [Agent Skills open format](https://agentskills.io/home).
 
 ## Features
 
