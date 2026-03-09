@@ -6,12 +6,11 @@ Architecture guidance for AI coding tools that support the [Agent Skills open fo
 
 This skill helps agents choose and apply the right Swift architecture for real feature work in SwiftUI/UIKit codebases with concrete implementation patterns, anti-pattern fixes, testing strategy, and review checklists.
 
-## Who This Is For
+## Features
 
-- iOS teams deciding between MVVM, MVI, TCA, Clean Architecture, VIPER, or reactive flows
-- engineers refactoring legacy UIKit modules into clearer architecture boundaries
-- reviewers who want architecture-aware PR checks instead of generic code review comments
-- AI-assisted workflows that need practical Swift guidance with modern concurrency defaults
+- **Architecture selection**: Describe your feature or module and the skill selects the right pattern based on UI stack, state complexity, and existing conventions. If you name a pattern, it validates fit before you commit.
+- **Dedicated playbooks**: Each architecture has its own reference with code patterns, anti-pattern fixes, testing strategy, and a PR review checklist. Guidance stays scoped to your task.
+- **SwiftUI and UIKit**: Every playbook covers both stacks and calls out where they differ, using modern async/await and actor-based concurrency patterns.
 
 ## Supported Architectures
 
