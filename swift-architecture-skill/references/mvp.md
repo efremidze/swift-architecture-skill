@@ -297,9 +297,7 @@ Rules:
 
 ## Testing Strategy
 
-Test the Presenter in isolation with a mock View and stub Repository.
-Verify the Presenter-to-View contract for success, failure, and cancellation paths.
-Keep tests deterministic by controlling async behaviour with stubs, not `sleep`.
+Test Presenter in isolation: mock View + stub Repository. Verify the Presenter-to-View command contract for success, failure, and cancellation paths.
 
 ```swift
 @MainActor
@@ -387,17 +385,8 @@ private enum TestError: Error { case notFound }
 
 ## When to Prefer MVP
 
-Prefer MVP when:
-- UIKit is the primary stack and you want full Presenter testability without observable state objects
-- the View must be completely passive (no `if` logic, no `guard`, no formatting)
-- migrating from MVC and want a minimal step up without pulling in Combine or the `@Observable` macro
-- existing team is familiar with the Presenter + View protocol pattern
-
-Prefer MVVM when:
-- SwiftUI is the primary stack and `@Observable` / `@Published` state binding reduces wiring overhead
-- you want reactive data flow with less hand-written command dispatch
-
-Compared with VIPER, MVP omits the Interactor and Router as distinct components, making it lighter and simpler for single-screen features.
+- UIKit primary stack; View must be fully passive (no logic, no formatting) and Presenter must be independently testable.
+- Migrating from MVC with minimal step-up — no Combine or `@Observable` needed.
 
 ## PR Review Checklist
 
@@ -405,6 +394,4 @@ Compared with VIPER, MVP omits the Interactor and Router as distinct components,
 - `view` property in Presenter is `weak` and typed as `ProfileView`.
 - Presenter cancels the previous task before starting a new load.
 - All Presenter-to-View calls are guarded by request identity where async.
-- Repository and service dependencies are injected via protocols, not singletons.
-- Tests cover success, failure, and stale-cancellation paths.
 - Assembly function wires the module from the outside — Presenter does not create its own dependencies.

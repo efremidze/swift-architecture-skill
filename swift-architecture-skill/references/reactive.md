@@ -189,17 +189,7 @@ For transient failures, prefer fallback state over terminating the stream.
 
 ## Testing Strategy
 
-Test stream behavior deterministically:
-- input -> expected output transitions
-- success path emits the expected state sequence
-- debounce/throttle behavior with controlled schedulers
-- cancellation behavior for replaced requests
-- error fallback behavior
-
-Rules:
-- inject schedulers/time providers for tests
-- avoid real-time sleeps when possible
-- assert emitted state sequence, not internal operator details
+Inject a controlled scheduler to drive debounce/throttle. Assert emitted state sequences, not internal operator details. Use `PassthroughSubject` for service responses to simulate success, error fallback, and `switchToLatest` request replacement.
 
 ```swift
 import Combine
@@ -309,13 +299,8 @@ The canonical `SearchViewModel` already supports scheduler injection for tests.
 
 ## When to Prefer Reactive Architecture
 
-Prefer when:
-- feature is event-heavy and stream-oriented
-- real-time updates and transformations are core behavior
-- composable async pipelines provide clarity over imperative callbacks
-
-Prefer MVI/TCA when:
-- explicit state-machine and strict reducer flow are primary requirements
+- Feature is stream-heavy: search, live feeds, real-time updates, typeahead.
+- Composable async pipelines (debounce, switchToLatest, share) provide clearer intent than imperative callbacks.
 
 ## PR Review Checklist
 
@@ -324,4 +309,4 @@ Prefer MVI/TCA when:
 - UI-bound updates are marshaled to main thread.
 - Operators match intent (`debounce`, `throttle`, `switchToLatest`, `share`).
 - Views/controllers do not hold business pipeline logic.
-- Error handling keeps UX resilient for transient failures.
+- Error handling recovers at stream boundaries; transient failures don't terminate the pipeline.

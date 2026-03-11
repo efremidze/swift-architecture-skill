@@ -252,78 +252,7 @@ enum ProfileModuleSwiftUI {
 }
 ```
 
-Pure SwiftUI app option (no `UINavigationController`):
-
-```swift
-import SwiftUI
-
-enum AppDestination: Hashable {
-    case settings
-}
-
-@MainActor
-@Observable
-final class AppRouter {
-    var path: [AppDestination] = []
-
-    func push(_ destination: AppDestination) {
-        path.append(destination)
-    }
-}
-
-@MainActor
-final class ProfileSwiftUIRouter: ProfileRouting {
-    private let appRouter: AppRouter
-
-    init(appRouter: AppRouter) {
-        self.appRouter = appRouter
-    }
-
-    func showSettings() {
-        appRouter.push(.settings)
-    }
-}
-
-enum ProfileModulePureSwiftUI {
-    @MainActor
-    static func build(
-        userRepository: UserRepository,
-        appRouter: AppRouter
-    ) -> ProfileScreen {
-        let interactor = ProfileInteractor(repository: userRepository)
-        let router = ProfileSwiftUIRouter(appRouter: appRouter)
-        let presenter = ProfilePresenter(interactor: interactor, router: router)
-        let adapter = ProfileViewAdapter(presenter: presenter)
-        presenter.view = adapter
-        return ProfileScreen(adapter: adapter)
-    }
-}
-```
-
-At app root, bind the shared router path to `NavigationStack`:
-
-```swift
-struct AppRootView: View {
-    @State private var appRouter = AppRouter()
-
-    var body: some View {
-        @Bindable var appRouter = appRouter
-
-        NavigationStack(path: $appRouter.path) {
-            ProfileModulePureSwiftUI.build(
-                userRepository: LiveUserRepository(),
-                appRouter: appRouter
-            )
-            .navigationDestination(for: AppDestination.self) { destination in
-                switch destination {
-                case .settings:
-                    SettingsView()
-                }
-            }
-        }
-    }
-}
-```
+**Pure SwiftUI app:** Implement `ProfileRouting` as a thin wrapper that calls `appRouter.push(.settings)` on a shared `@Observable AppRouter`. Bind `appRouter.path` to `NavigationStack` at the root — see `coordinator.md` for the full `NavigationStack` + `AppCoordinator` pattern.
 
 ## Concurrency and Cancellation
 
@@ -360,20 +289,7 @@ Rules:
 
 ## Testing Strategy
 
-Prioritize isolated tests per component:
-- Presenter tests with mocked View/Interactor/Router
-- Interactor tests with mocked repositories/services
-- Router tests for navigation triggers where feasible
-
-Testing rules:
-- assert interactions and outputs, not concrete implementations
-- avoid network in unit tests
-- verify presenter handles success and failure states
-- verify Presenter-to-View error contract (`showError(message:)`) for failure paths
-- test cancellation behavior when a newer load replaces an in-flight request
-- keep async tests deterministic with controlled stubs/clocks (avoid sleeps)
-
-Use the cancellation-aware presenter from the "Concurrency and Cancellation" section for cancellation-path tests.
+Test each component in isolation: Presenter with mocked View/Interactor/Router; Interactor with stub repositories. Assert Presenter-to-View output contracts (`show(profile:)`, `showError(message:)`) and cancellation behavior.
 
 ```swift
 @MainActor
@@ -467,18 +383,8 @@ private enum TestError: Error { case notFound }
 
 ## When to Prefer VIPER
 
-Prefer VIPER when:
-- multiple teams need independently owned feature modules with explicit boundaries
-- strict role separation reduces architecture drift in long-lived codebases
-- interactor-level business rules must be testable without booting UI screens
-- modular compilation and clear dependency direction are high priorities
-- UIKit-heavy codebase benefits from router-driven assembly/navigation
-
-Prefer lighter patterns when:
-- app is small or prototyping quickly
-- ceremony cost outweighs boundary/testability benefits
-
-Compared with organized MVVM, VIPER usually adds more setup but enforces role boundaries more strongly at scale, especially when teams and modules are decoupled.
+- Multiple teams need independently owned feature modules with explicit, enforced role boundaries.
+- UIKit-heavy codebase where interactor-level business rules must be testable in isolation.
 
 ## PR Review Checklist
 
@@ -488,4 +394,3 @@ Compared with organized MVVM, VIPER usually adds more setup but enforces role bo
 - Router handles only navigation and module assembly.
 - Boundary protocols avoid concrete coupling.
 - Retain cycles are prevented with weak references where needed.
-- Tests cover presenter orchestration and interactor business rules.

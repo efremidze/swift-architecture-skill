@@ -73,3 +73,16 @@ End with the architecture-specific PR review checklist from the reference file, 
 - Treat reference snippets as illustrative by default; add full compile scaffolding only if the user asks for runnable code.
 - Ask only minimum blocking questions; otherwise proceed with explicit assumptions stated up front.
 - When reviewing PRs, use the architecture-specific checklist and call out specific violations with line-level fixes.
+
+## Universal Rules (apply to all architectures)
+
+**Testing:**
+- Cover success, failure, and cancellation paths.
+- Use protocol stubs/fakes — no real network or sleep in unit tests.
+- Keep async tests deterministic with controlled continuations or schedulers.
+- Run ViewModel/Presenter tests on `@MainActor`.
+
+**PR Checklist (always append to architecture-specific checklist):**
+- Async effects have a cancellation strategy.
+- Dependencies injected via protocols; no global singletons.
+- Tests cover success, failure, and cancellation.

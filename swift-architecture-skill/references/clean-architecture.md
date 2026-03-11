@@ -232,16 +232,7 @@ UIKit adaptation:
 
 ## Testing Strategy
 
-Prioritize:
-- use-case unit tests with repository stubs
-- mapper tests (DTO <-> domain) in data layer
-- presentation tests with mocked use cases
-
-Rules:
-- avoid network in unit tests
-- assert business behavior at use-case boundary
-- keep async tests deterministic using controlled stubs
-- test cancellation propagation for long-running use cases
+Prioritize use-case unit tests with stub repositories, mapper tests (DTO ↔ domain), and presentation tests with mocked use cases. Assert business behavior at use-case boundaries; test cancellation propagation for long-running operations.
 
 ```swift
 struct StubUserRepository: UserRepository {
@@ -303,14 +294,8 @@ private enum TestError: Error { case notFound }
 
 ## When to Prefer Clean Architecture
 
-Prefer when:
-- app/domain complexity is medium to large
-- multiple teams need stable boundaries
-- long-term maintainability and replaceable infrastructure matter
-
-Prefer lighter layering when:
-- app is small and short-lived
-- strict layering overhead is higher than expected benefit
+- Medium-to-large domain where multiple teams need stable, independently testable layer boundaries.
+- Long-term maintainability and replaceable infrastructure (swap API clients, persistence engines) are priorities.
 
 ## PR Review Checklist
 
@@ -319,4 +304,3 @@ Prefer lighter layering when:
 - Use cases encapsulate business rules and stay focused.
 - Presentation does not import data implementations.
 - Repository abstractions live at domain boundary.
-- Tests isolate use cases from infrastructure.

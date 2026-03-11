@@ -23,13 +23,7 @@ Core rules:
 - Keep state equatable/serializable where practical.
 - Store canonical state, not redundant derived values.
 
-```swift
-enum Loadable<Value: Equatable>: Equatable {
-    case idle
-    case loading
-    case loaded(Value)
-    case failed(String)
-}
+// Use the shared Loadable<Value> enum from the MVVM playbook.
 
 struct CounterState: Equatable {
     var load: Loadable<Int> = .idle
@@ -200,25 +194,7 @@ func run(_ effect: CounterEffect, service: CounterServicing) async -> CounterAct
 }
 ```
 
-Adapter pattern for wiring the pure `reduce/run` pair into `Store`:
-
-```swift
-@MainActor
-func makeCounterStore(service: CounterServicing) -> Store<CounterState, CounterIntent, CounterAction> {
-    Store(
-        initial: CounterState(),
-        reduceIntent: { state, intent in
-            guard let effect = reduce(state: &state, intent: intent) else { return nil }
-            return .run {
-                await run(effect, service: service)
-            }
-        },
-        reduceAction: { state, action in
-            reduce(state: &state, action: action)
-        }
-    )
-}
-```
+Wire the pure `reduce/run` pair into `Store` via a factory: pass closures that call `reduce(state:intent:)` and `run(_:service:)` respectively, wrapping the effect descriptor in `.run { await run(effect, service: service) }`.
 
 ## Store Pattern
 
@@ -452,11 +428,7 @@ UIKit rules:
 
 ## Testing Expectations
 
-- Unit test intent reducer transitions.
-- Unit test action reducer success/failure transitions.
-- Verify cancellation and stale-response handling.
-- Keep tests deterministic with controlled services, schedulers, or clocks.
-- Assert state-machine behavior, not view details.
+Test intent reducer transitions, action reducer success/failure, cancellation, and stale-response handling. Assert state-machine behavior:
 
 Example test suite:
 
@@ -551,14 +523,8 @@ private enum TestError: Error {
 
 ## When to Prefer MVI
 
-Prefer MVI for:
-- complex state machines
-- heavy concurrency/effect orchestration
-- high determinism and testability requirements
-
-Prefer MVVM when:
-- screen complexity is moderate
-- lower boilerplate is more important than strict state-machine modeling
+- Complex state machines with heavy concurrency/effect orchestration.
+- High determinism and testability requirements where strict unidirectional flow is worth the boilerplate.
 
 ## PR Review Checklist
 
@@ -567,4 +533,3 @@ Prefer MVVM when:
 - Effects are isolated and mapped back into actions.
 - Cancellation/versioning exists for concurrent requests.
 - View sends intents only; no direct business mutation.
-- Reducer tests cover success, failure, and cancellation.

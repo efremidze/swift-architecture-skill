@@ -124,71 +124,9 @@ struct CounterView: View {
 }
 ```
 
-### Legacy Pattern (TCA < 1.7 with `WithViewStore`)
+// TCA < 1.7: wrap with `WithViewStore(store, observe: { $0 }) { viewStore in ... }` and use `viewStore.send` / `viewStore.count`.
 
-```swift
-struct CounterView: View {
-  let store: StoreOf<CounterFeature>
-
-  var body: some View {
-    WithViewStore(store, observe: { $0 }) { viewStore in
-      VStack {
-        Text("Count: \(viewStore.count)")
-        Button("+") { viewStore.send(.incrementTapped) }
-        Button("-") { viewStore.send(.decrementTapped) }
-        Button("Fact") { viewStore.send(.factButtonTapped) }
-        if viewStore.isLoading { ProgressView() }
-      }
-      .alert(store: store.scope(state: \.alert, action: \.alert))
-    }
-  }
-}
-```
-
-UIKit guidance:
-- keep a store in the view controller
-- subscribe to state changes from the store
-- centralize rendering in one method
-
-Concrete UIKit pattern:
-
-```swift
-import ComposableArchitecture
-import Combine
-import UIKit
-
-@MainActor
-final class CounterViewController: UIViewController {
-  private let viewStore: ViewStoreOf<CounterFeature>
-  private var cancellables = Set<AnyCancellable>()
-
-  init(store: StoreOf<CounterFeature>) {
-    self.viewStore = ViewStore(store, observe: { $0 })
-    super.init(nibName: nil, bundle: nil)
-  }
-
-  required init?(coder: NSCoder) { return nil }
-
-  override func viewDidLoad() {
-    super.viewDidLoad()
-
-    viewStore.publisher
-      .sink { [weak self] state in
-        self?.render(state)
-      }
-      .store(in: &cancellables)
-  }
-
-  @objc private func incrementTapped() {
-    viewStore.send(.incrementTapped)
-  }
-
-  private func render(_ state: CounterFeature.State) {
-    title = "Count: \(state.count)"
-    // Render labels/buttons/loading from state only.
-  }
-}
-```
+**UIKit:** Hold a `ViewStore` in the view controller, subscribe to `viewStore.publisher`, and render state in a single `render(_:)` method. Map target-action callbacks to `viewStore.send(.action)`.
 
 ## Composition Patterns
 
@@ -266,8 +204,7 @@ Keep navigation decisions in reducers and keep views declarative.
 
 ## Testing with `TestStore`
 
-Use `TestStore` for deterministic action/state assertions.
-Cover success, failure, and cancellation paths in async effects.
+Use `TestStore` for deterministic action/state assertions. Inject `withDependencies` to control service responses. Use `TestClock` for time-dependent cancellation tests.
 
 ```swift
 import XCTest
@@ -383,24 +320,14 @@ final class CounterFeatureTests: XCTestCase {
 
 ## When to Prefer TCA
 
-Prefer TCA when:
-- app has many stateful workflows
-- test determinism is critical
-- composition and modular scaling are required
-- effect cancellation correctness matters
-
-Prefer MVVM or lighter MVI variants when:
-- app is small and unlikely to grow
-- team is not ready for UDF discipline
-- feature speed and low ceremony are prioritized
+- App has many stateful workflows requiring strong composition, modular scaling, and `TestStore`-driven test determinism.
+- TCA dependency is already in the project or the team is committed to UDF discipline.
 
 ## PR Review Checklist
 
 - State is value-based and equatable.
 - Reducer avoids direct side effects.
 - Dependencies are injected and overrideable in tests.
-- Effects have cancellation strategy where needed.
 - Features compose with `Scope`/`forEach`.
 - Navigation is modeled in state.
-- Tests cover success, failure, and cancellation flows.
 - Views render and send actions only.

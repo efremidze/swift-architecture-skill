@@ -337,9 +337,7 @@ final class DeepLinkHandler {
 
 ## Testing Strategy
 
-Test Coordinators by verifying navigation state changes for success paths (expected destinations appended), failure paths (unknown inputs handled without crashing), and cancellation-safe pop operations.
-Use stub repositories and direct coordinator state inspection to keep tests deterministic.
-Avoid sleeps; prefer synchronous state mutations and direct property assertions.
+Verify navigation state changes directly: expected destinations appended on success, unknown inputs handled safely, pop guards empty-path crashes. Use stub repositories and synchronous state inspection — no sleeps.
 
 ```swift
 @MainActor
@@ -445,15 +443,8 @@ Note: `showEditProfileForTesting()` exposes the private routing action for test 
 
 ## When to Prefer Coordinator
 
-Prefer Coordinator when:
-- navigation logic is complex (conditional flows, deep linking, multi-step wizards)
-- multiple screens need to be reused across different flows
-- you want to test routing logic without instantiating full screens
-- ViewModels and View Controllers should have zero navigation coupling
-
-Pair with MVVM by injecting navigation closures into ViewModels; pair with MVP by having the Presenter call a Router protocol backed by a Coordinator.
-
-The Coordinator pattern is not an architecture on its own — it is a navigation layer that complements presentation patterns. Prefer it when `UINavigationController` push/present calls scattered across view controllers make flows hard to follow or test.
+- Navigation logic is complex: conditional flows, deep linking, multi-step wizards, or reused screens across flows.
+- ViewModels/View Controllers must have zero navigation coupling and routing must be independently testable.
 
 ## PR Review Checklist
 
@@ -463,4 +454,3 @@ The Coordinator pattern is not an architecture on its own — it is a navigation
 - ViewModels and View Controllers receive navigation closures, not coordinator references.
 - Navigation state (SwiftUI path/sheet) is modeled as value types.
 - Deep link handling routes through the coordinator, not directly to view controllers.
-- Tests verify routing state changes without relying on UIKit presentation timing.
