@@ -9,15 +9,11 @@ Use this reference when you need a passive View that delegates all logic to a Pr
 - Presenter: Owns all presentation logic, maps Model data to display output, and drives View updates through a protocol.
 - Services/Repositories: Side-effect boundaries (network, persistence) injected into Presenter.
 
-Dependency direction:
-
 ```text
 View -> Presenter (user actions)
 Presenter -> View (via ViewProtocol, one-way commands)
 Presenter -> Repository/Service (via protocols)
 ```
-
-The key difference from MVVM: the View holds no observable state — it passively executes commands dispatched by the Presenter.
 
 ## Feature Structure
 
@@ -42,8 +38,6 @@ Data/
 
 ## View Protocol
 
-Define the View as a weak protocol. The Presenter drives state through it.
-
 ```swift
 @MainActor
 protocol ProfileView: AnyObject {
@@ -53,14 +47,11 @@ protocol ProfileView: AnyObject {
 }
 ```
 
-Rules:
-- use `AnyObject` to allow weak references
-- methods represent view commands, not state flags
-- keep the protocol focused — one command per distinct UI concern
+- Use `AnyObject` to allow weak references
+- Methods represent view commands, not state flags
+- Keep the protocol focused — one command per distinct UI concern
 
 ## View Data
-
-Map domain entities to display-ready values in the Presenter, not the View.
 
 ```swift
 struct ProfileViewData: Equatable {
@@ -71,8 +62,6 @@ struct ProfileViewData: Equatable {
 ```
 
 ## Presenter Pattern
-
-Own task management, cancel stale work, and gate updates by request identity.
 
 ```swift
 @MainActor
@@ -128,14 +117,11 @@ extension ProfileViewData {
 }
 ```
 
-Rules:
 - `view` is `weak` to avoid retain cycles
-- cancel in-flight task before starting a new one
-- gate state updates by `requestID` to prevent stale overwrites
+- Cancel in-flight task before starting a new one
+- Gate state updates by `requestID` to prevent stale overwrites
 
 ## UIKit View Implementation
-
-The UIKit view controller forwards actions to Presenter and executes view commands.
 
 ```swift
 @MainActor
@@ -187,8 +173,6 @@ final class ProfileViewController: UIViewController, ProfileView {
 
 ## SwiftUI Adapter
 
-For SwiftUI, bridge via a thin observable adapter that conforms to `ProfileView`.
-
 ```swift
 @MainActor
 @Observable
@@ -203,19 +187,9 @@ final class ProfileViewAdapter: ProfileView {
         presenter.view = self
     }
 
-    func showLoading(_ isLoading: Bool) {
-        self.isLoading = isLoading
-    }
-
-    func show(profile: ProfileViewData) {
-        self.viewData = profile
-        self.errorMessage = nil
-    }
-
-    func showError(message: String) {
-        self.errorMessage = message
-    }
-
+    func showLoading(_ isLoading: Bool) { self.isLoading = isLoading }
+    func show(profile: ProfileViewData) { self.viewData = profile; self.errorMessage = nil }
+    func showError(message: String) { self.errorMessage = message }
     func viewDidAppear() { presenter.viewDidAppear() }
 }
 
@@ -248,8 +222,6 @@ struct ProfileScreen: View {
 
 ## Assembly
 
-Wire dependencies in one place — the assembler or coordinator.
-
 ```swift
 enum ProfileAssembly {
     static func build(repository: ProfileRepository) -> UIViewController {
@@ -268,10 +240,9 @@ enum ProfileAssembly {
 }
 ```
 
-Rules:
-- set `presenter.view` after construction, not inside the Presenter initializer
-- inject concrete repositories from the composition root
-- keep the assembly function as the only place that creates the full module
+- Set `presenter.view` after construction, not inside the Presenter initializer
+- Inject concrete repositories from the composition root
+- Keep the assembly function as the only place that creates the full module
 
 ## Anti-Patterns and Fixes
 
@@ -321,9 +292,7 @@ final class ProfilePresenterTests: XCTestCase {
     func test_load_success_showsUserName() async {
         let user = User(id: UUID(), name: "Alice", isPremium: false, joinDate: .now)
         let view = MockProfileView()
-        let presenter = ProfilePresenter(
-            repository: StubProfileRepository(result: .success(user))
-        )
+        let presenter = ProfilePresenter(repository: StubProfileRepository(result: .success(user)))
         presenter.view = view
 
         presenter.load()
@@ -335,9 +304,7 @@ final class ProfilePresenterTests: XCTestCase {
 
     func test_load_failure_showsError() async {
         let view = MockProfileView()
-        let presenter = ProfilePresenter(
-            repository: StubProfileRepository(result: .failure(TestError.notFound))
-        )
+        let presenter = ProfilePresenter(repository: StubProfileRepository(result: .failure(TestError.notFound)))
         presenter.view = view
 
         presenter.load()
@@ -351,9 +318,7 @@ final class ProfilePresenterTests: XCTestCase {
         let existing = User(id: UUID(), name: "Existing", isPremium: false, joinDate: .now)
         let view = MockProfileView()
         view.show(profile: ProfileViewData(user: existing))
-        let presenter = ProfilePresenter(
-            repository: StubProfileRepository(result: .failure(CancellationError()))
-        )
+        let presenter = ProfilePresenter(repository: StubProfileRepository(result: .failure(CancellationError())))
         presenter.view = view
 
         presenter.load()
@@ -365,12 +330,9 @@ final class ProfilePresenterTests: XCTestCase {
     func test_rapidLoads_onlyLatestResultShown() async {
         let firstUser = User(id: UUID(), name: "First", isPremium: false, joinDate: .now)
         let view = MockProfileView()
-        let presenter = ProfilePresenter(
-            repository: StubProfileRepository(result: .success(firstUser))
-        )
+        let presenter = ProfilePresenter(repository: StubProfileRepository(result: .success(firstUser)))
         presenter.view = view
 
-        // Simulate two rapid loads; second call cancels first.
         presenter.load() // request A — will be cancelled
         presenter.load() // request B — latest
         await Task.yield()

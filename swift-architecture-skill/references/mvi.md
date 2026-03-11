@@ -9,7 +9,6 @@ Intent -> Reducer -> New State -> View
                  -> Effect -> Action -> Reducer
 ```
 
-Core rules:
 - Keep one source of truth: `State`.
 - Keep reducer logic deterministic.
 - Isolate side effects in `Effect`.
@@ -23,6 +22,7 @@ Core rules:
 - Keep state equatable/serializable where practical.
 - Store canonical state, not redundant derived values.
 
+```swift
 // Use the shared Loadable<Value> enum from the MVVM playbook.
 
 struct CounterState: Equatable {
@@ -60,8 +60,6 @@ enum CounterAction {
     case resetResponse(Result<Int, Error>)
 }
 ```
-
-Action reducer for completing async transitions:
 
 ```swift
 func reduce(state: inout CounterState, action: CounterAction) {
@@ -148,7 +146,7 @@ func reduce(
 }
 ```
 
-This signature is a pragmatic shortcut: passing `service` into `reduce` keeps call sites simple, but the reducer is environment-coupled. If you want stricter MVI purity, make `reduce` return effect descriptors and run them outside the reducer.
+- For stricter purity: return effect descriptors from reducer; execute them outside.
 
 ```swift
 enum CounterEffect {
@@ -197,11 +195,6 @@ func run(_ effect: CounterEffect, service: CounterServicing) async -> CounterAct
 Wire the pure `reduce/run` pair into `Store` via a factory: pass closures that call `reduce(state:intent:)` and `run(_:service:)` respectively, wrapping the effect descriptor in `.run { await run(effect, service: service) }`.
 
 ## Store Pattern
-
-- Keep store on main actor for UI mutation safety.
-- Receive `Intent`, run reducer, execute `Effect`, dispatch `Action`.
-- Add cancellation and request versioning for concurrent requests.
-- Map all expected service failures to explicit failure actions; `onUnexpectedError` should be a bug hook, not a business-error path.
 
 ```swift
 @MainActor
@@ -269,11 +262,11 @@ final class Store<State, Intent, Action>: ObservableObject {
 }
 ```
 
-Map expected service failures to explicit failure actions; reserve `onUnexpectedError` for true fallthrough faults (for example decoding bugs, violated invariants, or effect wiring mistakes). If this handler fires for normal API failures, treat that as a modeling bug and add an explicit failure action path.
+- Reserve `onUnexpectedError` for invariant violations only; map all expected API failures to explicit failure actions.
 
 ## Composed Reducers
 
-Split reducers by feature and compose them.
+- Prefer feature-scoped stores; compose only at flow boundaries (tabs, checkout, onboarding).
 
 ```swift
 enum AppAction {
@@ -326,8 +319,6 @@ extension Effect {
 }
 ```
 
-Composition tradeoff: a single app-wide `AppIntent`/`AppAction` can become deeply nested as feature count grows. Prefer feature-scoped stores where practical, and compose only at flow boundaries (for example tab root, checkout flow, onboarding) instead of forcing one global mega-enum.
-
 ## View Guidance
 
 - Render `store.state` only.
@@ -352,11 +343,9 @@ struct CounterView: View {
 }
 ```
 
-If you target iOS 17+ for SwiftUI-first features, you can replace `ObservableObject`/`@Published` stores with `@Observable` stores (as in the MVVM playbook) and use `@State` + `@Bindable` in views. Keep `ObservableObject` when the same store must expose Combine publishers to UIKit.
+- iOS 17+: use `@Observable` store + `@State`/`@Bindable`; keep `ObservableObject` when UIKit Combine interop is needed.
 
 ### UIKit Integration
-
-In UIKit, subscribe once, render from state, and map control events to intents.
 
 ```swift
 import Combine
@@ -393,9 +382,8 @@ final class CounterViewController: UIViewController {
 }
 ```
 
-UIKit rules:
-- keep all UI writes in `render(_:)`
-- convert delegate/target-action callbacks into `Intent`
+- Keep all UI writes in `render(_:)`
+- Convert delegate/target-action callbacks into `Intent`
 
 ## Concurrency Rules
 
@@ -430,8 +418,6 @@ UIKit rules:
 
 Test intent reducer transitions, action reducer success/failure, cancellation, and stale-response handling. Assert state-machine behavior:
 
-Example test suite:
-
 ```swift
 import XCTest
 
@@ -446,11 +432,7 @@ final class CounterReducerTests: XCTestCase {
         var state = CounterState()
         let service = StubCounterService()
 
-        let effect = reduce(
-            state: &state,
-            intent: .incrementTapped,
-            service: service
-        )
+        let effect = reduce(state: &state, intent: .incrementTapped, service: service)
 
         XCTAssertEqual(state.load, .loading)
         XCTAssertNotNil(effect)
@@ -462,11 +444,7 @@ final class CounterReducerTests: XCTestCase {
         reduce(state: &state, action: .incrementResponse(.failure(TestError.offline)))
 
         XCTAssertEqual(state.count, 0)
-        if case .failed = state.load {
-            // expected
-        } else {
-            XCTFail("Expected failed state")
-        }
+        if case .failed = state.load { } else { XCTFail("Expected failed state") }
     }
 }
 
@@ -494,10 +472,7 @@ final class SearchReducerTests: XCTestCase {
         let requestID = UUID()
         var state = SearchState(latestRequestID: requestID, results: [])
 
-        reduce(
-            state: &state,
-            action: .response(requestID: requestID, .success(["new"]))
-        )
+        reduce(state: &state, action: .response(requestID: requestID, .success(["new"])))
 
         XCTAssertEqual(state.results, ["new"])
     }
@@ -507,18 +482,13 @@ final class SearchReducerTests: XCTestCase {
         let staleID = UUID()
         var state = SearchState(latestRequestID: latestID, results: ["current"])
 
-        reduce(
-            state: &state,
-            action: .response(requestID: staleID, .success(["old"]))
-        )
+        reduce(state: &state, action: .response(requestID: staleID, .success(["old"])))
 
         XCTAssertEqual(state.results, ["current"])
     }
 }
 
-private enum TestError: Error {
-    case offline
-}
+private enum TestError: Error { case offline }
 ```
 
 ## When to Prefer MVI

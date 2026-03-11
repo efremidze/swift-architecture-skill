@@ -4,8 +4,6 @@ Use this reference when a Swift codebase needs strict layer boundaries and use-c
 
 ## Core Dependency Rule
 
-Dependencies point inward:
-
 ```text
 Frameworks / UI
     ->
@@ -16,10 +14,9 @@ Use Cases
 Entities (Domain)
 ```
 
-Rules:
-- inner layers must not import or depend on outer layers
-- domain remains pure Swift
-- frameworks are implementation details and replaceable
+- Inner layers must not import or depend on outer layers
+- Domain remains pure Swift
+- Frameworks are implementation details and replaceable
 
 ## Canonical Layer Layout
 
@@ -36,15 +33,12 @@ Presentation/
 App/
 ```
 
-Guidance:
-- keep entities and use-case protocols in `Domain`
-- keep repository implementations and external adapters in `Data`
-- keep views/view models/controllers in `Presentation`
-- keep DI composition root and app bootstrap in `App`
+- Keep entities and use-case protocols in `Domain`
+- Keep repository implementations and external adapters in `Data`
+- Keep views/view models/controllers in `Presentation`
+- Keep DI composition root and app bootstrap in `App`
 
 ## Entities
-
-Entities model core business concepts and rules.
 
 ```swift
 struct User: Equatable {
@@ -53,14 +47,11 @@ struct User: Equatable {
 }
 ```
 
-Rules:
-- no SwiftUI/UIKit imports
-- no persistence or network behavior
-- avoid framework-specific types unless unavoidable
+- No SwiftUI/UIKit imports
+- No persistence or network behavior
+- Avoid framework-specific types unless unavoidable
 
 ## Use Cases
-
-Use cases orchestrate business actions through abstractions.
 
 ```swift
 protocol LoadUserUseCase {
@@ -80,14 +71,11 @@ final class LoadUser: LoadUserUseCase {
 }
 ```
 
-Rules:
-- one business responsibility per use case
-- no UI details
-- no direct framework usage unless abstracted
+- One business responsibility per use case
+- No UI details
+- No direct framework usage unless abstracted
 
 ## Repository Boundary
-
-Define repository protocols in `Domain`; implement them in `Data`.
 
 ```swift
 protocol UserRepository {
@@ -95,14 +83,11 @@ protocol UserRepository {
 }
 ```
 
-Data-layer implementations can coordinate:
 - API clients
-- local persistence
-- mapping DTOs to domain entities
+- Local persistence
+- Mapping DTOs to domain entities
 
 ## Dependency Injection Pattern
-
-Compose live dependencies in the app or feature assembly layer.
 
 ```swift
 enum UserFeatureAssembly {
@@ -113,13 +98,10 @@ enum UserFeatureAssembly {
 }
 ```
 
-Rules:
-- inject protocols into use cases and presentation
-- avoid global singletons as hidden dependencies
+- Inject protocols into use cases and presentation
+- Avoid global singletons as hidden dependencies
 
 ## DTO to Domain Mapping
-
-Map external models to domain entities at the data-layer boundary, in mappers or repository implementations.
 
 ```swift
 struct UserDTO: Decodable {
@@ -155,14 +137,11 @@ final class LiveUserRepository: UserRepository {
 }
 ```
 
-Rules:
-- never expose DTOs beyond the data layer
-- test mappers independently for edge cases and invalid input
-- keep mapping pure and side-effect-free
+- Never expose DTOs beyond the data layer
+- Test mappers independently for edge cases and invalid input
+- Keep mapping pure and side-effect-free
 
 ## Concurrency and Cancellation
-
-Use structured concurrency in use cases and let cancellation propagate through async calls.
 
 ```swift
 final class LoadUserProfile: LoadUserProfileUseCase {
@@ -182,31 +161,27 @@ final class LoadUserProfile: LoadUserProfileUseCase {
 }
 ```
 
-Rules:
-- prefer `async let` for concurrent independent fetches
-- cancellation propagates automatically through `try await`
-- use `Task.checkCancellation()` before expensive work if needed
-- in presentation, cancel tasks on view disappearance or new request
+- Prefer `async let` for concurrent independent fetches
+- Cancellation propagates automatically through `try await`
+- Use `Task.checkCancellation()` before expensive work if needed
+- In presentation, cancel tasks on view disappearance or new request
 
 ## Presentation Boundary
 
-Presentation depends on use-case abstractions, not data implementations.
-
-Expected flow:
 - View triggers intent/event
 - Presentation layer calls `UseCase`
 - UseCase returns domain entities
 - Presentation maps entities to view state
 
-SwiftUI adaptation:
-- use `@Observable`/`ObservableObject` ViewModels that expose view state
-- trigger use cases from intent methods on the ViewModel
-- keep SwiftUI views declarative and free of use-case/repository calls
+**SwiftUI:**
+- Use `@Observable`/`ObservableObject` ViewModels that expose view state
+- Trigger use cases from intent methods on the ViewModel
+- Keep SwiftUI views declarative and free of use-case/repository calls
 
-UIKit adaptation:
-- use Presenter/ViewModel objects owned by view controllers
-- convert delegate/target-action events into presenter intents
-- keep controllers responsible for rendering only; business coordination stays in presenter/use case layers
+**UIKit:**
+- Use Presenter/ViewModel objects owned by view controllers
+- Convert delegate/target-action events into presenter intents
+- Keep controllers responsible for rendering only; business coordination stays in presenter/use case layers
 
 ## Anti-Patterns and Fixes
 

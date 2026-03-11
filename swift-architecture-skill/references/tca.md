@@ -10,16 +10,13 @@ Reducer(State, Action) -> state mutation + Effect<Action>
 Effect emits Action -> reducer
 ```
 
-Core expectations:
-- value-based state
-- reducer-driven decisions
-- isolated side effects via effects
-- dependency injection through TCA dependencies
-- feature composition with scoped reducers
+- Value-based state
+- Reducer-driven decisions
+- Isolated side effects via effects
+- Dependency injection through TCA dependencies
+- Feature composition with scoped reducers
 
 ## Canonical Feature Shape
-
-Prefer modern TCA with `@Reducer` and `@ObservableState`.
 
 ```swift
 import ComposableArchitecture
@@ -98,14 +95,9 @@ struct CounterFeature {
 
 ## View Integration
 
-Rules:
-- send actions from the view
-- never mutate business state directly in the view
-- observe the smallest practical state slice
-
-### Modern Pattern (TCA 1.7+ with `@ObservableState`)
-
-With `@ObservableState`, views access store properties directly — no `WithViewStore` needed.
+- Send actions from the view
+- Never mutate business state directly in the view
+- Observe the smallest practical state slice
 
 ```swift
 struct CounterView: View {
@@ -130,7 +122,8 @@ struct CounterView: View {
 
 ## Composition Patterns
 
-Use `Scope` for parent-child composition.
+- Use `Scope(state:action:)` for parent-child feature composition
+- Use `IdentifiedArrayOf` + `.forEach` for stable-identity collections
 
 ```swift
 @Reducer
@@ -152,14 +145,12 @@ struct AppFeature {
 }
 ```
 
-Use `IdentifiedArrayOf` and `forEach` for collections with stable identity.
-
 ## Dependency Rules
 
-- keep dependency surfaces small and capability-focused
-- inject via `@Dependency`
-- never place dependencies in state
-- avoid singleton calls in reducers
+- Keep dependency surfaces small and capability-focused
+- Inject via `@Dependency`
+- Never place dependencies in state
+- Avoid singleton calls in reducers
 
 ```swift
 struct NumberFactClient {
@@ -186,21 +177,15 @@ extension DependencyValues {
 
 ## Effects and Concurrency
 
-Use `.run` for async work and route results back as actions.
-
-For re-entrant work, add cancellation (`.cancellable(id:cancelInFlight:)`) and map failures to explicit actions.
-If cancellation is not enough, add request versioning.
+- Use `.run` for async work; send results back as actions
+- Add `.cancellable(id:cancelInFlight:)` for re-entrant requests
+- Add request versioning when cancellation alone is insufficient
 
 ## Navigation Pattern
 
-Model navigation in state and drive it through actions.
-
-Common shapes:
 - `@Presents var alert: AlertState<Action.Alert>?`
 - `destination: Destination.State?`
-- Attach a matching `.ifLet` reducer for each presentation action (`alert`, `destination`, etc.).
-
-Keep navigation decisions in reducers and keep views declarative.
+- Attach a matching `.ifLet` reducer for each presentation action (`alert`, `destination`, etc.)
 
 ## Testing with `TestStore`
 

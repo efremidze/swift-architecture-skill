@@ -10,8 +10,6 @@ Use this reference when strict feature-level separation is needed, especially in
 - Entity: domain models used by the feature
 - Router: navigation and module assembly
 
-Expected interaction:
-
 ```text
 View -> Presenter -> Interactor -> Repository/Service -> Interactor -> Presenter -> View
 Presenter -> Router (navigation)
@@ -28,7 +26,7 @@ Feature/
   Router/
 ```
 
-Keep one VIPER module per feature to prevent cross-feature leakage.
+- Keep one VIPER module per feature to prevent cross-feature leakage.
 
 ## Responsibilities
 
@@ -85,8 +83,6 @@ extension ProfileViewData {
 ```
 
 ## Wiring Pattern
-
-Use boundary protocols and directional references.
 
 ```swift
 @MainActor
@@ -150,17 +146,10 @@ final class ProfilePresenter {
 }
 ```
 
-Keep `view` weak to avoid retain cycles.
-Keep presenter/view updates on the main actor so UI calls are thread-safe.
+- `weak var view: ProfileView?` — prevents retain cycles
+- Keep all Presenter → View calls on `@MainActor`
 
 ## Assembly Guidance
-
-Create modules via Router/Assembly factory:
-- instantiate View, Presenter, Interactor, Router
-- inject protocols, not concrete global singletons
-- set references once during build
-
-This centralizes wiring and reduces circular dependency mistakes.
 
 ```swift
 enum ProfileModule {
@@ -178,16 +167,11 @@ enum ProfileModule {
 }
 ```
 
-Rules:
-- keep the factory method as the single entry point for module creation
-- inject external dependencies (repositories, services) from the caller
-- set weak back-references (e.g., `presenter.view`) after construction
+- Keep the factory method as the single entry point for module creation
+- Inject external dependencies (repositories, services) from the caller
+- Set weak back-references (e.g., `presenter.view`) after construction
 
-SwiftUI integration option:
-- keep Presenter/Interactor/Router unchanged
-- wrap SwiftUI feature view in `UIHostingController`
-- bridge Presenter output through a small adapter object
-- for pure SwiftUI apps, inject a SwiftUI router object instead of requiring `UINavigationController`
+**SwiftUI:** Bridge via thin `@Observable` adapter conforming to the View protocol; inject a SwiftUI router instead of `UINavigationController`. For pure SwiftUI apps, implement `ProfileRouting` as a thin wrapper calling `appRouter.push(.settings)` on a shared `@Observable AppRouter` — see `coordinator.md`.
 
 ```swift
 import SwiftUI
@@ -204,19 +188,9 @@ final class ProfileViewAdapter: ObservableObject, ProfileView {
         self.presenter = presenter
     }
 
-    func showLoading(_ isLoading: Bool) {
-        self.isLoading = isLoading
-    }
-
-    func show(profile: ProfileViewData) {
-        self.name = profile.displayName
-        self.errorMessage = nil
-    }
-
-    func showError(message: String) {
-        self.errorMessage = message
-    }
-
+    func showLoading(_ isLoading: Bool) { self.isLoading = isLoading }
+    func show(profile: ProfileViewData) { self.name = profile.displayName; self.errorMessage = nil }
+    func showError(message: String) { self.errorMessage = message }
     func load() { presenter.load() }
     func didTapSettings() { presenter.didTapSettings() }
 }
@@ -228,9 +202,7 @@ struct ProfileScreen: View {
         VStack {
             Text(adapter.name)
             if adapter.isLoading { ProgressView() }
-            if let errorMessage = adapter.errorMessage {
-                Text(errorMessage)
-            }
+            if let errorMessage = adapter.errorMessage { Text(errorMessage) }
             Button("Settings") { adapter.didTapSettings() }
         }
         .task { adapter.load() }
@@ -252,18 +224,13 @@ enum ProfileModuleSwiftUI {
 }
 ```
 
-**Pure SwiftUI app:** Implement `ProfileRouting` as a thin wrapper that calls `appRouter.push(.settings)` on a shared `@Observable AppRouter`. Bind `appRouter.path` to `NavigationStack` at the root — see `coordinator.md` for the full `NavigationStack` + `AppCoordinator` pattern.
-
 ## Concurrency and Cancellation
 
-When Presenter coordinates async work, track active tasks and cancel stale requests. The `ProfilePresenter` shown in the Wiring Pattern section above already implements the full cancellation strategy — it holds a `loadTask: Task<Void, Never>?`, a `latestLoadRequestID: UUID?`, and handles `CancellationError` explicitly to guard against stale UI updates.
-
-Rules:
-- cancel in-flight tasks before issuing new requests
-- handle `CancellationError` explicitly to avoid stale UI updates
-- gate UI updates by request identity so only the latest request can update view state
-- cancel all tasks on module teardown
-- keep presenter intent methods synchronous (`func load()`), and manage async tasks internally
+- Cancel in-flight tasks before issuing new requests
+- Handle `CancellationError` explicitly to avoid stale UI updates
+- Gate UI updates by request identity so only the latest request can update view state
+- Cancel all tasks on module teardown
+- Keep presenter intent methods synchronous (`func load()`), and manage async tasks internally
 
 ## Anti-Patterns and Fixes
 
@@ -299,14 +266,8 @@ final class MockProfileView: ProfileView {
     var isLoading = false
 
     func showLoading(_ isLoading: Bool) { self.isLoading = isLoading }
-
-    func show(profile: ProfileViewData) {
-        shownName = profile.displayName
-    }
-
-    func showError(message: String) {
-        shownError = message
-    }
+    func show(profile: ProfileViewData) { shownName = profile.displayName }
+    func showError(message: String) { shownError = message }
 }
 
 struct StubProfileInteractor: ProfileInteracting {

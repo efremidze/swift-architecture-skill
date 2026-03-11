@@ -4,10 +4,10 @@ Use this reference for MVVM requests or screen-level state with async effects.
 
 ## Core Boundaries
 
-- Model: Domain entities and business rules. Keep UI-framework independent.
-- View: Render state and forward user intents. Do not call services directly.
-- ViewModel: Own presentation state, map domain to view data, coordinate effects.
-- Services/Repositories: Side-effect boundaries (network, persistence, analytics).
+- Model: domain entities and business rules; no UI-framework dependency
+- View: render state and forward user intents; no direct service calls
+- ViewModel: own presentation state, map domain to view data, coordinate effects
+- Services/Repositories: side-effect boundaries (network, persistence, analytics)
 
 Dependency direction:
 - View -> ViewModel
@@ -15,8 +15,6 @@ Dependency direction:
 - Model -> no dependency on View/ViewModel
 
 ## Feature Structure
-
-Prefer vertical feature slices with clear boundaries. Treat this layout as illustrative, not a required file checklist for every feature:
 
 ```text
 App/
@@ -41,8 +39,6 @@ Data/
 ```
 
 ## State Modeling
-
-Use explicit state types over boolean combinations.
 
 ```swift
 enum Loadable<Value: Equatable>: Equatable {
@@ -71,9 +67,7 @@ struct FeedState: Equatable {
 
 ## ViewModel Pattern
 
-Keep mutation on main actor, own task handles, and cancel stale work.
-
-### Modern Pattern (iOS 17+ / `@Observable`)
+### iOS 17+ (`@Observable`)
 
 ```swift
 @MainActor
@@ -121,8 +115,6 @@ final class FeedViewModel {
 
 ## Dependency Injection
 
-Inject abstractions into ViewModel constructors. Build live dependencies in feature assembly.
-
 ```swift
 protocol FeedRepository {
     func fetchPage(cursor: String?) async throws -> FeedPage
@@ -134,8 +126,6 @@ enum FeedAssembly {
     }
 }
 ```
-
-`FeedAssembly.makeViewModel()` keeps feature wiring obvious, but can become limiting as apps grow. A common evolution path is an app-level dependency container (composition root) that owns shared dependency graphs.
 
 ```swift
 protocol AppDependencies {
@@ -170,12 +160,9 @@ final class AppContainer {
 
 ## View Guidance
 
-- Bind to ViewModel state only.
-- Keep business transforms out of `body`/`cellForRowAt`.
-- Expose dedicated `ViewData` structs for formatting and display concerns.
-- Keep View-local state only for transient UI details (focus, scroll position).
-
-SwiftUI view with `@Observable` ViewModel (iOS 17+):
+- Keep business transforms out of `body`/`cellForRowAt`
+- Expose dedicated `ViewData` structs for formatting and display concerns
+- Keep View-local state only for transient UI details (focus, scroll position)
 
 ```swift
 struct FeedView: View {
@@ -198,8 +185,6 @@ struct FeedView: View {
 
 ## Navigation Patterns
 
-Keep routing decisions testable and decoupled from presentation APIs: ViewModel decides *where*, routing layer decides *how*.
-
 | Scenario | Recommended Pattern |
 |---|---|
 | Pure SwiftUI, linear flows | `NavigationStack` path on ViewModel |
@@ -207,8 +192,6 @@ Keep routing decisions testable and decoupled from presentation APIs: ViewModel 
 | UIKit host or mixed SwiftUI/UIKit | Coordinator protocol — see `coordinator.md` |
 | Multi-step flows (onboarding, checkout) | Coordinator with child coordinators |
 | Universal Links / push notifications | Deep link router + state-driven nav |
-
-Model destinations as a `Hashable` enum. Model sheets/alerts as optional `Identifiable` state.
 
 ### SwiftUI: ViewModel-owned path (default)
 
@@ -283,72 +266,31 @@ struct FeedView: View {
 
 ```swift
 // Anti-pattern: expensive mapping runs on @MainActor.
-@MainActor
-func load() {
-    loadTask?.cancel()
-    state.load = .loading
-
-    loadTask = Task {
-        do {
-            let page = try await repository.fetchPage(cursor: nil)
-            state.items = page.items.map(FeedItemViewData.init) // can hitch UI for large pages
-            state.load = .loaded(())
-        } catch is CancellationError {
-            // Ignore cancellation.
-        } catch {
-            state.load = .failed(error.localizedDescription)
-        }
-    }
+loadTask = Task {
+    let page = try await repository.fetchPage(cursor: nil)
+    state.items = page.items.map(FeedItemViewData.init) // can hitch UI for large pages
 }
 
-// Better: do CPU-heavy mapping off actor, then commit state on @MainActor.
-@MainActor
-func load() {
-    loadTask?.cancel()
-    state.load = .loading
-
-    loadTask = Task {
-        do {
-            let page = try await repository.fetchPage(cursor: nil)
-            let mappedItems = try await Task.detached(priority: .userInitiated) {
-                page.items.map(FeedItemViewData.init)
-            }.value
-            try Task.checkCancellation()
-            state.items = mappedItems
-            state.load = .loaded(())
-        } catch is CancellationError {
-            // Ignore cancellation.
-        } catch {
-            state.load = .failed(error.localizedDescription)
-        }
-    }
+// Better: map off actor, commit on @MainActor.
+loadTask = Task {
+    let page = try await repository.fetchPage(cursor: nil)
+    let mappedItems = try await Task.detached(priority: .userInitiated) {
+        page.items.map(FeedItemViewData.init)
+    }.value
+    try Task.checkCancellation()
+    state.items = mappedItems
 }
 ```
 
-If mapping is small but reused, extract it into a pure helper (`static`/`nonisolated`) for testability; if it is expensive, run it off actor (`Task.detached` or a background service). Under strict concurrency (Swift 6), ensure detached-task captures/results are `Sendable`, or move the work behind a background actor/service boundary.
+- Small reused mapping → `static`/`nonisolated` helper
+- Expensive mapping → `Task.detached` or background actor; ensure `Sendable` captures under Swift 6
 
 ## Testing Expectations
 
-Test state transitions: success (`loading -> loaded`), failure (`loading -> failed`), cancellation (no stale overwrite), mapping correctness (domain -> view data). Use `ControlledFeedRepository` to drive responses deterministically:
+Test state transitions: success (`loading -> loaded`), failure (`loading -> failed`), cancellation (no stale overwrite), mapping correctness (domain -> view data).
 
 ```swift
 import XCTest
-
-struct FeedItem: Equatable {
-    let id: UUID
-    let title: String
-}
-
-struct FeedPage: Equatable {
-    let items: [FeedItem]
-}
-
-extension FeedItemViewData {
-    init(_ item: FeedItem) {
-        self.id = item.id
-        self.title = item.title
-    }
-}
 
 actor ControlledFeedRepository: FeedRepository {
     private var continuations: [CheckedContinuation<FeedPage, Error>] = []
@@ -361,13 +303,7 @@ actor ControlledFeedRepository: FeedRepository {
 
     func resolveNext(with result: Result<FeedPage, Error>) {
         guard !continuations.isEmpty else { return }
-        let continuation = continuations.removeFirst()
-        switch result {
-        case .success(let page):
-            continuation.resume(returning: page)
-        case .failure(let error):
-            continuation.resume(throwing: error)
-        }
+        continuations.removeFirst().resume(with: result)
     }
 }
 
@@ -383,11 +319,7 @@ final class FeedViewModelTests: XCTestCase {
         await Task.yield()
 
         XCTAssertEqual(sut.state.items.map(\.title), ["A"])
-        if case .loaded = sut.state.load {
-            // expected
-        } else {
-            XCTFail("Expected loaded state")
-        }
+        if case .loaded = sut.state.load { } else { XCTFail("Expected loaded") }
     }
 
     func test_load_failure_setsFailed() async {
@@ -398,23 +330,17 @@ final class FeedViewModelTests: XCTestCase {
         await repository.resolveNext(with: .failure(TestError.offline))
         await Task.yield()
 
-        if case .failed = sut.state.load {
-            // expected
-        } else {
-            XCTFail("Expected failed state")
-        }
+        if case .failed = sut.state.load { } else { XCTFail("Expected failed") }
     }
 
     func test_load_cancellation_ignoresStaleResult() async {
         let repository = ControlledFeedRepository()
         let sut = FeedViewModel(repository: repository)
-
         let stale = FeedPage(items: [FeedItem(id: UUID(), title: "stale")])
         let latest = FeedPage(items: [FeedItem(id: UUID(), title: "latest")])
 
-        sut.load() // request A
-        sut.load() // request B cancels A
-
+        sut.load()
+        sut.load() // cancels first
         await repository.resolveNext(with: .success(stale))
         await repository.resolveNext(with: .success(latest))
         await Task.yield()
@@ -424,15 +350,13 @@ final class FeedViewModelTests: XCTestCase {
     }
 }
 
-private enum TestError: Error {
-    case offline
-}
+private enum TestError: Error { case offline }
 ```
 
 ## When to Prefer MVVM
 
 - Screen-level state management without strict unidirectional flow requirements.
-- Team wants explicit View/ViewModel boundaries at moderate ceremony cost (scales file splits to actual complexity).
+- Team wants explicit View/ViewModel boundaries at moderate ceremony cost.
 
 ## PR Review Checklist
 

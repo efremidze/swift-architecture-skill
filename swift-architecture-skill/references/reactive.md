@@ -4,13 +4,11 @@ Use this reference for stream-driven features (search, live updates, real-time f
 
 ## Core Philosophy
 
-Model inputs, transforms, and outputs as streams.
-
 ```text
 Input -> Publisher/Observable chain -> State -> UI
 ```
 
-Keep stream composition in presentation or a dedicated reactive layer, not in views.
+- Keep pipeline composition in ViewModel/Presenter, not in views.
 
 ## Canonical Combine Pattern
 
@@ -40,25 +38,22 @@ where S.SchedulerTimeType == DispatchQueue.SchedulerTimeType {
 }
 ```
 
-In production, pass `DispatchQueue.main` as the scheduler.
-
-Rules:
-- debounce user text input
-- remove duplicates where meaningful
-- hop to main thread before UI-bound state writes
-- keep cancellables tied to lifecycle
+- Debounce user text input
+- Remove duplicates where meaningful
+- Hop to main thread before UI-bound state writes
+- Keep cancellables tied to lifecycle
 
 ## UI Integration by Stack
 
-### SwiftUI Pattern
+### SwiftUI
 
 - Keep operator chains in `ObservableObject`/`@Observable` types, not in `View`.
 - Bind UI input (`TextField`, toggle, selection) to published inputs on the model.
 
-### UIKit Pattern (Combine)
+### UIKit (Combine)
 
 - Keep pipelines in Presenter/ViewModel.
-- Map delegate/target-action callbacks into input subjects.
+- Map delegate/target-action callbacks to input subjects.
 - Render from a single state subscription.
 
 ```swift
@@ -132,15 +127,12 @@ Prefer `switchToLatest` over nested subscriptions for request replacement flows.
 
 ## RxSwift Mapping Notes
 
-Combine and RxSwift mapping:
 - `AnyPublisher` <-> `Observable`
 - `AnyCancellable` <-> `DisposeBag`
 - `receive(on:)` <-> `observe(on:)`
-- `subscribe(on:)` semantics should be applied intentionally to offload heavy work
+- `subscribe(on:)`: apply intentionally to offload heavy work off main thread
 
 ## Error Handling Pattern
-
-Recover in stream boundaries and expose user-safe state:
 
 ```swift
 protocol SearchService {
@@ -163,7 +155,7 @@ func searchState(
 }
 ```
 
-For transient failures, prefer fallback state over terminating the stream.
+- Transient failures: recover with fallback state; don't terminate the pipeline.
 
 ## Anti-Patterns and Fixes
 
@@ -205,20 +197,12 @@ final class SearchViewModelTests: XCTestCase {
         let vm = SearchViewModel(service: stubService, scheduler: scheduler.eraseToAnyScheduler())
 
         var collected: [[String]] = []
-        let cancellable = vm.$results
-            .dropFirst()
-            .sink { collected.append($0) }
+        let cancellable = vm.$results.dropFirst().sink { collected.append($0) }
 
         vm.query = "swift"
-
-        // Advance past debounce interval.
         scheduler.advance(by: .milliseconds(300))
-
-        // Simulate service response.
         subject.send(["SwiftUI", "Swift"])
         subject.send(completion: .finished)
-
-        // Advance to process receive(on:).
         scheduler.advance()
 
         XCTAssertEqual(collected, [["SwiftUI", "Swift"]])
@@ -232,13 +216,10 @@ final class SearchViewModelTests: XCTestCase {
         let vm = SearchViewModel(service: stubService, scheduler: scheduler.eraseToAnyScheduler())
 
         var collected: [[String]] = []
-        let cancellable = vm.$results
-            .dropFirst()
-            .sink { collected.append($0) }
+        let cancellable = vm.$results.dropFirst().sink { collected.append($0) }
 
         vm.query = "swift"
         scheduler.advance(by: .milliseconds(300))
-
         subject.send(completion: .failure(TestError.offline))
         scheduler.advance()
 
@@ -251,29 +232,22 @@ final class SearchViewModelTests: XCTestCase {
         let second = PassthroughSubject<[String], Error>()
         let stubService = StubSearchService { query in
             switch query {
-            case "sw":
-                return first.eraseToAnyPublisher()
-            case "swift":
-                return second.eraseToAnyPublisher()
-            default:
-                return Empty<[String], Error>().eraseToAnyPublisher()
+            case "sw": return first.eraseToAnyPublisher()
+            case "swift": return second.eraseToAnyPublisher()
+            default: return Empty<[String], Error>().eraseToAnyPublisher()
             }
         }
         let scheduler = DispatchQueue.test
         let vm = SearchViewModel(service: stubService, scheduler: scheduler.eraseToAnyScheduler())
 
         var collected: [[String]] = []
-        let cancellable = vm.$results
-            .dropFirst()
-            .sink { collected.append($0) }
+        let cancellable = vm.$results.dropFirst().sink { collected.append($0) }
 
         vm.query = "sw"
         scheduler.advance(by: .milliseconds(300))
-
         vm.query = "swift"
         scheduler.advance(by: .milliseconds(300))
 
-        // This should be ignored because a newer query replaced the subscription.
         first.send(["stale"])
         second.send(["fresh"])
         scheduler.advance()
@@ -285,17 +259,11 @@ final class SearchViewModelTests: XCTestCase {
 
 struct StubSearchService: SearchService {
     let searchHandler: (String) -> AnyPublisher<[String], Error>
-    func search(_ query: String) -> AnyPublisher<[String], Error> {
-        searchHandler(query)
-    }
+    func search(_ query: String) -> AnyPublisher<[String], Error> { searchHandler(query) }
 }
 
-private enum TestError: Error {
-    case offline
-}
+private enum TestError: Error { case offline }
 ```
-
-The canonical `SearchViewModel` already supports scheduler injection for tests.
 
 ## When to Prefer Reactive Architecture
 

@@ -4,8 +4,6 @@ Use this reference when navigation logic needs to be decoupled from individual s
 
 ## Core Concept
 
-A Coordinator owns one navigation flow. It creates and connects screens, passes dependencies, and decides what happens next when a user action triggers a transition.
-
 ```text
 AppCoordinator
   -> AuthCoordinator   (owns login/signup flow)
@@ -13,11 +11,10 @@ AppCoordinator
        -> ProfileCoordinator (owns profile flow)
 ```
 
-Rules:
-- each coordinator owns one flow (a screen, a sub-flow, or a full section)
-- screens emit navigation events; coordinators decide what to do with them
-- screens do not reference coordinators or push/present directly
-- parent coordinators launch child coordinators for nested flows
+- Each coordinator owns one flow (a screen, a sub-flow, or a full section)
+- Screens emit navigation events; coordinators decide what to do with them
+- Screens do not reference coordinators or push/present directly
+- Parent coordinators launch child coordinators for nested flows
 
 ## Feature Structure
 
@@ -42,8 +39,6 @@ Navigation/
 
 ## Coordinator Protocol
 
-Define a minimal base contract.
-
 ```swift
 @MainActor
 protocol Coordinator: AnyObject {
@@ -63,14 +58,11 @@ extension Coordinator {
 }
 ```
 
-Rules:
-- retain child coordinators so they are not deallocated mid-flow
-- remove child coordinators when the flow they own completes
+- Retain child coordinators so they are not deallocated mid-flow
+- Remove child coordinators when the flow they own completes
 - `start()` is the single entry point that kicks off the flow
 
 ## UIKit Coordinator
-
-For UIKit, wrap a `UINavigationController` in a thin router.
 
 ```swift
 @MainActor
@@ -140,8 +132,6 @@ final class ProfileCoordinator: Coordinator {
 
 ## SwiftUI Coordinator
 
-For SwiftUI, model navigation state as a value type and bind it to `NavigationStack`.
-
 ```swift
 @MainActor
 @Observable
@@ -160,22 +150,10 @@ final class AppCoordinator: Coordinator {
         // Nothing to push — root is set at view layer.
     }
 
-    func showProfile(userID: UUID) {
-        path.append(.profile(userID))
-    }
-
-    func showSettings() {
-        sheet = .settings
-    }
-
-    func pop() {
-        guard !path.isEmpty else { return }
-        path.removeLast()
-    }
-
-    func dismissSheet() {
-        sheet = nil
-    }
+    func showProfile(userID: UUID) { path.append(.profile(userID)) }
+    func showSettings() { sheet = .settings }
+    func pop() { guard !path.isEmpty else { return }; path.removeLast() }
+    func dismissSheet() { sheet = nil }
 }
 
 enum AppDestination: Hashable {
@@ -234,15 +212,12 @@ struct AppRootView: View {
 }
 ```
 
-Rules:
-- model destinations as a `Hashable` enum so `NavigationStack` can drive them
-- model sheets as an `Identifiable` enum to bind `sheet(item:)`
-- mutate coordinator state on the main actor
-- avoid deep conditional nesting in the `navigationDestination` closure — prefer `switch`
+- Model destinations as a `Hashable` enum so `NavigationStack` can drive them
+- Model sheets as an `Identifiable` enum to bind `sheet(item:)`
+- Mutate coordinator state on the main actor
+- Avoid deep conditional nesting in the `navigationDestination` closure — prefer `switch`
 
 ## Child Coordinator Pattern
-
-Parent coordinators own child coordinators for nested flows.
 
 ```swift
 @MainActor
@@ -283,8 +258,7 @@ final class MainCoordinator: Coordinator {
 
 ## Deep Linking
 
-Handle deep links by parsing a URL into a destination and routing directly to it.
-Push destinations update `path`; sheet destinations set `sheet`.
+- Parse URL → destination enum; set coordinator path/sheet directly.
 
 ```swift
 @MainActor
@@ -358,10 +332,7 @@ final class SpyNavigationRouter: NavigationRouter {
 final class ProfileCoordinatorTests: XCTestCase {
     func test_start_pushesProfileViewController() {
         let router = SpyNavigationRouter()
-        let coordinator = ProfileCoordinator(
-            router: router,
-            userRepository: StubUserRepository()
-        )
+        let coordinator = ProfileCoordinator(router: router, userRepository: StubUserRepository())
 
         coordinator.start()
 
@@ -371,10 +342,7 @@ final class ProfileCoordinatorTests: XCTestCase {
 
     func test_showEditProfile_addsChildCoordinator() {
         let router = SpyNavigationRouter()
-        let coordinator = ProfileCoordinator(
-            router: router,
-            userRepository: StubUserRepository()
-        )
+        let coordinator = ProfileCoordinator(router: router, userRepository: StubUserRepository())
         coordinator.start()
 
         coordinator.showEditProfileForTesting()
@@ -439,7 +407,7 @@ struct StubUserRepository: UserRepository {
 }
 ```
 
-Note: `showEditProfileForTesting()` exposes the private routing action for test access — annotate with `#if DEBUG` or use `@testable import` and `internal` access level to keep production code clean.
+- Expose private routing actions via internal access + `@testable import`, or `#if DEBUG`.
 
 ## When to Prefer Coordinator
 
