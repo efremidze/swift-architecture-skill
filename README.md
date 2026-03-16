@@ -40,8 +40,20 @@ Which architecture should I use and why?
 ```
 
 ```text
-Use swift-architecture-skill to review this ViewModel for MVVM violations
-and suggest concrete fixes.
+We're planning to use TCA for a simple settings screen with two toggles.
+Is that the right call, or is it overkill for this feature?
+```
+
+```text
+This module started as MVVM but the ViewModel is doing too much — routing,
+formatting, and business logic. Use swift-architecture-skill to refactor it
+toward Clean Architecture and show me the layer boundaries.
+```
+
+```text
+We have a UIKit + MVP module we're migrating to SwiftUI. Should we keep MVP
+or switch patterns during the migration, and how do we handle the transition
+period where both coexist?
 ```
 
 ## Skill Structure
