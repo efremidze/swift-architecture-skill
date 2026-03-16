@@ -1,35 +1,26 @@
 # Swift Architecture Skill
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![GitHub Release](https://img.shields.io/github/v/release/efremidze/swift-architecture-skill)](https://github.com/efremidze/swift-architecture-skill/releases)
 
-Architecture guidance for AI coding tools — choose and apply the right Swift architecture for SwiftUI/UIKit features with concrete patterns, anti-pattern fixes, testing strategy, and review checklists.
+[![Validate Skill](https://github.com/efremidze/swift-architecture-skill/actions/workflows/validate-skill.yml/badge.svg)](https://github.com/efremidze/swift-architecture-skill/actions/workflows/validate-skill.yml)
+[![Agent Skills](https://img.shields.io/badge/Agent%20Skills-Compatible-purple.svg)](https://agentskills.io/home)
+![Release](https://img.shields.io/github/v/release/efremidze/swift-architecture-skill)
+
+Architecture guidance for AI coding tools — because LLMs default to MVVM for everything. This skill routes to the right pattern for your feature, keeps guidance scoped to your task, and gives you concrete code, anti-pattern fixes, and a PR checklist.
 
 Supports the [Agent Skills open format](https://agentskills.io/home).
 
 ## Features
 
-- **Architecture selection**: Describe your feature or module and the skill selects the right pattern based on UI stack, state complexity, and existing conventions. If you name a pattern, it validates fit before you commit.
-- **Dedicated playbooks**: Each architecture has its own reference with code patterns, anti-pattern fixes, testing strategy, and a PR review checklist. Guidance stays scoped to your task.
-- **SwiftUI and UIKit**: Every playbook covers both stacks and calls out where they differ, using modern async/await and actor-based concurrency patterns.
-
-The skill reads your task context, routes through `selection-guide.md`, and loads the matching playbook.
+- **Routes to the right architecture**: Describe your feature and the skill selects the best fit based on UI stack, state complexity, and existing conventions. Name a pattern yourself and it validates the fit before you commit.
+- **Scoped playbooks**: Each architecture has its own reference — code patterns, anti-pattern fixes, testing strategy, and a PR checklist. Guidance never bleeds across patterns.
+- **SwiftUI and UIKit**: Every playbook covers both stacks with modern async/await and actor-based concurrency patterns throughout.
 
 ## Supported Architectures
 
-- **MVP** - Model-View-Presenter pattern ([playbook](swift-architecture-skill/references/mvp.md))
-- **MVVM** - Model-View-ViewModel pattern ([playbook](swift-architecture-skill/references/mvvm.md))
-- **MVI** - Model-View-Intent pattern ([playbook](swift-architecture-skill/references/mvi.md))
-- **TCA** - The Composable Architecture ([playbook](swift-architecture-skill/references/tca.md))
-- **Clean Architecture** - Layered architecture with dependency inversion ([playbook](swift-architecture-skill/references/clean-architecture.md))
-- **VIPER** - View-Interactor-Presenter-Entity-Router pattern ([playbook](swift-architecture-skill/references/viper.md))
-- **Coordinator** - Navigation flow decoupling pattern ([playbook](swift-architecture-skill/references/coordinator.md))
-- **Reactive** - Combine/RxSwift patterns ([playbook](swift-architecture-skill/references/reactive.md))
+MVP · MVVM · MVI · TCA · Clean Architecture · VIPER · Coordinator · Reactive
 
-When no architecture is specified, the skill routes through [`references/selection-guide.md`](swift-architecture-skill/references/selection-guide.md) to infer the best fit based on feature type, UI stack, and team constraints.
+Each has a dedicated [playbook](swift-architecture-skill/references/) with overview, patterns, anti-pattern fixes, testing strategy, and PR checklist.
 
 ## Quick Start
-
-### Option A: `skills.sh` (Recommended)
 
 ```bash
 npx skills add https://github.com/efremidze/swift-architecture-skill --skill swift-architecture-skill
@@ -39,45 +30,7 @@ Then ask your agent:
 
 > Use `swift-architecture-skill` to recommend and scaffold architecture for this feature.
 
-[View this skill on skills.sh](https://skills.sh/efremidze/swift-architecture-skill/swift-architecture-skill)
-
-### Option B: Claude Code Plugin
-
-1. Add the marketplace:
-
-```bash
-/plugin marketplace add efremidze/swift-architecture-skill
-```
-
-2. Install the skill:
-
-```bash
-/plugin install swift-architecture-skill@swift-architecture-skill
-```
-
-For team setup, add this to `.claude/settings.json`:
-
-```json
-{
-  "enabledPlugins": {
-    "swift-architecture-skill@swift-architecture-skill": true
-  },
-  "extraKnownMarketplaces": {
-    "swift-architecture-skill": {
-      "source": {
-        "source": "github",
-        "repo": "efremidze/swift-architecture-skill"
-      }
-    }
-  }
-}
-```
-
-### Option C: Manual Install
-
-1. Clone this repository.
-2. Copy or symlink `swift-architecture-skill/` into your tool's skills directory.
-3. Ask your AI assistant to use `swift-architecture-skill` for architecture tasks.
+Or clone this repository and drop `swift-architecture-skill/` into your tool's skills directory.
 
 ## Example Prompts
 
@@ -87,13 +40,20 @@ Which architecture should I use and why?
 ```
 
 ```text
-Use swift-architecture-skill to review this ViewModel for MVVM violations
-and suggest concrete fixes.
+We're planning to use TCA for a simple settings screen with two toggles.
+Is that the right call, or is it overkill for this feature?
 ```
 
 ```text
-Help me migrate this 500-line UIViewController to Clean Architecture
-incrementally, with tests at each step.
+This module started as MVVM but the ViewModel is doing too much — routing,
+formatting, and business logic. Use swift-architecture-skill to refactor it
+toward Clean Architecture and show me the layer boundaries.
+```
+
+```text
+We have a UIKit + MVP module we're migrating to SwiftUI. Should we keep MVP
+or switch patterns during the migration, and how do we handle the transition
+period where both coexist?
 ```
 
 ## Skill Structure
@@ -101,8 +61,6 @@ incrementally, with tests at each step.
 ```text
 swift-architecture-skill/
   SKILL.md                       # Routing logic and output requirements
-  agents/
-    openai.yaml                  # Interface metadata for skill-capable tools
   references/
     selection-guide.md           # Decision framework across architectures
     mvp.md                       # MVP playbook
@@ -115,21 +73,20 @@ swift-architecture-skill/
     reactive.md                  # Reactive (Combine/RxSwift) playbook
 ```
 
-Each playbook follows a consistent contract:
-- overview and when to use it
-- core concepts and implementation patterns
-- anti-patterns with direct fixes
-- testing strategy
-- PR review checklist
+## Contributing
 
-## Related Skills
+Contributions are welcome. A few things to keep in mind:
+
+- **Respect the token budget.** SKILL.md is loaded on every invocation — keep additions concise.
+- **Don't repeat what LLMs already know.** Focus on edge cases, common mistakes, and pattern-specific traps that models get wrong.
+- **One playbook per pattern.** Keep guidance scoped; don't let patterns bleed into each other.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full structure and quality requirements.
+
+## Related
 
 - [swift-patterns-skill](https://github.com/efremidze/swift-patterns-skill)
 
-## Contributing
-
-Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for structure and quality requirements.
-
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+MIT. See [LICENSE](LICENSE) for details.
