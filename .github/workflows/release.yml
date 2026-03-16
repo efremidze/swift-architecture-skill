@@ -37,7 +37,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Bump and push tag
+      - name: Calculate next version
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
         with:
@@ -45,6 +45,20 @@ jobs:
           release_branches: main
           default_bump: ${{ inputs.bump }}
           tag_prefix: v
+          dry_run: true
+
+      - name: Update plugin versions
+        run: |
+          VERSION=${{ steps.tag_version.outputs.new_version }}
+          sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"${VERSION}\"/g" .claude-plugin/plugin.json .claude-plugin/marketplace.json
+          git add .claude-plugin/plugin.json .claude-plugin/marketplace.json
+          git diff --staged --quiet || git commit -m "chore: bump plugin version to ${VERSION}"
+          git push
+
+      - name: Tag release commit
+        run: |
+          git tag ${{ steps.tag_version.outputs.new_tag }}
+          git push origin ${{ steps.tag_version.outputs.new_tag }}
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
