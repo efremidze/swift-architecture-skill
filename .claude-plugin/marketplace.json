@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/marketplace/marketplace.schema.json",
   "name": "Swift Architecture Skill",
-  "version": "0.4.0",
+  "version": "0.4.2",
   "author": {
     "name": "Lasha Efremidze",
     "email": "efremidzel@hotmail.com"
@@ -14,7 +14,7 @@
       "name": "swift-architecture-skill",
       "description": "Swift architecture Agent Skill with playbooks for MVVM, MVI, TCA, Clean Architecture, VIPER, and Reactive.",
       "repository": "https://github.com/efremidze/swift-architecture-skill",
-      "version": "0.4.0",
+      "version": "0.4.2",
       "author": {
         "name": "Lasha Efremidze",
         "email": "efremidzel@hotmail.com"
