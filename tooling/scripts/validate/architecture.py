@@ -87,8 +87,20 @@ def parse_selection_flow_slugs(selection_text: str) -> Set[str]:
 
 def parse_readme_supported_slugs(readme_text: str) -> Tuple[Set[str], List[str]]:
     errors: List[str] = []
-    matches = re.findall(r"^- \*\*(.+?)\*\* -", readme_text, flags=re.MULTILINE)
     slugs: Set[str] = set()
+
+    # Format 1: bullet list  - **Name** - description
+    matches = re.findall(r"^- \*\*(.+?)\*\* -", readme_text, flags=re.MULTILINE)
+
+    # Format 2: inline dot-separated list  MVP · MVVM · Clean Architecture · ...
+    if not matches:
+        for line in readme_text.splitlines():
+            if " · " in line:
+                parts = [p.strip() for p in line.split(" · ")]
+                if all(p in README_NAME_TO_SLUG for p in parts):
+                    matches = parts
+                    break
+
     unknown_named = sorted(set(matches) - set(README_NAME_TO_SLUG.keys()))
     if unknown_named:
         errors.append(
