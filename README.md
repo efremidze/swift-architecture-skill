@@ -12,7 +12,7 @@ Supports the [Agent Skills open format](https://agentskills.io/home).
 - **Dedicated playbooks**: Each architecture has its own reference with code patterns, anti-pattern fixes, testing strategy, and a PR review checklist. Guidance stays scoped to your task.
 - **SwiftUI and UIKit**: Every playbook covers both stacks and calls out where they differ, using modern async/await and actor-based concurrency patterns.
 
-The skill reads your task context, routes through `selection-guide.md`, and loads the matching playbook.
+The skill reads your task context, routes through [`swift-architecture-skill/references/selection-guide.md`](swift-architecture-skill/references/selection-guide.md), and loads the matching playbook.
 
 ## Supported Architectures
 
@@ -25,7 +25,7 @@ The skill reads your task context, routes through `selection-guide.md`, and load
 - **Coordinator** - Navigation flow decoupling pattern ([playbook](swift-architecture-skill/references/coordinator.md))
 - **Reactive** - Combine/RxSwift patterns ([playbook](swift-architecture-skill/references/reactive.md))
 
-When no architecture is specified, the skill routes through [`references/selection-guide.md`](swift-architecture-skill/references/selection-guide.md) to infer the best fit based on feature type, UI stack, and team constraints.
+When no architecture is specified, the skill routes through [`swift-architecture-skill/references/selection-guide.md`](swift-architecture-skill/references/selection-guide.md) to infer the best fit based on feature type, UI stack, and team constraints.
 
 ## Quick Start
 
