@@ -1,8 +1,8 @@
 # Swift Architecture Skill
 
-![Release](https://img.shields.io/github/v/release/efremidze/swift-architecture-skill)
 [![Validate Skill](https://github.com/efremidze/swift-architecture-skill/actions/workflows/validate-skill.yml/badge.svg)](https://github.com/efremidze/swift-architecture-skill/actions/workflows/validate-skill.yml)
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-Compatible-purple.svg)](https://agentskills.io/home)
+![Release](https://img.shields.io/github/v/release/efremidze/swift-architecture-skill)
 
 Architecture guidance for AI coding tools — because LLMs default to MVVM for everything. This skill routes to the right pattern for your feature, keeps guidance scoped to your task, and gives you concrete code, anti-pattern fixes, and a PR checklist.
 
