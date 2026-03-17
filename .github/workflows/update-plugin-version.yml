@@ -1,0 +1,52 @@
+name: Update Plugin Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Plugin version to write (for example 0.4.3)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    environment: release
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update plugin versions
+        id: version
+        run: |
+          VERSION="${{ inputs.version }}"
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+            echo "Version must match X.Y.Z, got: $VERSION"
+            exit 1
+          }
+          jq --arg version "$VERSION" '.version = $version' .claude-plugin/plugin.json > .claude-plugin/plugin.json.tmp
+          mv .claude-plugin/plugin.json.tmp .claude-plugin/plugin.json
+          jq --arg version "$VERSION" '.version = $version | .plugins |= map(.version = $version)' .claude-plugin/marketplace.json > .claude-plugin/marketplace.json.tmp
+          mv .claude-plugin/marketplace.json.tmp .claude-plugin/marketplace.json
+          {
+            echo "new_version=$VERSION"
+            echo "new_tag=v$VERSION"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Open version update pull request
+        id: create_pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update plugin version to ${{ steps.version.outputs.new_version }}"
+          title: "chore: update plugin version to ${{ steps.version.outputs.new_version }}"
+          branch: release/${{ steps.version.outputs.new_tag }}
+          base: main
+          add-paths: |
+            .claude-plugin/plugin.json
+            .claude-plugin/marketplace.json
+          delete-branch: true
