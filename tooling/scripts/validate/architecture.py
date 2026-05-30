@@ -43,7 +43,7 @@ def expected_reference_slugs() -> Set[str]:
     slugs = {
         p.stem
         for p in REFERENCES_DIR.glob("*.md")
-        if p.stem != "selection-guide"
+        if p.stem not in {"selection-guide", "_index"}
     }
     return slugs
 
