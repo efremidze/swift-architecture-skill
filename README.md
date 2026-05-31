@@ -12,6 +12,7 @@ Supports the [Agent Skills open format](https://agentskills.io/home).
 
 - **Routes to the right architecture**: Describe your feature and the skill selects the best fit based on UI stack, state complexity, and existing conventions. Name a pattern yourself and it validates the fit before you commit.
 - **Scoped playbooks**: Each architecture has its own reference — code patterns, anti-pattern fixes, testing strategy, and a PR checklist. Guidance never bleeds across patterns.
+- **Reference index**: A dedicated `_index.md` gives agents a fast navigation hub and problem router before diving into a playbook.
 - **SwiftUI and UIKit**: Every playbook covers both stacks with modern async/await and actor-based concurrency patterns throughout.
 
 ## Supported Architectures
@@ -19,6 +20,7 @@ Supports the [Agent Skills open format](https://agentskills.io/home).
 MVP · MVVM · MVI · TCA · Clean Architecture · VIPER · Coordinator · Reactive
 
 Each has a dedicated [playbook](swift-architecture-skill/references/) with overview, patterns, anti-pattern fixes, testing strategy, and PR checklist.
+Start with the [reference index](swift-architecture-skill/references/_index.md) for quick routing, or use the [selection guide](swift-architecture-skill/references/selection-guide.md) when the architecture is still undecided.
 
 ## Quick Start
 
@@ -62,6 +64,7 @@ period where both coexist?
 swift-architecture-skill/
   SKILL.md                       # Routing logic and output requirements
   references/
+    _index.md                    # Navigation hub and problem router
     selection-guide.md           # Decision framework across architectures
     mvp.md                       # MVP playbook
     mvvm.md                      # MVVM playbook
