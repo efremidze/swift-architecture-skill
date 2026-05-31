@@ -2,6 +2,19 @@
 
 Use this reference for strict unidirectional flow, strong composition, and `TestStore`-driven testing.
 
+## Contents
+- [Mental Model](#mental-model)
+- [Canonical Feature Shape](#canonical-feature-shape)
+- [View Integration](#view-integration)
+- [Composition Patterns](#composition-patterns)
+- [Dependency Rules](#dependency-rules)
+- [Effects and Concurrency](#effects-and-concurrency)
+- [Navigation Pattern](#navigation-pattern)
+- [Testing with TestStore](#testing-with-teststore)
+- [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
+- [When to Prefer TCA](#when-to-prefer-tca)
+- [PR Review Checklist](#pr-review-checklist)
+
 ## Mental Model
 
 ```text

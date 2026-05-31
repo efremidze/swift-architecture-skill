@@ -2,6 +2,20 @@
 
 Use this reference when you need a passive View that delegates all logic to a Presenter, especially in UIKit codebases where direct testability of presentation logic is a priority.
 
+## Contents
+- [Core Boundaries](#core-boundaries)
+- [Feature Structure](#feature-structure)
+- [View Protocol](#view-protocol)
+- [View Data](#view-data)
+- [Presenter Pattern](#presenter-pattern)
+- [UIKit View Implementation](#uikit-view-implementation)
+- [SwiftUI Adapter](#swiftui-adapter)
+- [Assembly](#assembly)
+- [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
+- [Testing Strategy](#testing-strategy)
+- [When to Prefer MVP](#when-to-prefer-mvp)
+- [PR Review Checklist](#pr-review-checklist)
+
 ## Core Boundaries
 
 - Model: Domain entities and business rules. No UI dependencies.

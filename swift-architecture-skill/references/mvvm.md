@@ -2,6 +2,19 @@
 
 Use this reference for MVVM requests or screen-level state with async effects.
 
+## Contents
+- [Core Boundaries](#core-boundaries)
+- [Feature Structure](#feature-structure)
+- [State Modeling](#state-modeling)
+- [ViewModel Pattern](#viewmodel-pattern)
+- [Dependency Injection](#dependency-injection)
+- [View Guidance](#view-guidance)
+- [Navigation Patterns](#navigation-patterns)
+- [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
+- [Testing Expectations](#testing-expectations)
+- [When to Prefer MVVM](#when-to-prefer-mvvm)
+- [PR Review Checklist](#pr-review-checklist)
+
 ## Core Boundaries
 
 - Model: Domain entities and business rules. Keep UI-framework independent.

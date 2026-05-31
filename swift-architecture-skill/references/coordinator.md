@@ -2,6 +2,19 @@
 
 Use this reference when navigation logic needs to be decoupled from individual screens, enabling reusable flows, deep linking, and testable routing without view controllers owning their own transitions.
 
+## Contents
+- [Core Concept](#core-concept)
+- [Feature Structure](#feature-structure)
+- [Coordinator Protocol](#coordinator-protocol)
+- [UIKit Coordinator](#uikit-coordinator)
+- [SwiftUI Coordinator](#swiftui-coordinator)
+- [Child Coordinator Pattern](#child-coordinator-pattern)
+- [Deep Linking](#deep-linking)
+- [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
+- [Testing Strategy](#testing-strategy)
+- [When to Prefer Coordinator](#when-to-prefer-coordinator)
+- [PR Review Checklist](#pr-review-checklist)
+
 ## Core Concept
 
 A Coordinator owns one navigation flow. It creates and connects screens, passes dependencies, and decides what happens next when a user action triggers a transition.
