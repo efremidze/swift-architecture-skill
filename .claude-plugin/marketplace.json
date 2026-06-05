@@ -1,8 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/marketplace/marketplace.schema.json",
-  "name": "Swift Architecture Skill",
+  "name": "swift-architecture-skill",
   "version": "0.4.3",
-  "author": {
+  "owner": {
     "name": "Lasha Efremidze",
     "email": "efremidzel@hotmail.com"
   },
