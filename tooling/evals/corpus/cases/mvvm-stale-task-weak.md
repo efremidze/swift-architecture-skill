@@ -19,10 +19,10 @@ protocol FeedRepository {
 }
 
 @MainActor
-final class FeedViewModel: ObservableObject {
-    @Published private(set) var items: [Item] = []
-    @Published private(set) var isLoading = false
-    @Published private(set) var error: Error?
+final class FeedViewModel {
+    private(set) var items: [Item] = []
+    private(set) var isLoading = false
+    private(set) var error: Error?
 
     private let repository: FeedRepository
 

@@ -19,8 +19,8 @@ enum AppRoute: Hashable {
 }
 
 @MainActor
-final class AppCoordinator: ObservableObject {
-    @Published var path: [AppRoute] = []
+final class AppCoordinator {
+    var path: [AppRoute] = []
 
     func showDetail(id: UUID) {
         path.append(.detail(id: id))
