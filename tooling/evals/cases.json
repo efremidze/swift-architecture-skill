@@ -102,6 +102,113 @@
       ]
     },
     {
+      "id": "mvp-strong-view-reference",
+      "notes": "Expected smell: Presenter holds a strong reference to the View protocol, creating a retain cycle when the ViewController owns the Presenter.\nExpected direction: view reference must be weak; the View protocol must be class-constrained.\n",
+      "prompt": "Use `swift-architecture-skill` to review this MVP module.\n\nContext:\n- UIKit codebase migrating from MVC\n- Goal: testable Presenter with a fully passive View\n\n```swift\nimport UIKit\n\nprotocol ProfileView {\n    func showName(_ name: String)\n    func showError(_ message: String)\n}\n\nfinal class ProfilePresenter {\n    var view: ProfileView\n    private let service: UserService\n\n    init(view: ProfileView, service: UserService) {\n        self.view = view\n        self.service = service\n    }\n\n    func load() async {\n        do {\n            let user = try await service.fetchUser()\n            view.showName(user.name)\n        } catch {\n            view.showError(error.localizedDescription)\n        }\n    }\n}\n\nfinal class ProfileViewController: UIViewController, ProfileView {\n    private let presenter: ProfilePresenter\n\n    init(service: UserService) {\n        self.presenter = ProfilePresenter(view: self, service: service)\n        super.init(nibName: nil, bundle: nil)\n    }\n\n    required init?(coder: NSCoder) { fatalError() }\n\n    func showName(_ name: String) {}\n    func showError(_ message: String) {}\n}\n```\n\nRequest:\n1. Identify the memory management smell.\n2. Recommend the correct MVP ownership and reference pattern.\n3. Show the minimal fix.\n",
+      "required_keywords": [
+        "retain cycle",
+        "weak",
+        "anyobject",
+        "presenter"
+      ],
+      "required_any": [
+        [
+          "retain cycle",
+          "strong cycle",
+          "reference cycle",
+          "circular reference"
+        ],
+        [
+          "weak",
+          "weak var",
+          "weakly"
+        ],
+        [
+          "anyobject",
+          "class-constrained",
+          "class constraint"
+        ]
+      ],
+      "forbidden_keywords": [
+        "no issue",
+        "this is fine",
+        "strong is acceptable"
+      ]
+    },
+    {
+      "id": "mvi-missing-request-id",
+      "notes": "Expected smell: Store dispatches async effects without tracking a request ID, so stale responses can overwrite newer state.\nExpected direction: add a latestRequestID counter to State and guard reducer callbacks so only the most recent response is applied.\n",
+      "prompt": "Use `swift-architecture-skill` to review this MVI store.\n\nContext:\n- SwiftUI feature with a search input\n- Users can trigger rapid sequential loads\n- Goal: deterministic unidirectional state, no stale overwrites\n\n```swift\nimport Foundation\n\nenum SearchAction {\n    case search(String)\n    case loaded([String])\n    case failed(Error)\n}\n\nstruct SearchState {\n    var results: [String] = []\n    var isLoading = false\n    var error: Error? = nil\n}\n\n@MainActor\nfinal class SearchStore: ObservableObject {\n    @Published private(set) var state = SearchState()\n    private let service: SearchService\n\n    init(service: SearchService) {\n        self.service = service\n    }\n\n    func send(_ action: SearchAction) {\n        switch action {\n        case let .search(query):\n            state.isLoading = true\n            state.error = nil\n            Task {\n                do {\n                    let results = try await service.search(query)\n                    send(.loaded(results))\n                } catch {\n                    send(.failed(error))\n                }\n            }\n        case let .loaded(results):\n            state.isLoading = false\n            state.results = results\n        case let .failed(error):\n            state.isLoading = false\n            state.error = error\n        }\n    }\n}\n```\n\nRequest:\n1. Identify the concurrency smell.\n2. Explain why rapid sequential searches can corrupt state.\n3. Recommend the MVI-correct fix with a request ID guard.\n",
+      "required_keywords": [
+        "stale",
+        "request id",
+        "latestRequestID",
+        "cancellation"
+      ],
+      "required_any": [
+        [
+          "stale",
+          "stale response",
+          "out-of-order",
+          "race"
+        ],
+        [
+          "request id",
+          "requestID",
+          "latestRequestID",
+          "generation counter"
+        ],
+        [
+          "cancellation",
+          "cancel",
+          "task cancellation"
+        ]
+      ],
+      "forbidden_keywords": [
+        "no issue",
+        "this is safe",
+        "task order is guaranteed"
+      ]
+    },
+    {
+      "id": "coordinator-navigation-in-viewcontroller",
+      "notes": "Expected smell: ViewController owns and executes navigation transitions directly, coupling screen logic to flow logic.\nExpected direction: extract navigation responsibility to a Coordinator; ViewController delegates via a protocol or closure.\n",
+      "prompt": "Use `swift-architecture-skill` to review this UIKit navigation pattern.\n\nContext:\n- Multi-screen UIKit app\n- Goal: reusable flows, deep-link support, testable routing\n\n```swift\nimport UIKit\n\nfinal class FeedViewController: UIViewController {\n    private let service: FeedService\n    private var items: [FeedItem] = []\n\n    init(service: FeedService) {\n        self.service = service\n        super.init(nibName: nil, bundle: nil)\n    }\n\n    required init?(coder: NSCoder) { fatalError() }\n\n    func didSelectItem(_ item: FeedItem) {\n        let detail = DetailViewController(item: item)\n        navigationController?.pushViewController(detail, animated: true)\n    }\n\n    func didTapCompose() {\n        let compose = ComposeViewController(service: service)\n        let nav = UINavigationController(rootViewController: compose)\n        present(nav, animated: true)\n    }\n\n    func didTapProfile() {\n        let profile = ProfileViewController()\n        navigationController?.pushViewController(profile, animated: true)\n    }\n}\n```\n\nRequest:\n1. Identify the architecture smell.\n2. Explain why this blocks reuse and deep linking.\n3. Show how a Coordinator would own these transitions instead.\n",
+      "required_keywords": [
+        "coordinator",
+        "navigation",
+        "decouple",
+        "deep link"
+      ],
+      "required_any": [
+        [
+          "coordinator",
+          "flow coordinator",
+          "app coordinator"
+        ],
+        [
+          "decouple",
+          "decoupled",
+          "separation"
+        ],
+        [
+          "deep link",
+          "deep linking",
+          "reusable flow"
+        ],
+        [
+          "delegate",
+          "closure",
+          "callback"
+        ]
+      ],
+      "forbidden_keywords": [
+        "no issue",
+        "navigationcontroller in viewcontroller is fine",
+        "this is standard"
+      ]
+    },
+    {
       "id": "viper-retain-cycle",
       "notes": "Expected smell: strong bidirectional references in module wiring.\nExpected direction: apply weak references and explicit ownership boundaries.\n",
       "prompt": "Use `swift-architecture-skill` to review this VIPER wiring.\n\nContext:\n- Large UIKit codebase\n- Concern: memory leaks during repeated navigation\n\n```swift\nprotocol ProfileView: AnyObject {}\n\nfinal class ProfilePresenter {\n    var view: ProfileView?\n    let router: ProfileRouter\n\n    init(router: ProfileRouter) {\n        self.router = router\n    }\n}\n\nfinal class ProfileRouter {\n    var presenter: ProfilePresenter?\n}\n\nfunc build() {\n    let router = ProfileRouter()\n    let presenter = ProfilePresenter(router: router)\n    router.presenter = presenter\n}\n```\n\nRequest:\n1. Identify architectural smell(s).\n2. Recommend VIPER-correct ownership rules.\n3. Provide concrete fix guidance.\n",
