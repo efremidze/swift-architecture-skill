@@ -22,17 +22,57 @@ MVP · MVVM · MVI · TCA · Clean Architecture · VIPER · Coordinator · React
 Each has a dedicated [playbook](swift-architecture-skill/references/) with overview, patterns, anti-pattern fixes, testing strategy, and PR checklist.
 Start with the [reference index](swift-architecture-skill/references/_index.md) for quick routing, or use the [selection guide](swift-architecture-skill/references/selection-guide.md) when the architecture is still undecided.
 
-## Quick Start
+## Installation
+
+### skills.sh (recommended)
+
+Works with any tool that supports the [Agent Skills](https://agentskills.io) format:
 
 ```bash
 npx skills add https://github.com/efremidze/swift-architecture-skill --skill swift-architecture-skill
 ```
 
-Then ask your agent:
+### Claude Code plugin
+
+Install from the marketplace for personal use:
+
+```text
+/plugin marketplace add efremidze/swift-architecture-skill
+/plugin install swift-architecture-skill@swift-architecture-skill
+```
+
+Or enable it for an entire project by committing this to `.claude/settings.json`:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "swift-architecture-skill": {
+      "source": {
+        "source": "github",
+        "repo": "efremidze/swift-architecture-skill"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "swift-architecture-skill@swift-architecture-skill": true
+  }
+}
+```
+
+### Manual install
+
+Clone the repository and copy the skill into your tool's skills directory. For Claude Code that's `~/.claude/skills/` (personal, available everywhere) or a project's `.claude/skills/`:
+
+```bash
+git clone https://github.com/efremidze/swift-architecture-skill.git
+cp -r swift-architecture-skill/swift-architecture-skill ~/.claude/skills/swift-architecture-skill
+```
+
+## Usage
+
+Once installed, ask your agent:
 
 > Use `swift-architecture-skill` to recommend and scaffold architecture for this feature.
-
-Or clone this repository and drop `swift-architecture-skill/` into your tool's skills directory.
 
 ## Example Prompts
 
