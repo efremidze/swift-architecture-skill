@@ -2,6 +2,18 @@
 
 Use this reference for stream-driven features (search, live updates, real-time feeds).
 
+## Contents
+- [Core Philosophy](#core-philosophy)
+- [Canonical Combine Pattern](#canonical-combine-pattern)
+- [UI Integration by Stack](#ui-integration-by-stack)
+- [Operator Guidance](#operator-guidance)
+- [RxSwift Mapping Notes](#rxswift-mapping-notes)
+- [Error Handling Pattern](#error-handling-pattern)
+- [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
+- [Testing Strategy](#testing-strategy)
+- [When to Prefer Reactive Architecture](#when-to-prefer-reactive-architecture)
+- [PR Review Checklist](#pr-review-checklist)
+
 ## Core Philosophy
 
 Model inputs, transforms, and outputs as streams.

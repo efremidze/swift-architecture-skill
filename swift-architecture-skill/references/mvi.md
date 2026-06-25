@@ -2,6 +2,19 @@
 
 Use this reference for strict unidirectional flow and deterministic state transitions.
 
+## Contents
+- [Mental Model](#mental-model)
+- [Core Types](#core-types)
+- [Reducer Pattern](#reducer-pattern)
+- [Store Pattern](#store-pattern)
+- [Composed Reducers](#composed-reducers)
+- [View Guidance](#view-guidance)
+- [Concurrency Rules](#concurrency-rules)
+- [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
+- [Testing Expectations](#testing-expectations)
+- [When to Prefer MVI](#when-to-prefer-mvi)
+- [PR Review Checklist](#pr-review-checklist)
+
 ## Mental Model
 
 ```text

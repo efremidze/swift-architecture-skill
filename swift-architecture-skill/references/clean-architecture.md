@@ -2,6 +2,21 @@
 
 Use this reference when a Swift codebase needs strict layer boundaries and use-case-driven business logic.
 
+## Contents
+- [Core Dependency Rule](#core-dependency-rule)
+- [Canonical Layer Layout](#canonical-layer-layout)
+- [Entities](#entities)
+- [Use Cases](#use-cases)
+- [Repository Boundary](#repository-boundary)
+- [Dependency Injection Pattern](#dependency-injection-pattern)
+- [DTO to Domain Mapping](#dto-to-domain-mapping)
+- [Concurrency and Cancellation](#concurrency-and-cancellation)
+- [Presentation Boundary](#presentation-boundary)
+- [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
+- [Testing Strategy](#testing-strategy)
+- [When to Prefer Clean Architecture](#when-to-prefer-clean-architecture)
+- [PR Review Checklist](#pr-review-checklist)
+
 ## Core Dependency Rule
 
 Dependencies point inward:

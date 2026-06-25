@@ -64,6 +64,39 @@
             "file": "tooling/evals/corpus/cases/swift-testing-clock-real-weak.md",
             "expect_syntax": true,
             "expect_semantic": false
+        },
+        {
+            "id": "mvvm-stale-task-weak",
+            "file": "tooling/evals/corpus/cases/mvvm-stale-task-weak.md",
+            "expect_syntax": true,
+            "expect_semantic": false
+        },
+        {
+            "id": "clean-usecase-boundary-corpus-good",
+            "file": "tooling/evals/corpus/cases/clean-usecase-boundary-corpus-good.md",
+            "expect_syntax": true,
+            "expect_semantic": true,
+            "expect_architecture": true,
+            "architecture_assertions": [
+                {
+                    "label": "Tests via use case boundary, not repository directly",
+                    "regex": "LoadUser\\(repository:"
+                },
+                {
+                    "label": "Uses stub repository protocol",
+                    "regex": "struct\\s+StubUserRepository\\s*:\\s*UserRepository"
+                },
+                {
+                    "label": "Has cancellation-focused test",
+                    "regex": "(?mi)func\\s+test\\w*cancel\\w+"
+                }
+            ]
+        },
+        {
+            "id": "coordinator-path-state-corpus-weak",
+            "file": "tooling/evals/corpus/cases/coordinator-path-state-corpus-weak.md",
+            "expect_syntax": true,
+            "expect_semantic": false
         }
     ]
 }

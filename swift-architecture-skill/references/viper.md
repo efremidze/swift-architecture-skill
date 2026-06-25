@@ -2,6 +2,18 @@
 
 Use this reference when strict feature-level separation is needed, especially in large or legacy UIKit codebases.
 
+## Contents
+- [Core Components](#core-components)
+- [Canonical Feature Layout](#canonical-feature-layout)
+- [Responsibilities](#responsibilities)
+- [Wiring Pattern](#wiring-pattern)
+- [Assembly Guidance](#assembly-guidance)
+- [Concurrency and Cancellation](#concurrency-and-cancellation)
+- [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
+- [Testing Strategy](#testing-strategy)
+- [When to Prefer VIPER](#when-to-prefer-viper)
+- [PR Review Checklist](#pr-review-checklist)
+
 ## Core Components
 
 - View: render UI and forward user actions

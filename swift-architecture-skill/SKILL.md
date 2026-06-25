@@ -1,6 +1,6 @@
 ---
 name: swift-architecture-skill
-description: Swift architecture patterns and playbooks for MVVM, TCA, Clean Architecture, and more.
+description: Swift iOS architecture guidance and playbooks for MVVM, MVI, TCA, Clean Architecture, VIPER, MVP, Coordinator, and Reactive patterns. Use when designing, implementing, refactoring, or reviewing the architecture of a SwiftUI or UIKit feature, module, or codebase.
 license: MIT
 ---
 
