@@ -5,11 +5,13 @@ This repository contains an Agent Skill that provides Swift architecture design 
 ## Project Structure
 
 ```
-swift-architecture-skill/
+.claude-plugin/
+  plugin.json                 # Claude Code plugin manifest
+  marketplace.json            # Marketplace listing manifest
+swift-architecture-skill/     # The Agent Skill itself
   SKILL.md                    # Skill definition and workflow
-  agents/
-    openai.yaml               # Agent interface configuration
   references/
+    _index.md                 # Navigation hub and problem router
     selection-guide.md        # Architecture decision framework
     mvp.md                    # MVP pattern playbook
     mvvm.md                   # MVVM pattern playbook
@@ -19,6 +21,8 @@ swift-architecture-skill/
     viper.md                  # VIPER pattern playbook
     coordinator.md            # Coordinator pattern playbook
     reactive.md               # Reactive (Combine/RxSwift) playbook
+tooling/                      # Validation scripts, evals, and benchmarks
+README.md                     # Installation and usage docs
 ```
 
 ## How the Skill Works
