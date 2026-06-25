@@ -61,19 +61,12 @@ Or enable it for an entire project by committing this to `.claude/settings.json`
 
 ### Manual install
 
-Clone the repository and copy the skill into your tool's skills directory. For Claude Code that's `~/.claude/skills/` (personal, available everywhere):
+Clone the repo and copy the skill into your skills directory — `~/.claude/skills/` for personal use, or a project's `.claude/skills/`:
 
 ```bash
 git clone https://github.com/efremidze/swift-architecture-skill.git
-mkdir -p ~/.claude/skills
+mkdir -p ~/.claude/skills  # or .claude/skills for a project
 cp -r swift-architecture-skill/swift-architecture-skill ~/.claude/skills/swift-architecture-skill
-```
-
-For a project-scoped install, swap the destination for the project's `.claude/skills/` instead:
-
-```bash
-mkdir -p .claude/skills
-cp -r swift-architecture-skill/swift-architecture-skill .claude/skills/swift-architecture-skill
 ```
 
 ## Usage
