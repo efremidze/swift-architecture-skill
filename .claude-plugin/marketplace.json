@@ -30,6 +30,8 @@
         "tca",
         "clean-architecture",
         "viper",
+        "mvp",
+        "coordinator",
         "reactive"
       ],
       "tags": [
@@ -42,9 +44,11 @@
         "tca",
         "clean-architecture",
         "viper",
+        "mvp",
+        "coordinator",
         "reactive"
       ],
-      "source": "./"
+      "source": "./swift-architecture-skill"
     }
   ]
 }

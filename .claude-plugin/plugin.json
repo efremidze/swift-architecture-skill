@@ -18,6 +18,8 @@
     "tca",
     "clean-architecture",
     "viper",
+    "mvp",
+    "coordinator",
     "reactive"
   ],
   "skills": [
