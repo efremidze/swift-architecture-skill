@@ -212,6 +212,8 @@ Rules:
 - inject schedulers/time providers for tests
 - avoid real-time sleeps when possible
 - assert emitted state sequence, not internal operator details
+- if using `CombineSchedulers` for `DispatchQueue.test`, treat it as a test-only dependency and ask before adding it to a project
+- if no test scheduler dependency is allowed, extract pure transformation functions and test them separately from debounce/throttle timing
 
 ```swift
 import Combine
@@ -222,7 +224,7 @@ final class SearchViewModelTests: XCTestCase {
     func test_queryEmitsResults() {
         let subject = PassthroughSubject<[String], Error>()
         let stubService = StubSearchService { _ in subject.eraseToAnyPublisher() }
-        // Requires Point-Free's CombineSchedulers package.
+        // Test-only dependency: Point-Free's CombineSchedulers package.
         let scheduler = DispatchQueue.test
         let vm = SearchViewModel(service: stubService, scheduler: scheduler.eraseToAnyScheduler())
 

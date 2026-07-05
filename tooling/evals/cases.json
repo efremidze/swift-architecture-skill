@@ -241,6 +241,128 @@
         "no leak",
         "this is fine"
       ]
+    },
+    {
+      "id": "recommendation-simple-settings-tca-overkill",
+      "notes": "Expected recommendation: explicit TCA request should be fit-checked and likely marked mismatch/overkill for a tiny settings screen unless the app already uses TCA.\nExpected direction: recommend MVVM as closest fit, while noting TCA is acceptable if existing codebase convention requires it.\n",
+      "prompt": "Use `swift-architecture-skill` to recommend an architecture.\n\nContext:\n- New SwiftUI settings screen\n- Two toggles and one Save button\n- No child features, no async effects beyond saving preferences\n- Team has not adopted TCA yet and does not want new dependencies unless needed\n\nRequest:\nWe planned to use TCA. Is that the right call? Give a fit result and a practical alternative if it is overkill.\n",
+      "required_any": [
+        [
+          "mismatch",
+          "overkill",
+          "not the best fit"
+        ],
+        [
+          "MVVM",
+          "mvvm"
+        ],
+        [
+          "dependency",
+          "new dependency",
+          "framework dependency"
+        ],
+        [
+          "fit result",
+          "fit:"
+        ]
+      ],
+      "forbidden_keywords": [
+        "use TCA because it was requested",
+        "no trade-off",
+        "always use TCA"
+      ]
+    },
+    {
+      "id": "recommendation-live-feed-persistence-combination",
+      "notes": "Expected recommendation: combine patterns with explicit ownership, such as Clean Architecture for domain/data boundaries plus Reactive or MVVM/Reactive for stream presentation.\nExpected direction: identify primary and secondary playbooks rather than choosing Reactive alone.\n",
+      "prompt": "Use `swift-architecture-skill` to recommend architecture for this feature.\n\nContext:\n- SwiftUI live activity feed\n- WebSocket updates, offline cache, pagination, and pull-to-refresh\n- Data layer must be replaceable because the backend API is unstable\n- Team is comfortable with MVVM and Combine, but not TCA\n\nRequest:\nChoose the architecture and explain which playbook owns presentation, streams, and data boundaries.\n",
+      "required_any": [
+        [
+          "Clean Architecture",
+          "clean architecture"
+        ],
+        [
+          "Reactive",
+          "Combine",
+          "stream"
+        ],
+        [
+          "primary",
+          "secondary",
+          "owns"
+        ],
+        [
+          "repository",
+          "data boundary",
+          "use case"
+        ]
+      ],
+      "forbidden_keywords": [
+        "Reactive alone",
+        "only use Reactive",
+        "TCA is required"
+      ]
+    },
+    {
+      "id": "recommendation-navigation-heavy-mvvm-coordinator",
+      "notes": "Expected recommendation: preserve MVVM for screen state and add Coordinator as a secondary navigation concern.\nExpected direction: avoid replacing MVVM wholesale when the main smell is navigation ownership.\n",
+      "prompt": "Use `swift-architecture-skill` to recommend a refactor path.\n\nContext:\n- Existing mixed UIKit/SwiftUI app uses MVVM successfully for screen state\n- The main pain is deep links and reusable onboarding flows\n- ViewModels currently contain push/present calls\n- Team wants minimal churn\n\nRequest:\nShould we replace MVVM, or combine it with another pattern? Include the selected reference files and migration path.\n",
+      "required_any": [
+        [
+          "MVVM",
+          "mvvm"
+        ],
+        [
+          "Coordinator",
+          "coordinator"
+        ],
+        [
+          "primary",
+          "secondary",
+          "navigation concern"
+        ],
+        [
+          "migration",
+          "incremental",
+          "minimal churn"
+        ]
+      ],
+      "forbidden_keywords": [
+        "replace MVVM entirely",
+        "rewrite everything",
+        "VIPER"
+      ]
+    },
+    {
+      "id": "recommendation-user-insists-viper-swiftui",
+      "notes": "Expected recommendation: validate the explicit VIPER request, mark mismatch for SwiftUI-first feature, recommend MVVM/MVI/TCA depending on constraints, and proceed only with risks if user insists.\n",
+      "prompt": "Use `swift-architecture-skill` to fit-check a requested architecture.\n\nContext:\n- New SwiftUI-only checkout screen\n- Moderate form state and async validation\n- No UIKit module boundaries\n- Team requested VIPER because they used it years ago\n\nRequest:\nIs VIPER a good fit here? If not, recommend the closest alternative and explain the risk if we insist on VIPER.\n",
+      "required_any": [
+        [
+          "mismatch",
+          "poor fit",
+          "not a good fit"
+        ],
+        [
+          "SwiftUI",
+          "swiftui"
+        ],
+        [
+          "MVVM",
+          "MVI",
+          "TCA"
+        ],
+        [
+          "risk",
+          "boilerplate",
+          "UIKit-native"
+        ]
+      ],
+      "forbidden_keywords": [
+        "VIPER is an excellent fit",
+        "no risk",
+        "use VIPER without caveats"
+      ]
     }
   ]
 }

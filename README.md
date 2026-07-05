@@ -14,6 +14,7 @@ Supports the [Agent Skills open format](https://agentskills.io/home).
 - **Scoped playbooks**: Each architecture has its own reference — code patterns, anti-pattern fixes, testing strategy, and a PR checklist. Guidance never bleeds across patterns.
 - **Reference index**: A dedicated `_index.md` gives agents a fast navigation hub and problem router before diving into a playbook.
 - **SwiftUI and UIKit**: Every playbook covers both stacks with modern async/await and actor-based concurrency patterns throughout.
+- **Snippet validation**: CI parses Swift fences across the playbooks so examples stay syntactically healthy as guidance evolves.
 
 ## Supported Architectures
 

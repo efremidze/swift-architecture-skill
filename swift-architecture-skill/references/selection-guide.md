@@ -15,7 +15,7 @@ Use this reference when the user asks for an architecture recommendation.
 | UIKit fit | Good | Good | Good | Good | Excellent | Good | Excellent | Excellent |
 | Team learning curve | Low | Medium | High | Medium | Medium–High | Medium | Low | Low |
 | Async/effect orchestration | Manual | Structured | Built-in | Manual | Manual | Operator-driven | Manual | N/A |
-| Framework dependency | None | None | swift-composable-architecture | None | None | Combine or RxSwift | None | None |
+| Framework dependency | None | None | swift-composable-architecture | None | None | Combine or RxSwift; optional test scheduler | None | None |
 
 ## UI Stack Nuance by Architecture
 
@@ -32,7 +32,7 @@ Use this reference when the user asks for an architecture recommendation.
 
 ```text
 1. Is the feature stream-heavy (search, live feeds, real-time updates)?
-   YES -> Consider Reactive (references/reactive.md). If strict reducer/state-machine flow is also required, continue to step 2 and likely combine patterns.
+   YES -> Mark Reactive (references/reactive.md) as a stream concern. Continue to choose the owning presentation/layering pattern below unless the task is only about stream composition.
    NO  -> Continue
 
 2. Is strict unidirectional data flow and state-machine modeling required?
@@ -50,7 +50,7 @@ Use this reference when the user asks for an architecture recommendation.
    NO  -> Continue
 
 5. Is the primary goal decoupling navigation from screens (deep linking, reusable flows)?
-   YES -> Coordinator (references/coordinator.md) — pair with a presentation pattern below
+   YES -> Mark Coordinator (references/coordinator.md) as the flow concern. If screens also need state/presentation guidance, pair it with MVVM, MVP, TCA, or MVI below.
    NO  -> Continue
 
 6. Is UIKit the primary stack and a fully passive View with zero logic desired?
@@ -127,6 +127,12 @@ Some projects use multiple patterns. Common valid combinations:
 - **MVVM + Coordinator**: MVVM for screen-level state, Coordinator for navigation flows
 - **MVP + Coordinator**: MVP for presentation logic, Coordinator for navigation and routing
 - **Clean Architecture + MVP**: Clean layers for domain/data, MVP for presentation
+
+Combination selection rules:
+- Choose one **primary** pattern for the user's main boundary: feature state/presentation, domain layering, or navigation flow.
+- Choose a **secondary** pattern only for a distinct concern such as navigation (`Coordinator`) or streams (`Reactive`).
+- Read both playbooks when recommending a combination, then explicitly say which files/modules each pattern owns.
+- Do not recommend multiple full presentation patterns for the same feature boundary unless the task is a migration between them.
 
 When combining, clarify which pattern governs which layer and keep boundaries consistent.
 
