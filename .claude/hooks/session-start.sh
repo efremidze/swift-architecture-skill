@@ -16,8 +16,17 @@ fi
 
 # Idempotent: skip the install if skills-ref is already importable.
 if ! python3 -c "import skills_ref" >/dev/null 2>&1; then
+  # Best-effort: skills-ref is an optional validation aid, so a transient
+  # network/git failure here must not abort session startup. Attempt the
+  # install without letting a non-zero exit propagate through pipefail.
   python3 -m pip install --quiet --root-user-action=ignore \
-    "git+https://github.com/agentskills/agentskills.git#subdirectory=skills-ref"
+    "git+https://github.com/agentskills/agentskills.git#subdirectory=skills-ref" \
+    || echo "session-start: skills-ref install failed; skill validation unavailable this session" >&2
 fi
 
-echo "session-start: skills-ref ready"
+# Only report ready if the dependency actually imports.
+if python3 -c "import skills_ref" >/dev/null 2>&1; then
+  echo "session-start: skills-ref ready"
+fi
+
+exit 0
