@@ -30,6 +30,11 @@ while [[ $# -gt 0 ]]; do
       usage
       exit 0
       ;;
+    -*)
+      echo "Unknown option: $1" >&2
+      usage
+      exit 1
+      ;;
     *)
       PLAYBOOK_DIR="$1"
       shift
@@ -38,7 +43,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if ! command -v swiftc >/dev/null 2>&1; then
-  echo "swiftc not found; skipping testing snippet validation."
+  echo "swiftc not found; skipping Swift snippet validation."
   exit 0
 fi
 
@@ -83,7 +88,7 @@ while IFS= read -r file; do
     if [[ "$in_swift_block" -eq 0 && "$line" =~ ^\`\`\`swift ]]; then
       in_swift_block=1
       block_index=$((block_index + 1))
-      current_block_file="$tmp_dir/$(basename "$file" .md)-testing-$block_index.swift"
+      current_block_file="$tmp_dir/$(basename "$file" .md)-swift-$block_index.swift"
       : > "$current_block_file"
       continue
     fi
@@ -117,7 +122,7 @@ while IFS= read -r file; do
     sed '/^[[:space:]]*import[[:space:]]\+/d' "$current_block_file" > "$filtered_file"
 
     if ! swiftc -frontend -parse "$filtered_file" >/dev/null 2>"$filtered_file.err"; then
-      echo "Unclosed Swift fence in testing section: $file"
+      echo "Unclosed Swift fence at end of file: $file"
       sed 's/^/  /' "$filtered_file.err"
       failed_blocks=$((failed_blocks + 1))
     fi
@@ -130,7 +135,7 @@ if [[ "$total_blocks" -eq 0 ]]; then
 fi
 
 if [[ "$failed_blocks" -gt 0 ]]; then
-  echo "Validated $total_blocks testing snippet(s); $failed_blocks failed."
+  echo "Validated $total_blocks Swift snippet(s); $failed_blocks failed."
   exit 1
 fi
 
