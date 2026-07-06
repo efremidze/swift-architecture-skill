@@ -25,6 +25,7 @@ Before selecting an architecture, always capture:
 Then:
 - if the user explicitly names an architecture, treat it as the initial candidate and run a fit check first
 - if no architecture is named, load `references/selection-guide.md` and infer the best fit from the stated constraints
+- if the best fit combines patterns, name one **primary** playbook for the feature boundary and one **secondary** playbook for the supporting concern
 - choose **Quick Recommendation Mode** for single-feature guidance with clear constraints
 - choose **Deep Refactor Mode** for migrations, mixed architectures, or module boundary changes
 
@@ -72,6 +73,12 @@ Architecture reference mapping:
 - MVP → `references/mvp.md`
 - Coordinator → `references/coordinator.md`
 
+Combination routing:
+- Coordinator is usually secondary unless the user's main problem is flow ownership, deep linking, or reusable navigation.
+- Reactive is usually secondary when streams live inside MVVM, MVP, VIPER, MVI, or TCA presentation boundaries.
+- Clean Architecture is usually primary for app/module layering, with MVVM, MVP, or TCA as the presentation pattern.
+- When combining, read both references and state which pattern owns each boundary before giving file structure or code.
+
 ## Analyze Existing Codebase (When Applicable)
 
 When code already exists:
@@ -86,6 +93,7 @@ When code already exists:
 - Do not introduce new framework dependencies such as TCA unless the user explicitly accepts that trade-off or the codebase already uses them.
 - Prefer the smallest architecture change that solves the request cleanly.
 - Keep guidance architecture-specific; do not blend playbooks unless the boundary between patterns is explicit.
+- For combined patterns, avoid merging responsibilities: identify the primary boundary first, then apply the secondary playbook only to its concern.
 
 ## Produce Concrete Deliverables
 
