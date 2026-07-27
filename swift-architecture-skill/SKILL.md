@@ -17,6 +17,7 @@ For quick navigation across playbooks, use `references/_index.md`.
 Before selecting an architecture, always capture:
 - task type (new feature, refactor, PR review, debugging)
 - UI stack (SwiftUI, UIKit, or mixed)
+- minimum deployment target (iOS 17+ enables `@Observable`; iOS 16 requires `ObservableObject`)
 - scope (single screen, multi-screen, app-wide)
 - state and effect complexity
 - team familiarity and dependency tolerance

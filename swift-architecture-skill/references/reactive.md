@@ -26,6 +26,80 @@ Keep stream composition in presentation or a dedicated reactive layer, not in vi
 
 ## Canonical Combine Pattern
 
+### Modern Pattern (iOS 17+ / `@Observable`)
+
+Use `@Observable` for SwiftUI-first features. Combine pipelines run internally; state properties use fine-grained tracking — views only re-render when the specific properties they read change.
+
+```swift
+@MainActor
+@Observable
+final class SearchViewModel {
+    var query = ""
+    private(set) var results: [String] = []
+
+    private let service: SearchService
+    private var searchTask: Task<Void, Never>?
+
+    init(service: SearchService) {
+        self.service = service
+    }
+
+    func queryChanged(_ newQuery: String) {
+        query = newQuery
+        searchTask?.cancel()
+        guard !newQuery.isEmpty else {
+            results = []
+            return
+        }
+        searchTask = Task {
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            do {
+                results = try await service.search(newQuery)
+            } catch is CancellationError {
+                // Ignore cancellation.
+            } catch {
+                results = []
+            }
+        }
+    }
+
+    deinit {
+        searchTask?.cancel()
+    }
+}
+```
+
+When you need Combine operators (complex merges, `combineLatest`, `switchToLatest`), keep pipelines inside the `@Observable` class and assign results to tracked properties:
+
+```swift
+import Combine
+
+@MainActor
+@Observable
+final class LiveFeedViewModel {
+    private(set) var items: [FeedItem] = []
+    private(set) var isConnected = false
+
+    private var cancellables = Set<AnyCancellable>()
+
+    init(feed: LiveFeedService) {
+        feed.items
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in self?.items = $0 }
+            .store(in: &cancellables)
+        feed.connectionStatus
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in self?.isConnected = $0 }
+            .store(in: &cancellables)
+    }
+}
+```
+
+### Legacy Pattern (iOS 16 and earlier / `ObservableObject`)
+
+Use when targeting iOS 16 or when the model must expose `@Published` publishers to UIKit subscribers or other Combine chains.
+
 ```swift
 final class SearchViewModel<S: Scheduler>: ObservableObject
 where S.SchedulerTimeType == DispatchQueue.SchedulerTimeType {
@@ -64,8 +138,45 @@ Rules:
 
 ### SwiftUI Pattern
 
-- Keep operator chains in `ObservableObject`/`@Observable` types, not in `View`.
-- Bind UI input (`TextField`, toggle, selection) to published inputs on the model.
+- Keep operator chains in `@Observable` (iOS 17+) or `ObservableObject` types, not in `View`.
+- Bind UI input (`TextField`, toggle, selection) to model properties.
+
+With `@Observable` (iOS 17+):
+
+```swift
+struct SearchView: View {
+    @State private var viewModel: SearchViewModel
+
+    init(viewModel: SearchViewModel) {
+        _viewModel = State(wrappedValue: viewModel)
+    }
+
+    var body: some View {
+        List(viewModel.results, id: \.self) { result in
+            Text(result)
+        }
+        .searchable(text: Binding(
+            get: { viewModel.query },
+            set: { viewModel.queryChanged($0) }
+        ))
+    }
+}
+```
+
+With `ObservableObject` (iOS 16):
+
+```swift
+struct SearchView: View {
+    @StateObject private var viewModel: SearchViewModel<DispatchQueue>
+
+    var body: some View {
+        List(viewModel.results, id: \.self) { result in
+            Text(result)
+        }
+        .searchable(text: $viewModel.query)
+    }
+}
+```
 
 ### UIKit Pattern (Combine)
 
