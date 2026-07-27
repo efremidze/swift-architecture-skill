@@ -28,13 +28,15 @@ Keep stream composition in presentation or a dedicated reactive layer, not in vi
 
 ### Modern Pattern (iOS 17+ / `@Observable`)
 
-Use `@Observable` for SwiftUI-first features. Combine pipelines run internally; state properties use fine-grained tracking — views only re-render when the specific properties they read change.
+Use `@Observable` for SwiftUI-first features. Properties are tracked at the call site — views only re-render when the specific properties they read change. Expose mutable state as plain properties so views can bind directly via `@Bindable`.
 
 ```swift
 @MainActor
 @Observable
 final class SearchViewModel {
-    var query = ""
+    var query = "" {
+        didSet { debounceSearch() }
+    }
     private(set) var results: [String] = []
 
     private let service: SearchService
@@ -44,18 +46,18 @@ final class SearchViewModel {
         self.service = service
     }
 
-    func queryChanged(_ newQuery: String) {
-        query = newQuery
+    private func debounceSearch() {
         searchTask?.cancel()
-        guard !newQuery.isEmpty else {
+        guard !query.isEmpty else {
             results = []
             return
         }
+        let current = query
         searchTask = Task {
             try? await Task.sleep(for: .milliseconds(300))
             guard !Task.isCancelled else { return }
             do {
-                results = try await service.search(newQuery)
+                results = try await service.search(current)
             } catch is CancellationError {
                 // Ignore cancellation.
             } catch {
@@ -69,6 +71,11 @@ final class SearchViewModel {
     }
 }
 ```
+
+Key differences from `ObservableObject`:
+- No `@Published` — the `@Observable` macro synthesizes tracking for stored properties.
+- Views use `@State` for ownership and `@Bindable` for two-way binding (`$viewModel.query`).
+- `didSet` triggers side effects on property mutation — no imperative `queryChanged` method needed.
 
 When you need Combine operators (complex merges, `combineLatest`, `switchToLatest`), keep pipelines inside the `@Observable` class and assign results to tracked properties:
 
@@ -152,13 +159,12 @@ struct SearchView: View {
     }
 
     var body: some View {
+        @Bindable var viewModel = viewModel
+
         List(viewModel.results, id: \.self) { result in
             Text(result)
         }
-        .searchable(text: Binding(
-            get: { viewModel.query },
-            set: { viewModel.queryChanged($0) }
-        ))
+        .searchable(text: $viewModel.query)
     }
 }
 ```
