@@ -240,6 +240,81 @@ func makeCounterStore(service: CounterServicing) -> Store<CounterState, CounterI
 - Add cancellation and request versioning for concurrent requests.
 - Map all expected service failures to explicit failure actions; `onUnexpectedError` should be a bug hook, not a business-error path.
 
+### Modern Store (iOS 17+ / `@Observable`)
+
+Prefer this variant for SwiftUI-first features targeting iOS 17+. The Observation framework tracks property access at the call site, so views only re-render when the specific state properties they read change — no manual `objectWillChange` or `@Published` needed.
+
+```swift
+@MainActor
+@Observable
+final class Store<State, Intent, Action> {
+    private(set) var state: State
+
+    private let reduceIntent: (inout State, Intent) -> Effect<Action>?
+    private let reduceAction: (inout State, Action) -> Void
+    private let onUnexpectedError: @MainActor (Error) -> Void
+    private var activeTasks: [AnyHashable: Task<Void, Never>] = [:]
+
+    init(
+        initial: State,
+        reduceIntent: @escaping (inout State, Intent) -> Effect<Action>?,
+        reduceAction: @escaping (inout State, Action) -> Void,
+        onUnexpectedError: @escaping @MainActor (Error) -> Void = { error in
+            assertionFailure("Unexpected unmodeled effect error: \(error)")
+        }
+    ) {
+        self.state = initial
+        self.reduceIntent = reduceIntent
+        self.reduceAction = reduceAction
+        self.onUnexpectedError = onUnexpectedError
+    }
+
+    func send(_ intent: Intent) {
+        guard let effect = reduceIntent(&state, intent) else { return }
+        handle(effect)
+    }
+
+    private func handle(_ effect: Effect<Action>) {
+        switch effect {
+        case .none:
+            break
+        case .run(let operation):
+            Task {
+                do {
+                    let action = try await operation()
+                    reduceAction(&state, action)
+                } catch is CancellationError {
+                    // Task was cancelled; no state update.
+                } catch {
+                    onUnexpectedError(error)
+                }
+            }
+        case .cancellable(let id, let operation):
+            activeTasks[id]?.cancel()
+            activeTasks[id] = Task {
+                do {
+                    let action = try await operation()
+                    reduceAction(&state, action)
+                } catch is CancellationError {
+                    // Cancelled by a newer request for the same id.
+                } catch {
+                    onUnexpectedError(error)
+                }
+                activeTasks[id] = nil
+            }
+        }
+    }
+
+    deinit {
+        for task in activeTasks.values { task.cancel() }
+    }
+}
+```
+
+### Legacy Store (iOS 16 and earlier / `ObservableObject`)
+
+Use this variant when targeting iOS 16 or when the store must expose Combine publishers to UIKit subscribers.
+
 ```swift
 @MainActor
 final class Store<State, Intent, Action>: ObservableObject {
@@ -371,7 +446,29 @@ Composition tradeoff: a single app-wide `AppIntent`/`AppAction` can become deepl
 - Send user events through `store.send(intent)`.
 - Never mutate domain state directly in views.
 
-### SwiftUI Integration
+### SwiftUI Integration (iOS 17+ / `@Observable` Store)
+
+With the `@Observable` store, use `@State` for ownership. Views only re-render when the specific state properties they access change.
+
+```swift
+struct CounterView: View {
+    @State var store: Store<CounterState, CounterIntent, CounterAction>
+
+    var body: some View {
+        VStack {
+            Text("Count: \(store.state.count)")
+            if case .loading = store.state.load { ProgressView() }
+            Button("+") { store.send(.incrementTapped) }
+            Button("-") { store.send(.decrementTapped) }
+            Button("Reset") { store.send(.resetTapped) }
+        }
+    }
+}
+```
+
+### SwiftUI Integration (iOS 16 / `ObservableObject` Store)
+
+With the `ObservableObject` store, use `@StateObject` for ownership.
 
 ```swift
 struct CounterView: View {
@@ -389,7 +486,7 @@ struct CounterView: View {
 }
 ```
 
-If you target iOS 17+ for SwiftUI-first features, you can replace `ObservableObject`/`@Published` stores with `@Observable` stores (as in the MVVM playbook) and use `@State` + `@Bindable` in views. Keep `ObservableObject` when the same store must expose Combine publishers to UIKit.
+Keep `ObservableObject` when the same store must expose Combine publishers to UIKit subscribers.
 
 ### UIKit Integration
 
