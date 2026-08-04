@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -26,11 +26,117 @@ jobs:
         run: |
           python -m skills_ref.cli validate ./swift-architecture-skill
 
-  validate-swift-snippets:
-    runs-on: macos-latest
+  smoke-test-install:
+    runs-on: ubuntu-latest
+    needs: [validate]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install skills-ref CLI
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "git+https://github.com/agentskills/agentskills.git#subdirectory=skills-ref"
+
+      - name: Smoke test skill installation
+        run: |
+          python -m skills_ref.cli install ./swift-architecture-skill
+          echo "Skill installed successfully"
+
+      - name: Verify SKILL.md is reachable
+        run: |
+          test -f swift-architecture-skill/SKILL.md || { echo "SKILL.md not found"; exit 1; }
+          python3 - <<'EOF'
+          from pathlib import Path
+          skill = Path("swift-architecture-skill/SKILL.md").read_text()
+          assert "swift-architecture-skill" in skill, "skill name missing from SKILL.md"
+          refs_dir = Path("swift-architecture-skill/references")
+          playbooks = [p.stem for p in refs_dir.glob("*.md") if p.stem not in {"_index", "selection-guide"}]
+          missing = [s for s in playbooks if f"references/{s}.md" not in skill]
+          if missing:
+              raise SystemExit(f"SKILL.md missing references to: {missing}")
+          print(f"All {len(playbooks)} playbooks referenced in SKILL.md")
+          EOF
+
+  validate-manifests:
+    runs-on: ubuntu-latest
+    needs: [validate]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate plugin.json structure
+        run: |
+          jq -e '
+            .name and .version and .description and .license and
+            (.skills | type == "array") and ((.skills | length) > 0)
+          ' .claude-plugin/plugin.json > /dev/null || {
+            echo "plugin.json is missing required fields (name, version, description, license, skills)"
+            exit 1
+          }
+          echo "plugin.json is valid"
+
+      - name: Validate marketplace.json structure
+        run: |
+          jq -e '
+            .name and .plugins and
+            ((.plugins | type == "array") and (.plugins | length) > 0) and
+            (.plugins[0] | .name and .version and .repository and .license)
+          ' .claude-plugin/marketplace.json > /dev/null || {
+            echo "marketplace.json is missing required fields (name, plugins[].name/version/repository/license)"
+            exit 1
+          }
+          echo "marketplace.json is valid"
+
+      - name: Verify plugin.json and marketplace.json versions match
+        run: |
+          PLUGIN_VER=$(jq -r '.version' .claude-plugin/plugin.json)
+          MARKET_VER=$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)
+          if [ "$PLUGIN_VER" != "$MARKET_VER" ]; then
+            echo "Version mismatch: plugin.json=$PLUGIN_VER marketplace.json=$MARKET_VER"
+            exit 1
+          fi
+          echo "Versions match: $PLUGIN_VER"
+
+  lint-markdown:
+    runs-on: ubuntu-latest
+    needs: [validate]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint markdown files
+        uses: DavidAnson/markdownlint-cli2-action@v19
+        with:
+          globs: "swift-architecture-skill/**/*.md"
+          config: ".markdownlint.json"
+
+  check-links:
+    runs-on: ubuntu-latest
+    needs: [validate]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check internal links in references
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >
+            --no-progress
+            --include-verbatim
+            --offline
+            swift-architecture-skill/references/*.md
+            swift-architecture-skill/SKILL.md
+
+  validate-swift-snippets:
+    runs-on: macos-latest
+    needs: [validate]
+
+    steps:
+      - uses: actions/checkout@v4
 
       - name: Validate Swift Snippets
         run: |
@@ -38,10 +144,11 @@ jobs:
 
   validate-testing-quality:
     runs-on: ubuntu-latest
+    needs: [validate]
 
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -51,9 +158,10 @@ jobs:
 
   validate-testing-benchmarks:
     runs-on: macos-latest
+    needs: [validate]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Run Testing Benchmark Suite
         run: |
@@ -61,10 +169,11 @@ jobs:
 
   validate-benchmark-coverage:
     runs-on: ubuntu-latest
+    needs: [validate]
 
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -74,10 +183,11 @@ jobs:
 
   validate-realworld-corpus:
     runs-on: macos-latest
+    needs: [validate]
 
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -87,10 +197,11 @@ jobs:
 
   validate-architecture-consistency:
     runs-on: ubuntu-latest
+    needs: [validate]
 
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
