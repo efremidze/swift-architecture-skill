@@ -4,18 +4,40 @@ Use this reference for strict unidirectional flow, strong composition, and `Test
 
 ## Contents
 - [Mental Model](#mental-model)
+- [Default Path](#default-path)
+- [Minimal Baseline Implementation](#minimal-baseline-implementation)
 - [Canonical Feature Shape](#canonical-feature-shape)
 - [View Integration](#view-integration)
+- [Advanced Variants](#advanced-variants)
 - [Composition Patterns](#composition-patterns)
 - [Dependency Rules](#dependency-rules)
 - [Effects and Concurrency](#effects-and-concurrency)
 - [Navigation Pattern](#navigation-pattern)
 - [Testing with TestStore](#testing-with-teststore)
+- [Migration Notes (Non-TCA -> TCA)](#migration-notes-non-tca---tca)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [When to Prefer TCA](#when-to-prefer-tca)
+- [When Not to Use TCA (Cost Signals)](#when-not-to-use-tca-cost-signals)
+- [Testing Minimum Bar](#testing-minimum-bar)
+- [Cross-Playbook Navigation](#cross-playbook-navigation)
+- [Production Hardening Checklist](#production-hardening-checklist)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Mental Model
+
+## Default Path
+
+- **Default path**: one `@Reducer` feature with value `State`, focused `Action`, and dependency-injected effects.
+- Adopt `@ObservableState` and modern view bindings by default for current TCA.
+- Compose child reducers only when a feature boundary is truly distinct.
+
+## Minimal Baseline Implementation
+
+Start with:
+- `State` (equatable, value-based)
+- `Action` (user intents + effect results)
+- One `Reduce` body with explicit success/failure actions
+- One dependency client with `liveValue` + `testValue`
 
 ```text
 View -> store.send(Action)
@@ -202,6 +224,12 @@ final class CounterViewController: UIViewController {
   }
 }
 ```
+
+## Advanced Variants
+
+- Child composition via `Scope` and collection flows via `forEach`
+- Presentation state with `@Presents` and `.ifLet`
+- Request versioning on top of cancellation for out-of-order responses
 
 ## Composition Patterns
 
@@ -394,6 +422,12 @@ final class CounterFeatureTests: XCTestCase {
 - Smell: overlapping effects overwrite current intent.
 - Fix: use `.cancellable(id:cancelInFlight:)` and request IDs when needed.
 
+## Migration Notes (Non-TCA -> TCA)
+
+- Keep existing repositories/use cases; migrate a single feature boundary to TCA first.
+- Translate view-intent methods into `Action`, then move async coordination into `.run` effects.
+- Keep navigation and side-effect adapters at module edges during migration to limit churn.
+
 ## When to Prefer TCA
 
 Prefer TCA when:
@@ -406,6 +440,33 @@ Prefer MVVM or lighter MVI variants when:
 - app is small and unlikely to grow
 - team is not ready for UDF discipline
 - feature speed and low ceremony are prioritized
+
+## When Not to Use TCA (Cost Signals)
+
+Avoid TCA-first adoption when most of these are true:
+- only simple screen-level state with few async branches
+- no near-term need for reducer composition or strict state replay
+- team cannot absorb dependency and testing model changes now
+- migration budget is low and feature delivery speed is critical
+
+In those cases, start with `references/mvvm.md` or `references/mvi.md` and migrate selective high-complexity flows later.
+
+## Testing Minimum Bar
+
+- One reducer transition test for each core user intent.
+- Async success + failure coverage for each effect path.
+- At least one cancellation test for re-entrant effects.
+
+## Cross-Playbook Navigation
+
+- If this feels too heavy, switch to `references/mvi.md` or `references/mvvm.md`.
+- If system boundaries become primary, pair with `references/clean-architecture.md` for domain/data layering.
+
+## Production Hardening Checklist
+
+- Every effect has explicit error mapping and cancellation strategy.
+- Dependency clients are overrideable in tests and not hidden singletons.
+- Large features are decomposed before reducer size becomes unreviewable.
 
 ## PR Review Checklist
 

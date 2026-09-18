@@ -4,18 +4,41 @@ Use this reference for MVVM requests or screen-level state with async effects.
 
 ## Contents
 - [Core Boundaries](#core-boundaries)
+- [Default Path](#default-path)
+- [Minimal Baseline Implementation](#minimal-baseline-implementation)
 - [Feature Structure](#feature-structure)
 - [State Modeling](#state-modeling)
 - [ViewModel Pattern](#viewmodel-pattern)
 - [Dependency Injection](#dependency-injection)
 - [View Guidance](#view-guidance)
 - [Navigation Patterns](#navigation-patterns)
+- [Advanced Variants](#advanced-variants)
+- [Migration Notes](#migration-notes)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Expectations](#testing-expectations)
+- [Testing Minimum Bar](#testing-minimum-bar)
+- [Cross-Playbook Navigation](#cross-playbook-navigation)
+- [Production Hardening Checklist](#production-hardening-checklist)
 - [When to Prefer MVVM](#when-to-prefer-mvvm)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Boundaries
+
+## Default Path
+
+- **Default path**: start with one `State` type, one `ViewModel`, one `View`, and one injected repository/use-case protocol.
+- Keep navigation simple: begin with ViewModel-owned value-type destinations for SwiftUI-only features.
+- Add a router/coordinator only when flows become multi-screen, reused, or deep-link driven.
+
+## Minimal Baseline Implementation
+
+Build the smallest MVVM feature with:
+- `FeatureState` enum/struct for load + content + error
+- `FeatureViewModel` on `@MainActor` with one async `load()` and cancellation
+- `FeatureView` that renders only `state` and forwards intents
+- `FeatureAssembly.makeViewModel()` for dependency wiring
+
+Treat additional types (`ViewData`, dedicated router, app container) as optional expansions, not mandatory starting points.
 
 - Model: Domain entities and business rules. Keep UI-framework independent.
 - View: Render state and forward user intents. Do not call services directly.
@@ -563,6 +586,13 @@ final class AppRouter {
 }
 ```
 
+### Advanced Variants
+
+Use these only when the baseline stops fitting:
+- Router-owned path for shared multi-screen flows
+- App-level composition root when many features share dependency graphs
+- Dedicated deep-link router when links can target nested flows
+
 ### Which Pattern to Choose
 
 | Scenario | Recommended Pattern |
@@ -572,6 +602,12 @@ final class AppRouter {
 | UIKit host or mixed SwiftUI/UIKit | Coordinator protocol |
 | Multi-step flows (onboarding, checkout) | Coordinator with child coordinators |
 | Universal Links / push notifications | Deep link router + state-driven nav |
+
+## Migration Notes
+
+- From MVC: extract async loading and mapping from controllers into a ViewModel first, then move navigation behind closures/protocols.
+- From MVP: convert presenter output commands into explicit `State` updates and bind the view to that state.
+- From MVVM to MVI/TCA: keep domain contracts unchanged, then move intent handling into reducer/store only for features that need stronger determinism.
 
 ## Anti-Patterns and Fixes
 
@@ -768,6 +804,22 @@ Prefer MVI/TCA when:
 
 Prefer Clean Architecture/VIPER when:
 - strict layer boundaries and use-case isolation matter more than presentation-layer simplicity
+
+## Testing Minimum Bar
+
+- At least one success test, one failure test, and one cancellation/stale-response test per async intent.
+- At least one mapping test for domain -> `ViewData`/state correctness.
+
+## Cross-Playbook Navigation
+
+- If this feels too heavy for a small feature, switch to `references/mvp.md` (UIKit passive-view) or a trimmed MVVM baseline.
+- If complexity grows (strict state machine, advanced effect orchestration), evolve to `references/mvi.md` or `references/tca.md`.
+
+## Production Hardening Checklist
+
+- Replace `localizedDescription` pass-through with user-safe error mapping.
+- Ensure all long-running tasks have cancellation and stale-response protection.
+- Keep UIKit/navigation API references out of ViewModel via router/coordinator protocols.
 
 ## PR Review Checklist
 

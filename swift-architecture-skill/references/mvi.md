@@ -4,18 +4,40 @@ Use this reference for strict unidirectional flow and deterministic state transi
 
 ## Contents
 - [Mental Model](#mental-model)
+- [Default Path](#default-path)
+- [Minimal Baseline Implementation](#minimal-baseline-implementation)
 - [Core Types](#core-types)
 - [Reducer Pattern](#reducer-pattern)
 - [Store Pattern](#store-pattern)
+- [Advanced Variants](#advanced-variants)
 - [Composed Reducers](#composed-reducers)
 - [View Guidance](#view-guidance)
 - [Concurrency Rules](#concurrency-rules)
+- [Migration Notes (MVVM -> MVI)](#migration-notes-mvvm---mvi)
+- [End-to-End Feature Slice](#end-to-end-feature-slice)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Expectations](#testing-expectations)
+- [Testing Minimum Bar](#testing-minimum-bar)
+- [Cross-Playbook Navigation](#cross-playbook-navigation)
+- [Production Hardening Checklist](#production-hardening-checklist)
 - [When to Prefer MVI](#when-to-prefer-mvi)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Mental Model
+
+## Default Path
+
+- **Default path**: one feature-scoped `State`, `Intent`, `Action`, a reducer pair (`intent` + `action`), and one store instance.
+- Start with pure intent reduction that returns effect descriptors when team familiarity allows.
+- Use service-coupled reducer signatures only as a temporary simplicity tradeoff.
+
+## Minimal Baseline Implementation
+
+Start with:
+- Value `State` + user-only `Intent` + internal `Action`
+- `reduce(state:intent:) -> EffectDescriptor?`
+- `run(effectDescriptor) -> Action` at the boundary
+- Store that executes effects and feeds resulting actions back
 
 ```text
 Intent -> Reducer -> New State -> View
@@ -383,6 +405,12 @@ final class Store<State, Intent, Action>: ObservableObject {
 
 Map expected service failures to explicit failure actions; reserve `onUnexpectedError` for true fallthrough faults (for example decoding bugs, violated invariants, or effect wiring mistakes). If this handler fires for normal API failures, treat that as a modeling bug and add an explicit failure action path.
 
+## Advanced Variants
+
+- App-wide composition (`AppIntent`/`AppAction`) for shared flow boundaries
+- Cancellation IDs + request versioning for re-entrant async intents
+- Observation model split (`@Observable` vs `ObservableObject`) by deployment target
+
 ## Composed Reducers
 
 Split reducers by feature and compose them.
@@ -538,6 +566,27 @@ UIKit rules:
 - Use request IDs when responses can arrive out-of-order.
 - Keep shared mutable service state in actors.
 
+## Migration Notes (MVVM -> MVI)
+
+- Keep existing repositories/use cases unchanged; migrate only the presentation boundary first.
+- Convert each ViewModel intent method into `Intent`, then move async completion updates into `Action` handlers.
+- Start with one feature at a time; avoid forcing a global app reducer during first adoption.
+
+## End-to-End Feature Slice
+
+Typical file boundary for one feature:
+
+```text
+Features/Counter/
+  CounterState.swift
+  CounterIntent.swift
+  CounterAction.swift
+  CounterReducer.swift
+  CounterStore.swift
+  CounterView.swift
+  CounterAssembly.swift
+```
+
 ## Anti-Patterns and Fixes
 
 1. Side effects inside reducer:
@@ -669,6 +718,23 @@ Prefer MVI for:
 Prefer MVVM when:
 - screen complexity is moderate
 - lower boilerplate is more important than strict state-machine modeling
+
+## Testing Minimum Bar
+
+- Reducer tests for immediate intent transitions.
+- Reducer tests for action success/failure transitions.
+- One cancellation or stale-response test for each re-entrant effect path.
+
+## Cross-Playbook Navigation
+
+- If this feels too heavy, switch to `references/mvvm.md` for lower ceremony.
+- If complexity grows to many composed child features and dependency overrides, evolve to `references/tca.md`.
+
+## Production Hardening Checklist
+
+- Ensure every expected service failure maps to explicit failure actions.
+- Reserve unexpected-error hooks for true invariant/wiring faults.
+- Keep reducer logic deterministic and free from direct side effects.
 
 ## PR Review Checklist
 

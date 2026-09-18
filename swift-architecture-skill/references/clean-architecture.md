@@ -4,20 +4,41 @@ Use this reference when a Swift codebase needs strict layer boundaries and use-c
 
 ## Contents
 - [Core Dependency Rule](#core-dependency-rule)
+- [Default Path](#default-path)
+- [Minimal Baseline Implementation](#minimal-baseline-implementation)
 - [Canonical Layer Layout](#canonical-layer-layout)
 - [Entities](#entities)
 - [Use Cases](#use-cases)
 - [Repository Boundary](#repository-boundary)
 - [Dependency Injection Pattern](#dependency-injection-pattern)
 - [DTO to Domain Mapping](#dto-to-domain-mapping)
+- [End-to-End Feature Slice](#end-to-end-feature-slice)
 - [Concurrency and Cancellation](#concurrency-and-cancellation)
 - [Presentation Boundary](#presentation-boundary)
+- [Advanced Variants](#advanced-variants)
+- [Migration Notes](#migration-notes)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
+- [Testing Minimum Bar](#testing-minimum-bar)
+- [Cross-Playbook Navigation](#cross-playbook-navigation)
+- [Production Hardening Checklist](#production-hardening-checklist)
 - [When to Prefer Clean Architecture](#when-to-prefer-clean-architecture)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Dependency Rule
+
+## Default Path
+
+- **Default path**: one focused use case, one domain repository protocol, one data implementation, one presentation adapter.
+- Keep boundaries strict, but avoid creating extra layers/components until needed.
+
+## Minimal Baseline Implementation
+
+For one feature, start with:
+- `Domain/Entities` + `Domain/UseCases` + repository protocol
+- `Data/Repositories` + mapper from DTO to domain
+- `Presentation` ViewModel/Presenter consuming use-case abstraction
+- `App` assembly wiring concrete dependencies
 
 Dependencies point inward:
 
@@ -175,6 +196,31 @@ Rules:
 - test mappers independently for edge cases and invalid input
 - keep mapping pure and side-effect-free
 
+## End-to-End Feature Slice
+
+```text
+Domain/
+  Entities/User.swift
+  Repositories/UserRepository.swift
+  UseCases/LoadUser.swift
+Data/
+  API/UserDTO.swift
+  Mappers/UserMapper.swift
+  Repositories/LiveUserRepository.swift
+Presentation/
+  Profile/ProfileViewModel.swift
+  Profile/ProfileView.swift
+App/
+  ProfileAssembly.swift
+```
+
+End-to-end request path:
+- View triggers `ProfileViewModel.load()`
+- ViewModel calls `LoadUserUseCase.execute(id:)`
+- Use case calls `UserRepository.fetch(id:)`
+- Data repository fetches DTO, maps via `UserMapper`, returns domain `User`
+- ViewModel maps `User` to display state
+
 ## Concurrency and Cancellation
 
 Use structured concurrency in use cases and let cancellation propagate through async calls.
@@ -222,6 +268,18 @@ UIKit adaptation:
 - use Presenter/ViewModel objects owned by view controllers
 - convert delegate/target-action events into presenter intents
 - keep controllers responsible for rendering only; business coordination stays in presenter/use case layers
+
+## Advanced Variants
+
+- Multiple composed use cases per feature workflow
+- Separate data sources (remote/local cache) behind one repository abstraction
+- Dedicated domain services for cross-entity policies
+
+## Migration Notes
+
+- From tightly coupled MVC/MVVM: introduce repository protocols in domain first, then move implementations to data.
+- Defer splitting into many use cases until business responsibilities are actually distinct.
+- Keep presentation API stable while moving internals toward layer boundaries.
 
 ## Anti-Patterns and Fixes
 
@@ -326,6 +384,23 @@ Prefer when:
 Prefer lighter layering when:
 - app is small and short-lived
 - strict layering overhead is higher than expected benefit
+
+## Testing Minimum Bar
+
+- Use-case success + failure tests with repository stubs.
+- Mapper edge-case test for invalid transport input.
+- Presentation test proving it depends on use-case abstraction (not live data classes).
+
+## Cross-Playbook Navigation
+
+- If this feels too heavy for a single feature, switch to `references/mvvm.md` or `references/mvp.md`.
+- If state orchestration complexity grows inside presentation, pair with `references/mvi.md` or `references/tca.md`.
+
+## Production Hardening Checklist
+
+- Domain must remain framework-independent.
+- DTOs never cross into presentation/domain APIs.
+- Composition root owns concrete implementations and environment wiring.
 
 ## PR Review Checklist
 
