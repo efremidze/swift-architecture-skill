@@ -451,127 +451,27 @@ struct FeedView: View {
 }
 ```
 
-### Coordinator Pattern (UIKit or Mixed Codebases)
+### UIKit Hosts, Multi-Screen Flows, and Deep Links
 
-When UIKit is involved or complex multi-step flows require centralized control, use a Coordinator protocol.
-
-```swift
-@MainActor
-protocol FeedCoordinator: AnyObject {
-    func showDetail(itemID: UUID)
-    func showProfile(userId: UUID)
-    func presentCompose(onComplete: @MainActor @escaping () -> Void)
-}
-```
-
-Inject the Coordinator into the ViewModel:
+When UIKit hosts SwiftUI screens, flows span multiple screens, or deep links target nested destinations, move navigation ownership into a coordinator and follow `references/coordinator.md` (coordinator protocol, child coordinators, deep-link parsing). MVVM-specific rules:
+- ViewModels expose navigation as injected closures, never coordinator references.
+- In SwiftUI-only apps, a deep link can set the ViewModel's value-type `navigationPath` directly; parse and validate the URL in one place before touching state.
 
 ```swift
 @MainActor
 @Observable
 final class FeedViewModel {
     private(set) var state = FeedState()
-
     private let repository: FeedRepository
-    private weak var coordinator: FeedCoordinator?
-    private var loadTask: Task<Void, Never>?
+    private let onSelectItem: (UUID) -> Void
 
-    init(repository: FeedRepository, coordinator: FeedCoordinator) {
+    init(repository: FeedRepository, onSelectItem: @escaping (UUID) -> Void) {
         self.repository = repository
-        self.coordinator = coordinator
+        self.onSelectItem = onSelectItem
     }
 
     func didTapItem(_ item: FeedItemViewData) {
-        coordinator?.showDetail(itemID: item.id)
-    }
-
-    func didTapCompose() {
-        coordinator?.presentCompose { [weak self] in
-            self?.load()
-        }
-    }
-}
-```
-
-Concrete implementation lives in the navigation layer:
-
-```swift
-@MainActor
-final class FeedFlowCoordinator: FeedCoordinator {
-    private let navigationController: UINavigationController
-
-    init(navigationController: UINavigationController) {
-        self.navigationController = navigationController
-    }
-
-    func showDetail(itemID: UUID) {
-        let viewModel = FeedDetailAssembly.makeViewModel(itemID: itemID)
-        let vc = UIHostingController(rootView: FeedDetailView(viewModel: viewModel))
-        navigationController.pushViewController(vc, animated: true)
-    }
-
-    func showProfile(userId: UUID) {
-        let viewModel = ProfileAssembly.makeViewModel(userId: userId)
-        let vc = UIHostingController(rootView: ProfileView(viewModel: viewModel))
-        navigationController.pushViewController(vc, animated: true)
-    }
-
-    func presentCompose(onComplete: @MainActor @escaping () -> Void) {
-        let composeVM = ComposeAssembly.makeViewModel(onComplete: onComplete)
-        let vc = UIHostingController(rootView: ComposeView(viewModel: composeVM))
-        navigationController.present(vc, animated: true)
-    }
-}
-```
-
-### Deep Linking
-
-Centralize deep link resolution in a router that maps URLs to navigation destinations.
-
-```swift
-enum DeepLink {
-    case feedItem(id: UUID)
-    case profile(userId: UUID)
-    case settings
-
-    init?(url: URL) {
-        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-              let host = components.host else { return nil }
-        switch host {
-        case "feed":
-            guard let idString = components.queryItems?.first(where: { $0.name == "id" })?.value,
-                  let id = UUID(uuidString: idString) else { return nil }
-            self = .feedItem(id: id)
-        case "profile":
-            guard let idString = components.queryItems?.first(where: { $0.name == "userId" })?.value,
-                  let id = UUID(uuidString: idString) else { return nil }
-            self = .profile(userId: id)
-        case "settings":
-            self = .settings
-        default:
-            return nil
-        }
-    }
-}
-```
-
-Apply deep links to existing navigation state:
-
-```swift
-@MainActor
-@Observable
-final class AppRouter {
-    var feedViewModel: FeedViewModel
-
-    func handle(_ deepLink: DeepLink) {
-        switch deepLink {
-        case .feedItem(let id):
-            feedViewModel.navigationPath = [.detail(id: id)]
-        case .profile(let userId):
-            feedViewModel.navigationPath = [.profile(userId: userId)]
-        case .settings:
-            feedViewModel.navigationPath = [.settings]
-        }
+        onSelectItem(item.id)
     }
 }
 ```
@@ -582,9 +482,9 @@ final class AppRouter {
 |---|---|
 | Pure SwiftUI, linear flows | `NavigationStack` path on ViewModel |
 | Sheets, alerts, confirmations | Optional state-driven presentation |
-| UIKit host or mixed SwiftUI/UIKit | Coordinator protocol |
-| Multi-step flows (onboarding, checkout) | Coordinator with child coordinators |
-| Universal Links / push notifications | Deep link router + state-driven nav |
+| UIKit host or mixed SwiftUI/UIKit | Coordinator (`references/coordinator.md`) |
+| Multi-step flows (onboarding, checkout) | Child coordinators (`references/coordinator.md`) |
+| Universal Links / push notifications | Centralized deep-link parsing + state-driven nav |
 
 ## Advanced Variants
 
