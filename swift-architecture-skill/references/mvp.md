@@ -19,26 +19,13 @@ Use this reference when you need a passive View that delegates all logic to a Pr
 - [Migration Notes](#migration-notes)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
+- [When to Prefer MVP](#when-to-prefer-mvp)
 - [Testing Minimum Bar](#testing-minimum-bar)
 - [Cross-Playbook Navigation](#cross-playbook-navigation)
 - [Production Hardening Checklist](#production-hardening-checklist)
-- [When to Prefer MVP](#when-to-prefer-mvp)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Boundaries
-
-## Default Path
-
-- **Default path**: one passive view protocol, one presenter, one repository/use-case abstraction, one assembly function.
-- Keep navigation delegated to a Router/Coordinator boundary when transitions extend beyond simple dismissal.
-
-## Minimal Baseline Implementation
-
-Start with:
-- View protocol with explicit render/error/loading commands
-- Presenter with async task cancellation + request identity guard
-- Passive view implementation (UIKit or adapter)
-- Assembly that wires presenter/view/dependency from outside
 
 - Model: Domain entities and business rules. No UI dependencies.
 - View: Passive renderer driven entirely by Presenter commands. Owns no logic.
@@ -54,6 +41,19 @@ Presenter -> Repository/Service (via protocols)
 ```
 
 The key difference from MVVM: the View holds no observable state — it passively executes commands dispatched by the Presenter.
+
+## Default Path
+
+- **Default path**: one passive view protocol, one presenter, one repository/use-case abstraction, one assembly function.
+- Keep navigation delegated to a Router/Coordinator boundary when transitions extend beyond simple dismissal.
+
+## Minimal Baseline Implementation
+
+Start with:
+- View protocol with explicit render/error/loading commands
+- Presenter with async task cancellation + request identity guard
+- Passive view implementation (UIKit or adapter)
+- Assembly that wires presenter/view/dependency from outside
 
 ## Feature Structure
 

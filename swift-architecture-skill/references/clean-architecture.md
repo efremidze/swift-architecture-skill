@@ -19,26 +19,13 @@ Use this reference when a Swift codebase needs strict layer boundaries and use-c
 - [Migration Notes](#migration-notes)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
+- [When to Prefer Clean Architecture](#when-to-prefer-clean-architecture)
 - [Testing Minimum Bar](#testing-minimum-bar)
 - [Cross-Playbook Navigation](#cross-playbook-navigation)
 - [Production Hardening Checklist](#production-hardening-checklist)
-- [When to Prefer Clean Architecture](#when-to-prefer-clean-architecture)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Dependency Rule
-
-## Default Path
-
-- **Default path**: one focused use case, one domain repository protocol, one data implementation, one presentation adapter.
-- Keep boundaries strict, but avoid creating extra layers/components until needed.
-
-## Minimal Baseline Implementation
-
-For one feature, start with:
-- `Domain/Entities` + `Domain/UseCases` + repository protocol
-- `Data/Repositories` + mapper from DTO to domain
-- `Presentation` ViewModel/Presenter consuming use-case abstraction
-- `App` assembly wiring concrete dependencies
 
 Dependencies point inward:
 
@@ -56,6 +43,19 @@ Rules:
 - inner layers must not import or depend on outer layers
 - domain remains pure Swift
 - frameworks are implementation details and replaceable
+
+## Default Path
+
+- **Default path**: one focused use case, one domain repository protocol, one data implementation, one presentation adapter.
+- Keep boundaries strict, but avoid creating extra layers/components until needed.
+
+## Minimal Baseline Implementation
+
+For one feature, start with:
+- `Domain/Entities` + `Domain/UseCases` + repository protocol
+- `Data/Repositories` + mapper from DTO to domain
+- `Presentation` ViewModel/Presenter consuming use-case abstraction
+- `App` assembly wiring concrete dependencies
 
 ## Canonical Layer Layout
 

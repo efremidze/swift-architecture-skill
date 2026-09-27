@@ -14,8 +14,8 @@ Use this reference for strict unidirectional flow, strong composition, and `Test
 - [Effects and Concurrency](#effects-and-concurrency)
 - [Navigation Pattern](#navigation-pattern)
 - [Testing with TestStore](#testing-with-teststore)
-- [Migration Notes (Non-TCA -> TCA)](#migration-notes-non-tca---tca)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
+- [Migration Notes (Non-TCA -> TCA)](#migration-notes-non-tca---tca)
 - [When to Prefer TCA](#when-to-prefer-tca)
 - [When Not to Use TCA (Cost Signals)](#when-not-to-use-tca-cost-signals)
 - [Testing Minimum Bar](#testing-minimum-bar)
@@ -24,6 +24,19 @@ Use this reference for strict unidirectional flow, strong composition, and `Test
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Mental Model
+
+```text
+View -> store.send(Action)
+Reducer(State, Action) -> state mutation + Effect<Action>
+Effect emits Action -> reducer
+```
+
+Core expectations:
+- value-based state
+- reducer-driven decisions
+- isolated side effects via effects
+- dependency injection through TCA dependencies
+- feature composition with scoped reducers
 
 ## Default Path
 
@@ -38,19 +51,6 @@ Start with:
 - `Action` (user intents + effect results)
 - One `Reduce` body with explicit success/failure actions
 - One dependency client with `liveValue` + `testValue`
-
-```text
-View -> store.send(Action)
-Reducer(State, Action) -> state mutation + Effect<Action>
-Effect emits Action -> reducer
-```
-
-Core expectations:
-- value-based state
-- reducer-driven decisions
-- isolated side effects via effects
-- dependency injection through TCA dependencies
-- feature composition with scoped reducers
 
 ## Canonical Feature Shape
 

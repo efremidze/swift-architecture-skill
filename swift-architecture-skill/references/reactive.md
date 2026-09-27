@@ -5,6 +5,7 @@ Use this reference for stream-driven features (search, live updates, real-time f
 ## Contents
 - [Core Philosophy](#core-philosophy)
 - [Default Path](#default-path)
+- [Minimal Baseline Implementation](#minimal-baseline-implementation)
 - [Reactive-First vs Async-First](#reactive-first-vs-async-first)
 - [Canonical Combine Pattern](#canonical-combine-pattern)
 - [UI Integration by Stack](#ui-integration-by-stack)
@@ -13,28 +14,15 @@ Use this reference for stream-driven features (search, live updates, real-time f
 - [RxSwift Mapping Notes](#rxswift-mapping-notes)
 - [Error Handling Pattern](#error-handling-pattern)
 - [Migration Notes](#migration-notes)
-- [Minimal Baseline Implementation](#minimal-baseline-implementation)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
+- [When to Prefer Reactive Architecture](#when-to-prefer-reactive-architecture)
 - [Testing Minimum Bar](#testing-minimum-bar)
 - [Cross-Playbook Navigation](#cross-playbook-navigation)
 - [Production Hardening Checklist](#production-hardening-checklist)
-- [When to Prefer Reactive Architecture](#when-to-prefer-reactive-architecture)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Philosophy
-
-## Default Path
-
-- **Default path**: choose one primary reactive model per feature: reactive-first pipeline or async/await-first with reactive edges.
-- Keep stream ownership in ViewModel/Presenter, never in the view.
-
-## Reactive-First vs Async-First
-
-- **Reactive-first**: domain interactions are naturally streams (live feeds, websockets, rapid input pipelines). Use publishers/observables end-to-end in presentation.
-- **Async-first with reactive edges**: request/response is mostly imperative async work, with limited stream points (search input, connectivity, notifications). Keep core logic async/await and bridge only edge signals reactively.
-
-Pick one approach per feature and document it to avoid mixed mental models.
 
 Model inputs, transforms, and outputs as streams.
 
@@ -43,6 +31,22 @@ Input -> Publisher/Observable chain -> State -> UI
 ```
 
 Keep stream composition in presentation or a dedicated reactive layer, not in views.
+
+## Default Path
+
+- **Default path**: choose one primary reactive model per feature: reactive-first pipeline or async/await-first with reactive edges.
+- Keep stream ownership in ViewModel/Presenter, never in the view.
+
+## Minimal Baseline Implementation
+
+Start with one input stream, one transformation chain, one state output, and one lifecycle-owned cancellation container. Add operators only when needed by behavior.
+
+## Reactive-First vs Async-First
+
+- **Reactive-first**: domain interactions are naturally streams (live feeds, websockets, rapid input pipelines). Use publishers/observables end-to-end in presentation.
+- **Async-first with reactive edges**: request/response is mostly imperative async work, with limited stream points (search input, connectivity, notifications). Keep core logic async/await and bridge only edge signals reactively.
+
+Pick one approach per feature and document it to avoid mixed mental models.
 
 ## Canonical Combine Pattern
 
@@ -325,10 +329,6 @@ For transient failures, prefer fallback state over terminating the stream.
 - From callback-heavy code: first centralize input and output streams in Presenter/ViewModel.
 - From async-only MVVM: add reactive edges only where event composition is the real complexity driver.
 - Avoid partial operator chains spread across view and model layers during migration.
-
-## Minimal Baseline Implementation
-
-Start with one input stream, one transformation chain, one state output, and one lifecycle-owned cancellation container. Add operators only when needed by behavior.
 
 ## Anti-Patterns and Fixes
 

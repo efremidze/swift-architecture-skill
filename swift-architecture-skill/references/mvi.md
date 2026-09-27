@@ -17,13 +17,24 @@ Use this reference for strict unidirectional flow and deterministic state transi
 - [End-to-End Feature Slice](#end-to-end-feature-slice)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Expectations](#testing-expectations)
+- [When to Prefer MVI](#when-to-prefer-mvi)
 - [Testing Minimum Bar](#testing-minimum-bar)
 - [Cross-Playbook Navigation](#cross-playbook-navigation)
 - [Production Hardening Checklist](#production-hardening-checklist)
-- [When to Prefer MVI](#when-to-prefer-mvi)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Mental Model
+
+```text
+Intent -> Reducer -> New State -> View
+                 -> Effect -> Action -> Reducer
+```
+
+Core rules:
+- Keep one source of truth: `State`.
+- Keep reducer logic deterministic.
+- Isolate side effects in `Effect`.
+- Feed effect output back as `Action`.
 
 ## Default Path
 
@@ -38,17 +49,6 @@ Start with:
 - `reduce(state:intent:) -> EffectDescriptor?`
 - `run(effectDescriptor) -> Action` at the boundary
 - Store that executes effects and feeds resulting actions back
-
-```text
-Intent -> Reducer -> New State -> View
-                 -> Effect -> Action -> Reducer
-```
-
-Core rules:
-- Keep one source of truth: `State`.
-- Keep reducer logic deterministic.
-- Isolate side effects in `Effect`.
-- Feed effect output back as `Action`.
 
 ## Core Types
 

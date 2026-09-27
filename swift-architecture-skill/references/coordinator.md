@@ -17,26 +17,13 @@ Use this reference when navigation logic needs to be decoupled from individual s
 - [SwiftUI Purity Guidance](#swiftui-purity-guidance)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
+- [When to Prefer Coordinator](#when-to-prefer-coordinator)
 - [Testing Minimum Bar](#testing-minimum-bar)
 - [Cross-Playbook Navigation](#cross-playbook-navigation)
 - [Production Hardening Checklist](#production-hardening-checklist)
-- [When to Prefer Coordinator](#when-to-prefer-coordinator)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Concept
-
-## Default Path
-
-- **Default path**: one coordinator per flow, one navigation state model (`path`, optional sheet), one start entrypoint.
-- Keep business logic in ViewModels/UseCases; coordinator owns routing only.
-
-## Minimal Baseline Implementation
-
-Start with:
-- `Coordinator` protocol (`start`, `childCoordinators`)
-- One concrete flow coordinator with injected dependencies
-- ViewModels emitting navigation events via closures
-- Optional deep-link handler mapping links to coordinator destinations
 
 A Coordinator owns one navigation flow. It creates and connects screens, passes dependencies, and decides what happens next when a user action triggers a transition.
 
@@ -52,6 +39,19 @@ Rules:
 - screens emit navigation events; coordinators decide what to do with them
 - screens do not reference coordinators or push/present directly
 - parent coordinators launch child coordinators for nested flows
+
+## Default Path
+
+- **Default path**: one coordinator per flow, one navigation state model (`path`, optional sheet), one start entrypoint.
+- Keep business logic in ViewModels/UseCases; coordinator owns routing only.
+
+## Minimal Baseline Implementation
+
+Start with:
+- `Coordinator` protocol (`start`, `childCoordinators`)
+- One concrete flow coordinator with injected dependencies
+- ViewModels emitting navigation events via closures
+- Optional deep-link handler mapping links to coordinator destinations
 
 ## Feature Structure
 
@@ -140,7 +140,7 @@ Profile flow coordinator example:
 final class ProfileCoordinator: Coordinator {
     var childCoordinators: [Coordinator] = []
     private let router: NavigationRouter
-    let userRepository: UserRepository
+    private let userRepository: UserRepository
 
     init(router: NavigationRouter, userRepository: UserRepository) {
         self.router = router

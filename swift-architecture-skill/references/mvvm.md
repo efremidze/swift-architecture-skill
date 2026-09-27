@@ -16,13 +16,23 @@ Use this reference for MVVM requests or screen-level state with async effects.
 - [Migration Notes](#migration-notes)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Expectations](#testing-expectations)
+- [When to Prefer MVVM](#when-to-prefer-mvvm)
 - [Testing Minimum Bar](#testing-minimum-bar)
 - [Cross-Playbook Navigation](#cross-playbook-navigation)
 - [Production Hardening Checklist](#production-hardening-checklist)
-- [When to Prefer MVVM](#when-to-prefer-mvvm)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Boundaries
+
+- Model: Domain entities and business rules. Keep UI-framework independent.
+- View: Render state and forward user intents. Do not call services directly.
+- ViewModel: Own presentation state, map domain to view data, coordinate effects.
+- Services/Repositories: Side-effect boundaries (network, persistence, analytics).
+
+Dependency direction:
+- View -> ViewModel
+- ViewModel -> UseCases/Repositories/Services (via protocols)
+- Model -> no dependency on View/ViewModel
 
 ## Default Path
 
@@ -39,16 +49,6 @@ Build the smallest MVVM feature with:
 - `FeatureAssembly.makeViewModel()` for dependency wiring
 
 Treat additional types (`ViewData`, dedicated router, app container) as optional expansions, not mandatory starting points.
-
-- Model: Domain entities and business rules. Keep UI-framework independent.
-- View: Render state and forward user intents. Do not call services directly.
-- ViewModel: Own presentation state, map domain to view data, coordinate effects.
-- Services/Repositories: Side-effect boundaries (network, persistence, analytics).
-
-Dependency direction:
-- View -> ViewModel
-- ViewModel -> UseCases/Repositories/Services (via protocols)
-- Model -> no dependency on View/ViewModel
 
 ## Feature Structure
 

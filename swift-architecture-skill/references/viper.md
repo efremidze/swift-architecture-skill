@@ -16,13 +16,26 @@ Use this reference when strict feature-level separation is needed, especially in
 - [Module Scaling Rules](#module-scaling-rules)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
+- [When to Prefer VIPER](#when-to-prefer-viper)
 - [Testing Minimum Bar](#testing-minimum-bar)
 - [Cross-Playbook Navigation](#cross-playbook-navigation)
 - [Production Hardening Checklist](#production-hardening-checklist)
-- [When to Prefer VIPER](#when-to-prefer-viper)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Components
+
+- View: render UI and forward user actions
+- Interactor: execute business logic and coordinate data access
+- Presenter: transform entities into display-ready output and control view state
+- Entity: domain models used by the feature
+- Router: navigation and module assembly
+
+Expected interaction:
+
+```text
+View -> Presenter -> Interactor -> Repository/Service -> Interactor -> Presenter -> View
+Presenter -> Router (navigation)
+```
 
 ## Default Path
 
@@ -42,19 +55,6 @@ Profile/
 ```
 
 Start with this shape before adding extra protocol layers or helper types.
-
-- View: render UI and forward user actions
-- Interactor: execute business logic and coordinate data access
-- Presenter: transform entities into display-ready output and control view state
-- Entity: domain models used by the feature
-- Router: navigation and module assembly
-
-Expected interaction:
-
-```text
-View -> Presenter -> Interactor -> Repository/Service -> Interactor -> Presenter -> View
-Presenter -> Router (navigation)
-```
 
 ## Canonical Feature Layout
 
