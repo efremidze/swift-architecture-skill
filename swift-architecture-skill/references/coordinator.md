@@ -5,7 +5,6 @@ Use this reference when navigation logic needs to be decoupled from individual s
 ## Contents
 - [Core Concept](#core-concept)
 - [Default Path](#default-path)
-- [Minimal Baseline Implementation](#minimal-baseline-implementation)
 - [Feature Structure](#feature-structure)
 - [Coordinator Protocol](#coordinator-protocol)
 - [UIKit Coordinator](#uikit-coordinator)
@@ -18,9 +17,7 @@ Use this reference when navigation logic needs to be decoupled from individual s
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
 - [When to Prefer Coordinator](#when-to-prefer-coordinator)
-- [Testing Minimum Bar](#testing-minimum-bar)
 - [Cross-Playbook Navigation](#cross-playbook-navigation)
-- [Production Hardening Checklist](#production-hardening-checklist)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Concept
@@ -42,16 +39,13 @@ Rules:
 
 ## Default Path
 
-- **Default path**: one coordinator per flow, one navigation state model (`path`, optional sheet), one start entrypoint.
-- Keep business logic in ViewModels/UseCases; coordinator owns routing only.
-
-## Minimal Baseline Implementation
-
-Start with:
+Start with one coordinator per flow, one navigation state model (`path`, optional sheet), and one start entrypoint:
 - `Coordinator` protocol (`start`, `childCoordinators`)
 - One concrete flow coordinator with injected dependencies
 - ViewModels emitting navigation events via closures
 - Optional deep-link handler mapping links to coordinator destinations
+
+Keep business logic in ViewModels/UseCases; the coordinator owns routing only.
 
 ## Feature Structure
 
@@ -388,6 +382,12 @@ final class DeepLinkHandler {
 
 ## Testing Strategy
 
+### Minimum Bar
+
+- One test that `start()` creates the expected initial route/screen.
+- One child-coordinator retention/removal test for nested flows.
+- One deep-link success and one invalid-link safety test.
+
 Test Coordinators by verifying navigation state changes for success paths (expected destinations appended), failure paths (unknown inputs handled without crashing), and cancellation-safe pop operations.
 Use stub repositories and direct coordinator state inspection to keep tests deterministic.
 Avoid sleeps; prefer synchronous state mutations and direct property assertions.
@@ -506,29 +506,17 @@ Pair with MVVM by injecting navigation closures into ViewModels; pair with MVP b
 
 The Coordinator pattern is not an architecture on its own — it is a navigation layer that complements presentation patterns. Prefer it when `UINavigationController` push/present calls scattered across view controllers make flows hard to follow or test.
 
-## Testing Minimum Bar
-
-- One test that `start()` creates the expected initial route/screen.
-- One child-coordinator retention/removal test for nested flows.
-- One deep-link success and one invalid-link safety test.
-
 ## Cross-Playbook Navigation
 
 - If this feels too heavy for simple single-screen navigation, use value-type navigation in `references/mvvm.md`.
 - If flow plus role-separation complexity grows in UIKit modules, pair with `references/viper.md`.
 
-## Production Hardening Checklist
-
-- Ensure child coordinators are removed on flow completion to avoid leaks.
-- Keep deep-link parsing isolated and validated.
-- Keep coordinator APIs small and flow-scoped.
-
 ## PR Review Checklist
 
-- Each coordinator owns one clearly scoped flow.
+- Each coordinator owns one clearly scoped flow and keeps a small, flow-scoped API.
 - Child coordinators are retained in `childCoordinators` before `start()` is called.
 - Child coordinators are removed when their flow completes.
 - ViewModels and View Controllers receive navigation closures, not coordinator references.
 - Navigation state (SwiftUI path/sheet) is modeled as value types.
-- Deep link handling routes through the coordinator, not directly to view controllers.
-- Tests verify routing state changes without relying on UIKit presentation timing.
+- Deep link handling routes through the coordinator, with parsing isolated and validated, not directly to view controllers.
+- Tests verify routing state changes without relying on UIKit presentation timing, and meet the minimum bar in Testing Strategy.

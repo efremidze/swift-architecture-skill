@@ -5,7 +5,6 @@ Use this reference for MVVM requests or screen-level state with async effects.
 ## Contents
 - [Core Boundaries](#core-boundaries)
 - [Default Path](#default-path)
-- [Minimal Baseline Implementation](#minimal-baseline-implementation)
 - [Feature Structure](#feature-structure)
 - [State Modeling](#state-modeling)
 - [ViewModel Pattern](#viewmodel-pattern)
@@ -17,9 +16,7 @@ Use this reference for MVVM requests or screen-level state with async effects.
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Expectations](#testing-expectations)
 - [When to Prefer MVVM](#when-to-prefer-mvvm)
-- [Testing Minimum Bar](#testing-minimum-bar)
 - [Cross-Playbook Navigation](#cross-playbook-navigation)
-- [Production Hardening Checklist](#production-hardening-checklist)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Boundaries
@@ -36,19 +33,13 @@ Dependency direction:
 
 ## Default Path
 
-- **Default path**: start with one `State` type, one `ViewModel`, one `View`, and one injected repository/use-case protocol.
-- Keep navigation simple: begin with ViewModel-owned value-type destinations for SwiftUI-only features.
-- Add a router/coordinator only when flows become multi-screen, reused, or deep-link driven.
-
-## Minimal Baseline Implementation
-
-Build the smallest MVVM feature with:
+Start with one `State` type, one `ViewModel`, one `View`, and one injected repository/use-case protocol:
 - `FeatureState` enum/struct for load + content + error
 - `FeatureViewModel` on `@MainActor` with one async `load()` and cancellation
 - `FeatureView` that renders only `state` and forwards intents
 - `FeatureAssembly.makeViewModel()` for dependency wiring
 
-Treat additional types (`ViewData`, dedicated router, app container) as optional expansions, not mandatory starting points.
+Keep navigation simple: begin with ViewModel-owned value-type destinations for SwiftUI-only features, and add a router/coordinator only when flows become multi-screen, reused, or deep-link driven. Treat additional types (`ViewData`, dedicated router, app container) as optional expansions, not mandatory starting points.
 
 ## Feature Structure
 
@@ -679,6 +670,11 @@ If mapping is small but reused, extract it into a pure helper (`static`/`nonisol
 
 ## Testing Expectations
 
+### Minimum Bar
+
+- At least one success test, one failure test, and one cancellation/stale-response test per async intent.
+- At least one mapping test for domain -> `ViewData`/state correctness.
+
 Focus on deterministic state transitions:
 - success path (`loading -> loaded`)
 - failure path (`loading -> failed`)
@@ -805,30 +801,20 @@ Prefer MVI/TCA when:
 Prefer Clean Architecture/VIPER when:
 - strict layer boundaries and use-case isolation matter more than presentation-layer simplicity
 
-## Testing Minimum Bar
-
-- At least one success test, one failure test, and one cancellation/stale-response test per async intent.
-- At least one mapping test for domain -> `ViewData`/state correctness.
-
 ## Cross-Playbook Navigation
 
-- If this feels too heavy for a small feature, trim to the Minimal Baseline above (one `State`, one `ViewModel`, one `View`) rather than switching patterns. For UIKit screens that need a strictly passive view and explicit view commands, consider `references/mvp.md`.
+- If this feels too heavy for a small feature, trim to the Default Path above (one `State`, one `ViewModel`, one `View`) rather than switching patterns. For UIKit screens that need a strictly passive view and explicit view commands, consider `references/mvp.md`.
 - If complexity grows (strict state machine, advanced effect orchestration), evolve to `references/mvi.md` or `references/tca.md`.
-
-## Production Hardening Checklist
-
-- Replace `localizedDescription` pass-through with user-safe error mapping.
-- Ensure all long-running tasks have cancellation and stale-response protection.
-- Keep UIKit/navigation API references out of ViewModel via router/coordinator protocols.
 
 ## PR Review Checklist
 
 - View does not call services directly.
 - ViewModel exposes explicit state model.
 - Dependencies are injected (no app-wide singleton dependency in ViewModel).
-- Async tasks have cancellation strategy.
+- Async tasks have cancellation and stale-response protection.
+- Errors are mapped to user-safe messages, not `localizedDescription` pass-through.
 - Domain models are not directly coupled to View rendering.
 - Navigation destinations are modeled as value types (enum/struct), not imperative calls.
 - ViewModel does not import UIKit or reference presentation APIs directly.
 - Deep link handling routes through a centralized router, not ad-hoc view logic.
-- Unit tests cover success, failure, and cancellation.
+- Unit tests meet the minimum bar in Testing Expectations.

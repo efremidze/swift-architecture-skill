@@ -5,7 +5,6 @@ Use this reference when you need a passive View that delegates all logic to a Pr
 ## Contents
 - [Core Boundaries](#core-boundaries)
 - [Default Path](#default-path)
-- [Minimal Baseline Implementation](#minimal-baseline-implementation)
 - [Feature Structure](#feature-structure)
 - [View Protocol](#view-protocol)
 - [View Data](#view-data)
@@ -20,9 +19,7 @@ Use this reference when you need a passive View that delegates all logic to a Pr
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
 - [When to Prefer MVP](#when-to-prefer-mvp)
-- [Testing Minimum Bar](#testing-minimum-bar)
 - [Cross-Playbook Navigation](#cross-playbook-navigation)
-- [Production Hardening Checklist](#production-hardening-checklist)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Boundaries
@@ -44,16 +41,13 @@ The key difference from MVVM: the View holds no observable state — it passivel
 
 ## Default Path
 
-- **Default path**: one passive view protocol, one presenter, one repository/use-case abstraction, one assembly function.
-- Keep navigation delegated to a Router/Coordinator boundary when transitions extend beyond simple dismissal.
-
-## Minimal Baseline Implementation
-
-Start with:
+Start with one passive view protocol, one presenter, one repository/use-case abstraction, and one assembly function:
 - View protocol with explicit render/error/loading commands
 - Presenter with async task cancellation + request identity guard
 - Passive view implementation (UIKit or adapter)
 - Assembly that wires presenter/view/dependency from outside
+
+Delegate navigation to a Router/Coordinator boundary when transitions extend beyond simple dismissal.
 
 ## Feature Structure
 
@@ -356,6 +350,11 @@ Rules:
 
 ## Testing Strategy
 
+### Minimum Bar
+
+- Presenter success, failure, and cancellation-path tests with mocked view.
+- One stale-request guard test proving old responses do not overwrite current view state.
+
 Test the Presenter in isolation with a mock View and stub Repository.
 Verify the Presenter-to-View contract for success, failure, and cancellation paths.
 Keep tests deterministic by controlling async behaviour with stubs, not `sleep`.
@@ -458,21 +457,10 @@ Prefer MVVM when:
 
 Compared with VIPER, MVP omits the Interactor and Router as distinct components, making it lighter and simpler for single-screen features.
 
-## Testing Minimum Bar
-
-- Presenter success, failure, and cancellation-path tests with mocked view.
-- One stale-request guard test proving old responses do not overwrite current view state.
-
 ## Cross-Playbook Navigation
 
 - If this feels too heavy for SwiftUI-first features, switch to `references/mvvm.md`.
 - If strict module role separation is required at larger scale, evolve to `references/viper.md`.
-
-## Production Hardening Checklist
-
-- Keep `view` weak and lifecycle-safe.
-- Standardize user-facing error mapping instead of raw error strings.
-- Centralize module wiring in assembly/composition root.
 
 ## PR Review Checklist
 
@@ -480,6 +468,7 @@ Compared with VIPER, MVP omits the Interactor and Router as distinct components,
 - `view` property in Presenter is `weak` and typed as `ProfileView`.
 - Presenter cancels the previous task before starting a new load.
 - All Presenter-to-View calls are guarded by request identity where async.
+- Errors are mapped to user-facing messages, not raw error strings.
 - Repository and service dependencies are injected via protocols, not singletons.
-- Tests cover success, failure, and stale-cancellation paths.
+- Tests meet the minimum bar in Testing Strategy.
 - Assembly function wires the module from the outside — Presenter does not create its own dependencies.

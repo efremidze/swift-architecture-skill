@@ -133,7 +133,7 @@ Before finalizing:
 
 When updating references, validate:
 
-1. section structure remains consistent (default path, baseline, advanced variants, migration, testing minimum bar)
+1. section structure remains consistent (default path, advanced variants, migration notes, testing section with a minimum bar, PR review checklist)
 2. snippets are internally consistent and compile-plausible
 3. cross-playbook links point to the correct reference files
 4. terminology is consistent across selection guide and playbooks

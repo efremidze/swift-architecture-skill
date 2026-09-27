@@ -5,7 +5,6 @@ Use this reference when strict feature-level separation is needed, especially in
 ## Contents
 - [Core Components](#core-components)
 - [Default Path](#default-path)
-- [Minimal VIPER Module Template](#minimal-viper-module-template)
 - [Canonical Feature Layout](#canonical-feature-layout)
 - [Responsibilities](#responsibilities)
 - [Wiring Pattern](#wiring-pattern)
@@ -17,9 +16,7 @@ Use this reference when strict feature-level separation is needed, especially in
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
 - [When to Prefer VIPER](#when-to-prefer-viper)
-- [Testing Minimum Bar](#testing-minimum-bar)
 - [Cross-Playbook Navigation](#cross-playbook-navigation)
-- [Production Hardening Checklist](#production-hardening-checklist)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Components
@@ -39,10 +36,7 @@ Presenter -> Router (navigation)
 
 ## Default Path
 
-- **Default path**: one module with View, Presenter, Interactor, Router, and minimal entity/view-data mapping.
-- Keep module contracts narrow: one interactor input protocol, one view protocol, one routing protocol.
-
-## Minimal VIPER Module Template
+Start with one module with View, Presenter, Interactor, Router, and minimal entity/view-data mapping. Keep module contracts narrow: one interactor input protocol, one view protocol, one routing protocol.
 
 ```text
 Profile/
@@ -417,6 +411,12 @@ Rules:
 
 ## Testing Strategy
 
+### Minimum Bar
+
+- Presenter tests for success, failure, and one cancellation-safe path.
+- Interactor tests for business-rule correctness with stub repositories.
+- Router test or spy assertion for core navigation triggers.
+
 Prioritize isolated tests per component:
 - Presenter tests with mocked View/Interactor/Router
 - Interactor tests with mocked repositories/services
@@ -537,22 +537,10 @@ Prefer lighter patterns when:
 
 Compared with organized MVVM, VIPER usually adds more setup but enforces role boundaries more strongly at scale, especially when teams and modules are decoupled.
 
-## Testing Minimum Bar
-
-- Presenter tests for success, failure, and one cancellation-safe path.
-- Interactor tests for business-rule correctness with stub repositories.
-- Router test or spy assertion for core navigation triggers.
-
 ## Cross-Playbook Navigation
 
 - If this feels too heavy, switch to `references/mvp.md` (lighter passive-view pattern) or `references/mvvm.md`.
 - If strict domain/data boundaries become primary, pair with `references/clean-architecture.md`.
-
-## Production Hardening Checklist
-
-- Ensure presenter/view references avoid retain cycles.
-- Keep navigation in Router and business logic in Interactor.
-- Keep module factories as the only wiring entry point.
 
 ## PR Review Checklist
 
@@ -560,6 +548,7 @@ Compared with organized MVVM, VIPER usually adds more setup but enforces role bo
 - Presenter does not own business logic implementation details.
 - Interactor does not navigate.
 - Router handles only navigation and module assembly.
+- Module factories are the only wiring entry point.
 - Boundary protocols avoid concrete coupling.
 - Retain cycles are prevented with weak references where needed.
-- Tests cover presenter orchestration and interactor business rules.
+- Tests meet the minimum bar in Testing Strategy.

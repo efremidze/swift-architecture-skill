@@ -5,7 +5,6 @@ Use this reference for stream-driven features (search, live updates, real-time f
 ## Contents
 - [Core Philosophy](#core-philosophy)
 - [Default Path](#default-path)
-- [Minimal Baseline Implementation](#minimal-baseline-implementation)
 - [Reactive-First vs Async-First](#reactive-first-vs-async-first)
 - [Canonical Combine Pattern](#canonical-combine-pattern)
 - [UI Integration by Stack](#ui-integration-by-stack)
@@ -17,9 +16,7 @@ Use this reference for stream-driven features (search, live updates, real-time f
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
 - [When to Prefer Reactive Architecture](#when-to-prefer-reactive-architecture)
-- [Testing Minimum Bar](#testing-minimum-bar)
 - [Cross-Playbook Navigation](#cross-playbook-navigation)
-- [Production Hardening Checklist](#production-hardening-checklist)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Philosophy
@@ -34,12 +31,7 @@ Keep stream composition in presentation or a dedicated reactive layer, not in vi
 
 ## Default Path
 
-- **Default path**: choose one primary reactive model per feature: reactive-first pipeline or async/await-first with reactive edges.
-- Keep stream ownership in ViewModel/Presenter, never in the view.
-
-## Minimal Baseline Implementation
-
-Start with one input stream, one transformation chain, one state output, and one lifecycle-owned cancellation container. Add operators only when needed by behavior.
+Choose one primary reactive model per feature: reactive-first pipeline or async/await-first with reactive edges. Start with one input stream, one transformation chain, one state output, and one lifecycle-owned cancellation container, owned by the ViewModel/Presenter (never the view). Add operators only when needed by behavior.
 
 ## Reactive-First vs Async-First
 
@@ -354,6 +346,12 @@ For transient failures, prefer fallback state over terminating the stream.
 
 ## Testing Strategy
 
+### Minimum Bar
+
+- Deterministic success sequence test for one representative input stream.
+- One timing/cancellation test (`debounce`, `switchToLatest`, or equivalent).
+- One error-fallback test that proves stream resilience.
+
 Test stream behavior deterministically:
 - input -> expected output transitions
 - success path emits the expected state sequence
@@ -484,28 +482,18 @@ Prefer when:
 Prefer MVI/TCA when:
 - explicit state-machine and strict reducer flow are primary requirements
 
-## Testing Minimum Bar
-
-- Deterministic success sequence test for one representative input stream.
-- One timing/cancellation test (`debounce`, `switchToLatest`, or equivalent).
-- One error-fallback test that proves stream resilience.
-
 ## Cross-Playbook Navigation
 
 - If this feels too heavy, use `references/mvvm.md` with plain async/await state updates.
 - If strict state machine and reducer determinism become primary, move to `references/mvi.md` or `references/tca.md`.
 
-## Production Hardening Checklist
-
-- Document scheduler/threading decisions for UI-bound outputs.
-- Ensure stream lifecycles are tied to screen/module lifetimes.
-- Prevent duplicated side effects when multiple subscribers observe the same pipeline.
-
 ## PR Review Checklist
 
 - Streams are composed without nested subscriptions.
-- Cancellation/disposal is lifecycle-safe.
-- UI-bound updates are marshaled to main thread.
+- Cancellation/disposal is tied to screen/module lifetimes.
+- UI-bound updates are marshaled to main thread, and scheduler choices are explicit.
+- Shared pipelines do not duplicate side effects across multiple subscribers (`share`/multicast where needed).
 - Operators match intent (`debounce`, `throttle`, `switchToLatest`, `share`).
 - Views/controllers do not hold business pipeline logic.
 - Error handling keeps UX resilient for transient failures.
+- Tests meet the minimum bar in Testing Strategy.
