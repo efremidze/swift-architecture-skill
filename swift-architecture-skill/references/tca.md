@@ -305,7 +305,6 @@ Keep navigation decisions in reducers and keep views declarative.
 - At least one cancellation test for re-entrant effects.
 
 Use `TestStore` for deterministic action/state assertions.
-Cover success, failure, and cancellation paths in async effects.
 
 ```swift
 import XCTest

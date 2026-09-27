@@ -571,14 +571,8 @@ If mapping is small but reused, extract it into a pure helper (`static`/`nonisol
 
 ### Minimum Bar
 
-- At least one success test, one failure test, and one cancellation/stale-response test per async intent.
+- Per async intent: one success test (`loading -> loaded`), one failure test (`loading -> failed`), and one cancellation/stale-response test (no stale overwrite).
 - At least one mapping test for domain -> `ViewData`/state correctness.
-
-Focus on deterministic state transitions:
-- success path (`loading -> loaded`)
-- failure path (`loading -> failed`)
-- cancellation path (no stale overwrite)
-- mapping correctness (domain -> view data)
 
 Test strategy:
 - Use protocol stubs/fakes for repositories.

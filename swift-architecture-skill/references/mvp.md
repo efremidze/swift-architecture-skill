@@ -355,7 +355,6 @@ Rules:
 - One stale-request guard test proving old responses do not overwrite current view state.
 
 Test the Presenter in isolation with a mock View and stub Repository.
-Verify the Presenter-to-View contract for success, failure, and cancellation paths.
 Keep tests deterministic by controlling async behaviour with stubs, not `sleep`.
 
 ```swift

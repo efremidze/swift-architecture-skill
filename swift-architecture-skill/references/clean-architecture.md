@@ -306,11 +306,6 @@ UIKit adaptation:
 - Mapper edge-case test for invalid transport input.
 - Presentation test proving it depends on use-case abstraction (not live data classes).
 
-Prioritize:
-- use-case unit tests with repository stubs
-- mapper tests (DTO <-> domain) in data layer
-- presentation tests with mocked use cases
-
 Rules:
 - avoid network in unit tests
 - assert business behavior at use-case boundary

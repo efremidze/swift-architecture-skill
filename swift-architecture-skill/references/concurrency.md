@@ -57,9 +57,16 @@ Use a request identity when a newer request must win regardless of completion or
 func search(_ query: String) async {
     let requestID = UUID()
     latestRequestID = requestID
-    guard let results = try? await repository.search(query) else { return }
-    guard latestRequestID == requestID else { return } // a newer search started
-    state = .loaded(results)
+    do {
+        let results = try await repository.search(query)
+        guard latestRequestID == requestID else { return } // a newer search started
+        state = .loaded(results)
+    } catch is CancellationError {
+        return
+    } catch {
+        guard latestRequestID == requestID else { return }
+        state = .failed(userMessage(for: error))
+    }
 }
 ```
 

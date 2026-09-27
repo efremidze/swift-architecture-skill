@@ -416,15 +416,9 @@ Rules:
 - Interactor tests for business-rule correctness with stub repositories.
 - Router test or spy assertion for core navigation triggers.
 
-Prioritize isolated tests per component:
-- Presenter tests with mocked View/Interactor/Router
-- Interactor tests with mocked repositories/services
-- Router tests for navigation triggers where feasible
-
 Testing rules:
 - assert interactions and outputs, not concrete implementations
 - avoid network in unit tests
-- verify presenter handles success and failure states
 - verify Presenter-to-View error contract (`showError(message:)`) for failure paths
 - test cancellation behavior when a newer load replaces an in-flight request
 - keep async tests deterministic with controlled stubs/clocks (avoid sleeps)

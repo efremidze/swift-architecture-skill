@@ -608,9 +608,7 @@ Features/Counter/
 - Reducer tests for action success/failure transitions.
 - One cancellation or stale-response test for each re-entrant effect path.
 
-- Unit test intent reducer transitions.
-- Unit test action reducer success/failure transitions.
-- Verify cancellation and stale-response handling.
+Rules:
 - Keep tests deterministic with controlled services, schedulers, or clocks.
 - Assert state-machine behavior, not view details.
 
