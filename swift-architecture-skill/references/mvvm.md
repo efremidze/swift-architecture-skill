@@ -132,6 +132,7 @@ final class FeedViewModel {
             } catch is CancellationError {
                 // Ignore cancellation.
             } catch {
+                guard !Task.isCancelled else { return }
                 state.load = .failed(userMessage(for: error))
             }
         }
@@ -175,6 +176,7 @@ final class FeedViewModel: ObservableObject {
             } catch is CancellationError {
                 // Ignore cancellation.
             } catch {
+                guard !Task.isCancelled else { return }
                 state.load = .failed(userMessage(for: error))
             }
         }

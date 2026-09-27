@@ -54,7 +54,7 @@ final class FeatureModel {
 Notes:
 - Capture `self` weakly so a long-running task does not keep the model alive (the model retains `loadTask`, so a strong capture forms a cycle until the task finishes).
 - Check `Task.isCancelled` before every write: a dependency may return normally or throw a non-cancellation error after being cancelled.
-- To stop work when the screen goes away, cancel from the owner's teardown (for example, start the load from SwiftUI's `.task` modifier, which cancels automatically, or call a `cancel()` method from `onDisappear`/`viewDidDisappear`).
+- `load()` starts an unstructured task, so cancelling a caller (including SwiftUI's `.task` modifier) does not cancel `loadTask`. To stop work when the screen goes away, expose a `cancel()` that calls `loadTask?.cancel()` and call it from the owner's teardown (`onDisappear`, `viewDidDisappear`). Alternatively, make `load()` itself `async` (no stored task) and call it from `.task`, which then cancels it automatically.
 
 ## Stale-Response Guards
 
@@ -67,12 +67,12 @@ func search(_ query: String) async {
     latestRequestID = requestID
     do {
         let results = try await repository.search(query)
-        guard latestRequestID == requestID else { return } // a newer search started
+        guard latestRequestID == requestID, !Task.isCancelled else { return } // a newer search started
         state = .loaded(results)
     } catch is CancellationError {
         return
     } catch {
-        guard latestRequestID == requestID else { return }
+        guard latestRequestID == requestID, !Task.isCancelled else { return }
         state = .failed(userMessage(for: error))
     }
 }
