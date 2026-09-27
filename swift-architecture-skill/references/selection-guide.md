@@ -162,6 +162,28 @@ Combination selection rules:
 
 When combining, clarify which pattern governs which layer and keep boundaries consistent.
 
+## Disqualifier Checklist
+
+Before finalizing a recommendation, quickly disqualify poor fits:
+
+- **Disqualify MVVM** when strict replayable state-machine behavior is required across many async branches.
+- **Disqualify MVI/TCA** when feature complexity is low and delivery speed outweighs reducer/store ceremony.
+- **Disqualify Clean Architecture** when the feature is small and stable boundaries/infrastructure replacement are not meaningful goals.
+- **Disqualify VIPER** when module size/team scale does not justify role-heavy setup.
+- **Disqualify Reactive-first** when behavior is mostly request/response with little stream composition.
+- **Disqualify MVP** when SwiftUI-first binding ergonomics are a higher priority than passive-view command dispatch.
+- **Disqualify Coordinator as primary** when the main problem is state/business orchestration rather than flow control.
+
+## Migration Trigger Thresholds
+
+Use these signals to recommend evolving architecture:
+
+- MVVM -> MVI/TCA: repeated stale-response bugs, effect orchestration branching growth, or hard-to-reason state transitions.
+- MVVM/MVP -> Coordinator: repeated duplicated routing logic across screens or deep-link expansion.
+- MVP/MVVM -> VIPER: modules repeatedly blur responsibilities and team ownership boundaries.
+- Presentation-only pattern -> Clean Architecture: repeated coupling to infrastructure blocks testing/replacement.
+- Async-first -> Reactive-first: event pipelines (search/live feed/real-time updates) dominate feature complexity.
+
 ## Recommendation Format
 
 When recommending:

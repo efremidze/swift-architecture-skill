@@ -4,14 +4,22 @@ Use this reference for stream-driven features (search, live updates, real-time f
 
 ## Contents
 - [Core Philosophy](#core-philosophy)
+- [Default Path](#default-path)
+- [Minimal Baseline Implementation](#minimal-baseline-implementation)
+- [Reactive-First vs Async-First](#reactive-first-vs-async-first)
 - [Canonical Combine Pattern](#canonical-combine-pattern)
 - [UI Integration by Stack](#ui-integration-by-stack)
+- [Advanced Variants](#advanced-variants)
 - [Operator Guidance](#operator-guidance)
 - [RxSwift Mapping Notes](#rxswift-mapping-notes)
 - [Error Handling Pattern](#error-handling-pattern)
+- [Migration Notes](#migration-notes)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
 - [When to Prefer Reactive Architecture](#when-to-prefer-reactive-architecture)
+- [Testing Minimum Bar](#testing-minimum-bar)
+- [Cross-Playbook Navigation](#cross-playbook-navigation)
+- [Production Hardening Checklist](#production-hardening-checklist)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Philosophy
@@ -23,6 +31,22 @@ Input -> Publisher/Observable chain -> State -> UI
 ```
 
 Keep stream composition in presentation or a dedicated reactive layer, not in views.
+
+## Default Path
+
+- **Default path**: choose one primary reactive model per feature: reactive-first pipeline or async/await-first with reactive edges.
+- Keep stream ownership in ViewModel/Presenter, never in the view.
+
+## Minimal Baseline Implementation
+
+Start with one input stream, one transformation chain, one state output, and one lifecycle-owned cancellation container. Add operators only when needed by behavior.
+
+## Reactive-First vs Async-First
+
+- **Reactive-first**: domain interactions are naturally streams (live feeds, websockets, rapid input pipelines). Use publishers/observables end-to-end in presentation.
+- **Async-first with reactive edges**: request/response is mostly imperative async work, with limited stream points (search input, connectivity, notifications). Keep core logic async/await and bridge only edge signals reactively.
+
+Pick one approach per feature and document it to avoid mixed mental models.
 
 ## Canonical Combine Pattern
 
@@ -248,6 +272,12 @@ final class SearchViewController: UIViewController, UISearchBarDelegate {
 }
 ```
 
+## Advanced Variants
+
+- Multi-stream composition (`combineLatest`, merged refresh triggers)
+- Shared side-effect streams with `share`/multicast
+- Backpressure/throttling for high-frequency event sources
+
 ## Operator Guidance
 
 - `debounce`: stabilize noisy user input (search fields)
@@ -293,6 +323,12 @@ func searchState(
 ```
 
 For transient failures, prefer fallback state over terminating the stream.
+
+## Migration Notes
+
+- From callback-heavy code: first centralize input and output streams in Presenter/ViewModel.
+- From async-only MVVM: add reactive edges only where event composition is the real complexity driver.
+- Avoid partial operator chains spread across view and model layers during migration.
 
 ## Anti-Patterns and Fixes
 
@@ -447,6 +483,23 @@ Prefer when:
 
 Prefer MVI/TCA when:
 - explicit state-machine and strict reducer flow are primary requirements
+
+## Testing Minimum Bar
+
+- Deterministic success sequence test for one representative input stream.
+- One timing/cancellation test (`debounce`, `switchToLatest`, or equivalent).
+- One error-fallback test that proves stream resilience.
+
+## Cross-Playbook Navigation
+
+- If this feels too heavy, use `references/mvvm.md` with plain async/await state updates.
+- If strict state machine and reducer determinism become primary, move to `references/mvi.md` or `references/tca.md`.
+
+## Production Hardening Checklist
+
+- Document scheduler/threading decisions for UI-bound outputs.
+- Ensure stream lifecycles are tied to screen/module lifetimes.
+- Prevent duplicated side effects when multiple subscribers observe the same pipeline.
 
 ## PR Review Checklist
 

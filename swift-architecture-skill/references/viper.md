@@ -4,14 +4,22 @@ Use this reference when strict feature-level separation is needed, especially in
 
 ## Contents
 - [Core Components](#core-components)
+- [Default Path](#default-path)
+- [Minimal VIPER Module Template](#minimal-viper-module-template)
 - [Canonical Feature Layout](#canonical-feature-layout)
 - [Responsibilities](#responsibilities)
 - [Wiring Pattern](#wiring-pattern)
+- [Advanced Variants](#advanced-variants)
 - [Assembly Guidance](#assembly-guidance)
 - [Concurrency and Cancellation](#concurrency-and-cancellation)
+- [Migration Notes](#migration-notes)
+- [Module Scaling Rules](#module-scaling-rules)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
 - [When to Prefer VIPER](#when-to-prefer-viper)
+- [Testing Minimum Bar](#testing-minimum-bar)
+- [Cross-Playbook Navigation](#cross-playbook-navigation)
+- [Production Hardening Checklist](#production-hardening-checklist)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Components
@@ -28,6 +36,25 @@ Expected interaction:
 View -> Presenter -> Interactor -> Repository/Service -> Interactor -> Presenter -> View
 Presenter -> Router (navigation)
 ```
+
+## Default Path
+
+- **Default path**: one module with View, Presenter, Interactor, Router, and minimal entity/view-data mapping.
+- Keep module contracts narrow: one interactor input protocol, one view protocol, one routing protocol.
+
+## Minimal VIPER Module Template
+
+```text
+Profile/
+  ProfileView.swift
+  ProfilePresenter.swift
+  ProfileInteractor.swift
+  ProfileRouter.swift
+  ProfileEntity.swift
+  ProfileModule.swift
+```
+
+Start with this shape before adding extra protocol layers or helper types.
 
 ## Canonical Feature Layout
 
@@ -164,6 +191,12 @@ final class ProfilePresenter {
 
 Keep `view` weak to avoid retain cycles.
 Keep presenter/view updates on the main actor so UI calls are thread-safe.
+
+## Advanced Variants
+
+- SwiftUI adapter layer over unchanged Presenter/Interactor/Router
+- Child module composition through router-managed subflows
+- Shared interactor services for cross-module capabilities
 
 ## Assembly Guidance
 
@@ -348,6 +381,18 @@ Rules:
 - cancel all tasks on module teardown
 - keep presenter intent methods synchronous (`func load()`), and manage async tasks internally
 
+## Migration Notes
+
+- From MVC: move orchestration into Presenter first, then extract business work into Interactor and navigation into Router.
+- From MVP: split service/business responsibilities from Presenter into Interactor only when boundaries become overloaded.
+- Introduce VIPER incrementally on modules with churn; avoid whole-app rewrites.
+
+## Module Scaling Rules
+
+- Keep one VIPER module per feature boundary.
+- Split a module when Presenter or Interactor owns unrelated user journeys.
+- Extract shared policies to domain/use-case services instead of cross-module imports.
+
 ## Anti-Patterns and Fixes
 
 1. Massive Presenter:
@@ -491,6 +536,23 @@ Prefer lighter patterns when:
 - ceremony cost outweighs boundary/testability benefits
 
 Compared with organized MVVM, VIPER usually adds more setup but enforces role boundaries more strongly at scale, especially when teams and modules are decoupled.
+
+## Testing Minimum Bar
+
+- Presenter tests for success, failure, and one cancellation-safe path.
+- Interactor tests for business-rule correctness with stub repositories.
+- Router test or spy assertion for core navigation triggers.
+
+## Cross-Playbook Navigation
+
+- If this feels too heavy, switch to `references/mvp.md` (lighter passive-view pattern) or `references/mvvm.md`.
+- If strict domain/data boundaries become primary, pair with `references/clean-architecture.md`.
+
+## Production Hardening Checklist
+
+- Ensure presenter/view references avoid retain cycles.
+- Keep navigation in Router and business logic in Interactor.
+- Keep module factories as the only wiring entry point.
 
 ## PR Review Checklist
 

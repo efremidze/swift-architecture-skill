@@ -128,3 +128,12 @@ Before finalizing:
 2. confirm dependency injection, state ownership, effects, and testing strategy are covered
 3. call out migration risk explicitly when recommending an architecture change
 4. end with the selected architecture’s PR review checklist adapted to the user’s feature
+
+## Documentation QA Checklist
+
+When updating references, validate:
+
+1. section structure remains consistent (default path, baseline, advanced variants, migration, testing minimum bar)
+2. snippets are internally consistent and compile-plausible
+3. cross-playbook links point to the correct reference files
+4. terminology is consistent across selection guide and playbooks

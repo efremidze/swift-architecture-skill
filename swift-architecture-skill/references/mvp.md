@@ -4,16 +4,25 @@ Use this reference when you need a passive View that delegates all logic to a Pr
 
 ## Contents
 - [Core Boundaries](#core-boundaries)
+- [Default Path](#default-path)
+- [Minimal Baseline Implementation](#minimal-baseline-implementation)
 - [Feature Structure](#feature-structure)
 - [View Protocol](#view-protocol)
 - [View Data](#view-data)
 - [Presenter Pattern](#presenter-pattern)
 - [UIKit View Implementation](#uikit-view-implementation)
 - [SwiftUI Adapter](#swiftui-adapter)
+- [Advanced Variants](#advanced-variants)
 - [Assembly](#assembly)
+- [Navigation Ownership Rules](#navigation-ownership-rules)
+- [Module Scaling Rules](#module-scaling-rules)
+- [Migration Notes](#migration-notes)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
 - [When to Prefer MVP](#when-to-prefer-mvp)
+- [Testing Minimum Bar](#testing-minimum-bar)
+- [Cross-Playbook Navigation](#cross-playbook-navigation)
+- [Production Hardening Checklist](#production-hardening-checklist)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Boundaries
@@ -32,6 +41,19 @@ Presenter -> Repository/Service (via protocols)
 ```
 
 The key difference from MVVM: the View holds no observable state — it passively executes commands dispatched by the Presenter.
+
+## Default Path
+
+- **Default path**: one passive view protocol, one presenter, one repository/use-case abstraction, one assembly function.
+- Keep navigation delegated to a Router/Coordinator boundary when transitions extend beyond simple dismissal.
+
+## Minimal Baseline Implementation
+
+Start with:
+- View protocol with explicit render/error/loading commands
+- Presenter with async task cancellation + request identity guard
+- Passive view implementation (UIKit or adapter)
+- Assembly that wires presenter/view/dependency from outside
 
 ## Feature Structure
 
@@ -260,6 +282,12 @@ struct ProfileScreen: View {
 }
 ```
 
+## Advanced Variants
+
+- Router/Coordinator-backed navigation for multi-screen flows
+- Shared formatting/mapping helpers for complex display policies
+- SwiftUI adapter wrapper for mixed UIKit/SwiftUI stacks
+
 ## Assembly
 
 Wire dependencies in one place — the assembler or coordinator.
@@ -286,6 +314,23 @@ Rules:
 - set `presenter.view` after construction, not inside the Presenter initializer
 - inject concrete repositories from the composition root
 - keep the assembly function as the only place that creates the full module
+
+## Navigation Ownership Rules
+
+- Presenter decides **when** navigation should happen.
+- Router/Coordinator decides **how** transitions are executed.
+- View never pushes/presents directly.
+
+## Module Scaling Rules
+
+- Keep one presenter per screen-level feature.
+- Split when a presenter owns unrelated workflows or too many service dependencies.
+- Promote shared business rules to use cases/services instead of cross-presenter calls.
+
+## Migration Notes
+
+- From MVC: move formatting + async orchestration into presenter first, then extract repository abstractions.
+- From MVVM: keep existing domain contracts and replace observable state bindings with presenter command dispatch only when passive-view benefits are clear.
 
 ## Anti-Patterns and Fixes
 
@@ -412,6 +457,22 @@ Prefer MVVM when:
 - you want reactive data flow with less hand-written command dispatch
 
 Compared with VIPER, MVP omits the Interactor and Router as distinct components, making it lighter and simpler for single-screen features.
+
+## Testing Minimum Bar
+
+- Presenter success, failure, and cancellation-path tests with mocked view.
+- One stale-request guard test proving old responses do not overwrite current view state.
+
+## Cross-Playbook Navigation
+
+- If this feels too heavy for SwiftUI-first features, switch to `references/mvvm.md`.
+- If strict module role separation is required at larger scale, evolve to `references/viper.md`.
+
+## Production Hardening Checklist
+
+- Keep `view` weak and lifecycle-safe.
+- Standardize user-facing error mapping instead of raw error strings.
+- Centralize module wiring in assembly/composition root.
 
 ## PR Review Checklist
 

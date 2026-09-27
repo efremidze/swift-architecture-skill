@@ -16,6 +16,21 @@ Quick navigation for the Swift Architecture skill.
 | `mvp.md` | UIKit-first passive views with presenter-driven rendering |
 | `coordinator.md` | decoupled navigation flows and deep-linkable screen orchestration |
 
+## Start Here Defaults
+
+- If constraints are unclear: start with `selection-guide.md`.
+- If single-feature SwiftUI/UIKit state handling is primary: start with `mvvm.md`.
+- If strict state-machine determinism is primary: start with `mvi.md` (or `tca.md` if TCA is accepted).
+- If navigation flow ownership is primary: start with `coordinator.md`.
+
+## Common Combination Paths
+
+- `mvvm.md` + `coordinator.md` for screen-state + flow separation
+- `mvvm.md` + `reactive.md` for state binding + stream-heavy event handling
+- `clean-architecture.md` + `mvvm.md` for layered domain/data + lightweight presentation
+- `clean-architecture.md` + `tca.md` for layered domain/data + strict reducer-driven presentation
+- `mvp.md` + `coordinator.md` for passive-view UIKit modules with decoupled navigation
+
 ## Problem Router
 
 - "I need help choosing an architecture" → `selection-guide.md`
