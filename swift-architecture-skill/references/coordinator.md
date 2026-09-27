@@ -16,8 +16,7 @@ Use this reference when navigation logic needs to be decoupled from individual s
 - [SwiftUI Purity Guidance](#swiftui-purity-guidance)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
-- [When to Prefer Coordinator](#when-to-prefer-coordinator)
-- [Cross-Playbook Navigation](#cross-playbook-navigation)
+- [When to Use Coordinator](#when-to-use-coordinator)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Concept
@@ -494,22 +493,21 @@ struct StubUserRepository: UserRepository {
 
 Note: `showEditProfileForTesting()` exposes the private routing action for test access — annotate with `#if DEBUG` or use `@testable import` and `internal` access level to keep production code clean.
 
-## When to Prefer Coordinator
+## When to Use Coordinator
 
-Prefer Coordinator when:
+Use Coordinator when:
 - navigation logic is complex (conditional flows, deep linking, multi-step wizards)
 - multiple screens need to be reused across different flows
-- you want to test routing logic without instantiating full screens
-- ViewModels and View Controllers should have zero navigation coupling
+- routing must be testable without instantiating full screens
+- `push`/`present` calls scattered across view controllers make flows hard to follow
 
-Pair with MVVM by injecting navigation closures into ViewModels; pair with MVP by having the Presenter call a Router protocol backed by a Coordinator.
+Coordinator is a navigation layer, not a full architecture: pair it with MVVM by injecting navigation closures into ViewModels, or with MVP by having the Presenter call a Router protocol backed by a Coordinator.
 
-The Coordinator pattern is not an architecture on its own — it is a navigation layer that complements presentation patterns. Prefer it when `UINavigationController` push/present calls scattered across view controllers make flows hard to follow or test.
+Switch or pair when:
+- navigation is simple and single-screen: use value-type navigation in `references/mvvm.md`
+- flow plus role-separation complexity grows in UIKit modules: pair with `references/viper.md`
 
-## Cross-Playbook Navigation
-
-- If this feels too heavy for simple single-screen navigation, use value-type navigation in `references/mvvm.md`.
-- If flow plus role-separation complexity grows in UIKit modules, pair with `references/viper.md`.
+For cross-architecture disqualifiers and migration triggers, see `references/selection-guide.md`.
 
 ## PR Review Checklist
 

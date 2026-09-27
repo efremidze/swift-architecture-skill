@@ -15,8 +15,7 @@ Use this reference when strict feature-level separation is needed, especially in
 - [Module Scaling Rules](#module-scaling-rules)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
-- [When to Prefer VIPER](#when-to-prefer-viper)
-- [Cross-Playbook Navigation](#cross-playbook-navigation)
+- [When to Use VIPER](#when-to-use-viper)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Components
@@ -522,25 +521,21 @@ final class ProfilePresenterTests: XCTestCase {
 private enum TestError: Error { case notFound }
 ```
 
-## When to Prefer VIPER
+## When to Use VIPER
 
-Prefer VIPER when:
+Use VIPER when:
 - multiple teams need independently owned feature modules with explicit boundaries
 - strict role separation reduces architecture drift in long-lived codebases
 - interactor-level business rules must be testable without booting UI screens
-- modular compilation and clear dependency direction are high priorities
-- UIKit-heavy codebase benefits from router-driven assembly/navigation
+- a UIKit-heavy codebase benefits from router-driven assembly/navigation
 
-Prefer lighter patterns when:
-- app is small or prototyping quickly
-- ceremony cost outweighs boundary/testability benefits
+Compared with organized MVVM, VIPER adds more setup but enforces role boundaries more strongly at scale.
 
-Compared with organized MVVM, VIPER usually adds more setup but enforces role boundaries more strongly at scale, especially when teams and modules are decoupled.
+Switch or pair when:
+- the app is small, prototyping, or ceremony outweighs boundary benefits: use `references/mvp.md` (lighter passive view) or `references/mvvm.md`
+- strict domain/data boundaries become primary: pair with `references/clean-architecture.md`
 
-## Cross-Playbook Navigation
-
-- If this feels too heavy, switch to `references/mvp.md` (lighter passive-view pattern) or `references/mvvm.md`.
-- If strict domain/data boundaries become primary, pair with `references/clean-architecture.md`.
+For cross-architecture disqualifiers and migration triggers, see `references/selection-guide.md`.
 
 ## PR Review Checklist
 

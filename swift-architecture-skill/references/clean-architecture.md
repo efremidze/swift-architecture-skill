@@ -18,8 +18,7 @@ Use this reference when a Swift codebase needs strict layer boundaries and use-c
 - [Migration Notes](#migration-notes)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
-- [When to Prefer Clean Architecture](#when-to-prefer-clean-architecture)
-- [Cross-Playbook Navigation](#cross-playbook-navigation)
+- [When to Use Clean Architecture](#when-to-use-clean-architecture)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Dependency Rule
@@ -376,21 +375,18 @@ private actor BlockingUserRepository: UserRepository {
 private enum TestError: Error { case notFound }
 ```
 
-## When to Prefer Clean Architecture
+## When to Use Clean Architecture
 
-Prefer when:
+Use Clean Architecture when:
 - app/domain complexity is medium to large
 - multiple teams need stable boundaries
 - long-term maintainability and replaceable infrastructure matter
 
-Prefer lighter layering when:
-- app is small and short-lived
-- strict layering overhead is higher than expected benefit
+Switch or pair when:
+- the app or feature is small and layering overhead exceeds the benefit: use `references/mvvm.md` or `references/mvp.md` alone
+- state orchestration grows inside presentation: pair with `references/mvi.md` or `references/tca.md`
 
-## Cross-Playbook Navigation
-
-- If this feels too heavy for a single feature, switch to `references/mvvm.md` or `references/mvp.md`.
-- If state orchestration complexity grows inside presentation, pair with `references/mvi.md` or `references/tca.md`.
+For cross-architecture disqualifiers and migration triggers, see `references/selection-guide.md`.
 
 ## PR Review Checklist
 

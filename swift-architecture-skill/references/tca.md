@@ -15,9 +15,7 @@ Use this reference for strict unidirectional flow, strong composition, and `Test
 - [Testing with TestStore](#testing-with-teststore)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Migration Notes (Non-TCA -> TCA)](#migration-notes-non-tca---tca)
-- [When to Prefer TCA](#when-to-prefer-tca)
-- [When Not to Use TCA (Cost Signals)](#when-not-to-use-tca-cost-signals)
-- [Cross-Playbook Navigation](#cross-playbook-navigation)
+- [When to Use TCA](#when-to-use-tca)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Mental Model
@@ -427,33 +425,24 @@ final class CounterFeatureTests: XCTestCase {
 - Translate view-intent methods into `Action`, then move async coordination into `.run` effects.
 - Keep navigation and side-effect adapters at module edges during migration to limit churn.
 
-## When to Prefer TCA
+## When to Use TCA
 
-Prefer TCA when:
-- app has many stateful workflows
-- test determinism is critical
+Use TCA when:
+- the app has many stateful workflows
+- test determinism and effect cancellation correctness are critical
 - composition and modular scaling are required
-- effect cancellation correctness matters
-
-Prefer MVVM or lighter MVI variants when:
-- app is small and unlikely to grow
-- team is not ready for UDF discipline
-- feature speed and low ceremony are prioritized
-
-## When Not to Use TCA (Cost Signals)
 
 Avoid TCA-first adoption when most of these are true:
 - only simple screen-level state with few async branches
 - no near-term need for reducer composition or strict state replay
-- team cannot absorb dependency and testing model changes now
-- migration budget is low and feature delivery speed is critical
+- the team cannot absorb dependency and testing model changes now
+- migration budget is low and delivery speed is critical
 
-In those cases, start with `references/mvvm.md` or `references/mvi.md` and migrate selective high-complexity flows later.
+Switch or pair when:
+- the cost signals above dominate: start with `references/mvvm.md` or `references/mvi.md` and migrate selective high-complexity flows later
+- system boundaries become primary: pair with `references/clean-architecture.md` for domain/data layering
 
-## Cross-Playbook Navigation
-
-- If this feels too heavy, switch to `references/mvi.md` or `references/mvvm.md`.
-- If system boundaries become primary, pair with `references/clean-architecture.md` for domain/data layering.
+For cross-architecture disqualifiers and migration triggers, see `references/selection-guide.md`.
 
 ## PR Review Checklist
 

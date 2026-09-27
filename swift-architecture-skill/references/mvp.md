@@ -18,8 +18,7 @@ Use this reference when you need a passive View that delegates all logic to a Pr
 - [Migration Notes](#migration-notes)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
-- [When to Prefer MVP](#when-to-prefer-mvp)
-- [Cross-Playbook Navigation](#cross-playbook-navigation)
+- [When to Use MVP](#when-to-use-mvp)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Boundaries
@@ -443,24 +442,22 @@ final class ProfilePresenterTests: XCTestCase {
 private enum TestError: Error { case notFound }
 ```
 
-## When to Prefer MVP
+## When to Use MVP
 
-Prefer MVP when:
+Use MVP when:
 - UIKit is the primary stack and you want full Presenter testability without observable state objects
 - the View must be completely passive (no `if` logic, no `guard`, no formatting)
-- migrating from MVC and want a minimal step up without pulling in Combine or the `@Observable` macro
-- existing team is familiar with the Presenter + View protocol pattern
+- migrating from MVC as a minimal step up without pulling in Combine or `@Observable`
+- the team is familiar with the Presenter + View protocol pattern
 
-Prefer MVVM when:
-- SwiftUI is the primary stack and `@Observable` / `@Published` state binding reduces wiring overhead
-- you want reactive data flow with less hand-written command dispatch
+Compared with VIPER, MVP omits the Interactor and Router as distinct components, making it lighter for single-screen features.
 
-Compared with VIPER, MVP omits the Interactor and Router as distinct components, making it lighter and simpler for single-screen features.
+Switch or pair when:
+- SwiftUI is the primary stack and state binding reduces wiring: switch to `references/mvvm.md`
+- strict module role separation is needed at larger scale: evolve to `references/viper.md`
+- navigation spans multiple screens: pair with `references/coordinator.md`
 
-## Cross-Playbook Navigation
-
-- If this feels too heavy for SwiftUI-first features, switch to `references/mvvm.md`.
-- If strict module role separation is required at larger scale, evolve to `references/viper.md`.
+For cross-architecture disqualifiers and migration triggers, see `references/selection-guide.md`.
 
 ## PR Review Checklist
 

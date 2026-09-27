@@ -15,8 +15,7 @@ Use this reference for stream-driven features (search, live updates, real-time f
 - [Migration Notes](#migration-notes)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
-- [When to Prefer Reactive Architecture](#when-to-prefer-reactive-architecture)
-- [Cross-Playbook Navigation](#cross-playbook-navigation)
+- [When to Use Reactive Architecture](#when-to-use-reactive-architecture)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Philosophy
@@ -472,20 +471,18 @@ private enum TestError: Error {
 
 The canonical `SearchViewModel` already supports scheduler injection for tests.
 
-## When to Prefer Reactive Architecture
+## When to Use Reactive Architecture
 
-Prefer when:
-- feature is event-heavy and stream-oriented
+Use Reactive architecture when:
+- the feature is event-heavy and stream-oriented
 - real-time updates and transformations are core behavior
-- composable async pipelines provide clarity over imperative callbacks
+- composable async pipelines are clearer than imperative callbacks
 
-Prefer MVI/TCA when:
-- explicit state-machine and strict reducer flow are primary requirements
+Switch or pair when:
+- behavior is mostly request/response: use `references/mvvm.md` with plain async/await state updates
+- strict state machines and reducer determinism become primary: move to `references/mvi.md` or `references/tca.md`
 
-## Cross-Playbook Navigation
-
-- If this feels too heavy, use `references/mvvm.md` with plain async/await state updates.
-- If strict state machine and reducer determinism become primary, move to `references/mvi.md` or `references/tca.md`.
+For cross-architecture disqualifiers and migration triggers, see `references/selection-guide.md`.
 
 ## PR Review Checklist
 

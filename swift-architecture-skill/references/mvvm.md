@@ -15,8 +15,7 @@ Use this reference for MVVM requests or screen-level state with async effects.
 - [Migration Notes](#migration-notes)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Expectations](#testing-expectations)
-- [When to Prefer MVVM](#when-to-prefer-mvvm)
-- [Cross-Playbook Navigation](#cross-playbook-navigation)
+- [When to Use MVVM](#when-to-use-mvvm)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Boundaries
@@ -784,27 +783,21 @@ private enum TestError: Error {
 }
 ```
 
-## When to Prefer MVVM
+## When to Use MVVM
 
-Prefer MVVM when:
+Use MVVM when:
 - screen-level state management is the primary concern
-- team wants explicit View/ViewModel boundaries without introducing a full reducer/store framework
+- the team wants explicit View/ViewModel boundaries without a full reducer/store framework
 - feature complexity is moderate and does not require strict unidirectional flow
-- the team accepts moderate structure (for example, `State`, `ViewData`, assembly/router types) in exchange for clarity and testability
 
-MVVM is often lower ceremony than TCA/VIPER, but not "no ceremony." A strict MVVM style can introduce several files per feature; scale file splitting to actual complexity instead of applying every type up front.
+MVVM is lower ceremony than TCA/VIPER, but not "no ceremony": scale file splitting (`State`, `ViewData`, assembly/router types) to actual complexity instead of applying every type up front.
 
-Prefer MVI/TCA when:
-- deterministic state-machine modeling is required
-- complex effect orchestration and cancellation correctness are critical
+Switch or pair when:
+- the feature feels too heavy: trim to the Default Path rather than switching patterns; consider `references/mvp.md` only for UIKit screens that need a strictly passive view
+- deterministic state machines or complex effect orchestration become primary: evolve to `references/mvi.md` or `references/tca.md`
+- strict layer boundaries matter more than presentation simplicity: pair with `references/clean-architecture.md`
 
-Prefer Clean Architecture/VIPER when:
-- strict layer boundaries and use-case isolation matter more than presentation-layer simplicity
-
-## Cross-Playbook Navigation
-
-- If this feels too heavy for a small feature, trim to the Default Path above (one `State`, one `ViewModel`, one `View`) rather than switching patterns. For UIKit screens that need a strictly passive view and explicit view commands, consider `references/mvp.md`.
-- If complexity grows (strict state machine, advanced effect orchestration), evolve to `references/mvi.md` or `references/tca.md`.
+For cross-architecture disqualifiers and migration triggers, see `references/selection-guide.md`.
 
 ## PR Review Checklist
 

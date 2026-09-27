@@ -16,8 +16,7 @@ Use this reference for strict unidirectional flow and deterministic state transi
 - [End-to-End Feature Slice](#end-to-end-feature-slice)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Expectations](#testing-expectations)
-- [When to Prefer MVI](#when-to-prefer-mvi)
-- [Cross-Playbook Navigation](#cross-playbook-navigation)
+- [When to Use MVI](#when-to-use-mvi)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Mental Model
@@ -707,21 +706,18 @@ private enum TestError: Error {
 }
 ```
 
-## When to Prefer MVI
+## When to Use MVI
 
-Prefer MVI for:
-- complex state machines
-- heavy concurrency/effect orchestration
-- high determinism and testability requirements
+Use MVI when:
+- the feature is a complex state machine
+- concurrency/effect orchestration is heavy
+- determinism and testability requirements are high, without adding a framework dependency
 
-Prefer MVVM when:
-- screen complexity is moderate
-- lower boilerplate is more important than strict state-machine modeling
+Switch or pair when:
+- screen complexity is moderate and lower boilerplate matters more: switch to `references/mvvm.md`
+- many composed child features and dependency overrides are needed: evolve to `references/tca.md`
 
-## Cross-Playbook Navigation
-
-- If this feels too heavy, switch to `references/mvvm.md` for lower ceremony.
-- If complexity grows to many composed child features and dependency overrides, evolve to `references/tca.md`.
+For cross-architecture disqualifiers and migration triggers, see `references/selection-guide.md`.
 
 ## PR Review Checklist
 

@@ -10,8 +10,6 @@ license: MIT
 
 Use this skill to pick the best Swift architecture playbook for SwiftUI/UIKit codebases and apply it to the user’s task.
 
-For quick navigation across playbooks, use `references/_index.md`.
-
 ## Fast Path
 
 Before selecting an architecture, always capture:
@@ -59,26 +57,22 @@ Deliver:
 ## Architecture Router
 
 If the user explicitly names an architecture, treat it as the initial candidate and run a fit check before committing:
-- validate against UI stack fit (SwiftUI/UIKit/mixed), state complexity, effect orchestration needs, team familiarity, and existing codebase conventions
+- validate against UI stack fit (SwiftUI/UIKit/mixed), minimum deployment target, state complexity, effect orchestration needs, team familiarity, and existing codebase conventions
 - if it fits, proceed with the requested architecture
 - if it mismatches key constraints, explicitly explain the mismatch and recommend the closest-fit alternative from `references/selection-guide.md`
 - if the user still insists on a mismatched architecture, proceed with a risk-mitigated plan and state the risks up front
 
 Architecture reference mapping:
-- MVVM → `references/mvvm.md`
-- MVI → `references/mvi.md`
-- TCA → `references/tca.md`
-- Clean Architecture → `references/clean-architecture.md`
-- VIPER → `references/viper.md`
-- Reactive → `references/reactive.md`
-- MVP → `references/mvp.md`
-- Coordinator → `references/coordinator.md`
+- MVVM (screen-level state with lightweight binding) → `references/mvvm.md`
+- MVI (reducer-style state machines without a framework dependency) → `references/mvi.md`
+- TCA (composable features with strict effect orchestration) → `references/tca.md`
+- Clean Architecture (strict layers and replaceable infrastructure) → `references/clean-architecture.md`
+- VIPER (large UIKit modules with explicit role separation) → `references/viper.md`
+- Reactive (Combine/RxSwift stream-heavy features) → `references/reactive.md`
+- MVP (UIKit passive views with presenter-driven rendering) → `references/mvp.md`
+- Coordinator (navigation flows and deep linking) → `references/coordinator.md`
 
-Combination routing:
-- Coordinator is usually secondary unless the user's main problem is flow ownership, deep linking, or reusable navigation.
-- Reactive is usually secondary when streams live inside MVVM, MVP, VIPER, MVI, or TCA presentation boundaries.
-- Clean Architecture is usually primary for app/module layering, with MVVM, MVP, or TCA as the presentation pattern.
-- When combining, read both references and state which pattern owns each boundary before giving file structure or code.
+When the best fit combines patterns, follow **Combining Architectures** in `references/selection-guide.md`, read both playbooks, and state which pattern owns each boundary before giving file structure or code.
 
 ## Analyze Existing Codebase (When Applicable)
 
@@ -114,7 +108,7 @@ Read the selected architecture reference and convert its guidance into deliverab
 - Flag anti-patterns found in existing code and provide direct fixes.
 - Include cancellation and error handling in all async flows.
 - For explicit architecture requests, include a short fit result (`fit` or `mismatch`) with 1-2 reasons.
-- For mismatch cases, include one closest-fit alternative and why it better matches the stated constraints.
+- For mismatch cases, include one closest-fit alternative, why it better matches the stated constraints, and one trade-off.
 - When writing code, include only the patterns relevant to the task — do not dump entire playbooks.
 - Treat reference snippets as illustrative by default; add full compile scaffolding only if the user asks for runnable code.
 - Ask only minimum blocking questions; otherwise proceed with explicit assumptions stated up front.

@@ -2,14 +2,13 @@
 
 Thanks for contributing to `swift-architecture-skill`.
 
-This repository is documentation-first: it defines a routing skill (`SKILL.md`), a references index (`references/_index.md`), and architecture playbooks (`references/*.md`) used by coding agents.
+This repository is documentation-first: it defines a routing skill (`SKILL.md`), a selection guide (`references/selection-guide.md`), and architecture playbooks (`references/*.md`) used by coding agents.
 
 ## Before You Start
 
 1. Read `swift-architecture-skill/SKILL.md` to understand how architecture selection and routing works.
-2. Review `swift-architecture-skill/references/_index.md` to see the current navigation and routing model.
-3. Review `swift-architecture-skill/references/selection-guide.md` to see current decision criteria.
-4. Skim one or two existing playbooks (for example `mvvm.md`, `tca.md`) to match structure and tone.
+2. Review `swift-architecture-skill/references/selection-guide.md` to see current decision criteria.
+3. Skim one or two existing playbooks (for example `mvvm.md`, `tca.md`) to match structure and tone.
 
 ## Repository Structure
 
@@ -18,7 +17,6 @@ swift-architecture-skill/
   SKILL.md
   agents/openai.yaml
   references/
-    _index.md
     selection-guide.md
     mvvm.md
     mvi.md
@@ -60,16 +58,13 @@ Content expectations:
 1. Create a new playbook in `swift-architecture-skill/references/<architecture>.md`.
 2. Follow the required playbook structure listed above.
 3. Update `swift-architecture-skill/SKILL.md`:
-   - Add the architecture to the mapping in **Architecture Router**
+   - Add the architecture, with a one-line description, to the mapping in **Architecture Router**
    - Mention it in any architecture list that should include it
-4. Update `swift-architecture-skill/references/_index.md`:
-   - Add a one-line description
-   - Add or adjust any problem-router entries
-5. Update `swift-architecture-skill/references/selection-guide.md`:
+4. Update `swift-architecture-skill/references/selection-guide.md`:
    - Add decision criteria signals
    - Add it to the decision matrix/flow if applicable
    - Document valid combinations with other patterns when relevant
-6. If needed, update `README.md` so supported architectures and project structure stay accurate.
+5. If needed, update `README.md` so supported architectures and project structure stay accurate.
 
 ## Swift Example Conventions
 
