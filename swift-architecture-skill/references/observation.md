@@ -6,7 +6,7 @@ The minimum deployment target determines which observation mechanism to use. Thi
 
 | Factor | `@Observable` (iOS 17+) | `ObservableObject` (iOS 14–16) |
 |--------|--------------------------|-------------------------------|
-| Import | `import Observation` (or none — built-in) | `import Combine` |
+| Import | `import Observation` (re-exported by `import SwiftUI`) | `import Combine` (re-exported by `import SwiftUI`) |
 | Property tracking | Fine-grained (per-property) | Coarse (any `@Published` change re-renders) |
 | View ownership | `@State` | `@StateObject` |
 | Binding access | `@Bindable` | `@ObservedObject` / `$property` |
