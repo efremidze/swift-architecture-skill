@@ -39,15 +39,15 @@ Core rules:
 ## Default Path
 
 - **Default path**: one feature-scoped `State`, `Intent`, `Action`, a reducer pair (`intent` + `action`), and one store instance.
-- Start with pure intent reduction that returns effect descriptors when team familiarity allows.
+- Start with pure intent reduction that returns effect descriptors (a plain `FeatureEffect` enum, see the `CounterEffect` example under Reducer Pattern) when team familiarity allows.
 - Use service-coupled reducer signatures only as a temporary simplicity tradeoff.
 
 ## Minimal Baseline Implementation
 
 Start with:
 - Value `State` + user-only `Intent` + internal `Action`
-- `reduce(state:intent:) -> EffectDescriptor?`
-- `run(effectDescriptor) -> Action` at the boundary
+- `reduce(state:intent:) -> FeatureEffect?` where `FeatureEffect` is a plain enum describing work to perform
+- `run(_ effect: FeatureEffect) async -> Action` at the boundary
 - Store that executes effects and feeds resulting actions back
 
 ## Core Types

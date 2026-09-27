@@ -586,13 +586,6 @@ final class AppRouter {
 }
 ```
 
-### Advanced Variants
-
-Use these only when the baseline stops fitting:
-- Router-owned path for shared multi-screen flows
-- App-level composition root when many features share dependency graphs
-- Dedicated deep-link router when links can target nested flows
-
 ### Which Pattern to Choose
 
 | Scenario | Recommended Pattern |
@@ -602,6 +595,13 @@ Use these only when the baseline stops fitting:
 | UIKit host or mixed SwiftUI/UIKit | Coordinator protocol |
 | Multi-step flows (onboarding, checkout) | Coordinator with child coordinators |
 | Universal Links / push notifications | Deep link router + state-driven nav |
+
+## Advanced Variants
+
+Use these only when the baseline stops fitting:
+- Router-owned path for shared multi-screen flows
+- App-level composition root when many features share dependency graphs
+- Dedicated deep-link router when links can target nested flows
 
 ## Migration Notes
 
