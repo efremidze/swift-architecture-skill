@@ -87,10 +87,7 @@ final class SearchViewModel {
 }
 ```
 
-Key differences from `ObservableObject`:
-- No `@Published` — the `@Observable` macro synthesizes tracking for stored properties.
-- Views use `@State` for ownership and `@Bindable` for two-way binding (`$viewModel.query`).
-- `didSet` triggers side effects on property mutation — no imperative `queryChanged` method needed.
+`didSet` triggers side effects on property mutation, so no imperative `queryChanged` method is needed. For the general `@Observable` vs `ObservableObject` differences, see `references/observation.md`.
 
 When you need Combine operators (complex merges, `combineLatest`, `switchToLatest`), keep pipelines inside the `@Observable` class and assign results to tracked properties:
 
@@ -222,7 +219,7 @@ final class SearchPresenter<S: Scheduler> where S.SchedulerTimeType == DispatchQ
             .map { value in
                 service.search(value)
                     .map(SearchResultState.loaded)
-                    .catch { Just(.failed($0.localizedDescription)) }
+                    .catch { Just(.failed(userMessage(for: $0))) }
             }
             .switchToLatest()
             .sink { [weak self] in self?.state.send($0) }
@@ -308,7 +305,7 @@ func searchState(
 ) -> AnyPublisher<SearchResultState, Never> {
     service.search(query)
         .map(SearchResultState.loaded)
-        .catch { Just(.failed($0.localizedDescription)) }
+        .catch { Just(.failed(userMessage(for: $0))) }
         .eraseToAnyPublisher()
 }
 ```

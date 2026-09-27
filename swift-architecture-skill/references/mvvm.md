@@ -132,7 +132,7 @@ final class FeedViewModel {
             } catch is CancellationError {
                 // Ignore cancellation.
             } catch {
-                state.load = .failed(error.localizedDescription)
+                state.load = .failed(userMessage(for: error))
             }
         }
     }
@@ -175,7 +175,7 @@ final class FeedViewModel: ObservableObject {
             } catch is CancellationError {
                 // Ignore cancellation.
             } catch {
-                state.load = .failed(error.localizedDescription)
+                state.load = .failed(userMessage(for: error))
             }
         }
     }
@@ -636,7 +636,7 @@ func load() {
         } catch is CancellationError {
             // Ignore cancellation.
         } catch {
-            state.load = .failed(error.localizedDescription)
+            state.load = .failed(userMessage(for: error))
         }
     }
 }
@@ -659,7 +659,7 @@ func load() {
         } catch is CancellationError {
             // Ignore cancellation.
         } catch {
-            state.load = .failed(error.localizedDescription)
+            state.load = .failed(userMessage(for: error))
         }
     }
 }
@@ -805,7 +805,7 @@ For cross-architecture disqualifiers and migration triggers, see `references/sel
 - ViewModel exposes explicit state model.
 - Dependencies are injected (no app-wide singleton dependency in ViewModel).
 - Async tasks have cancellation and stale-response protection.
-- Errors are mapped to user-safe messages, not `localizedDescription` pass-through.
+- Errors are mapped to user-safe messages (see `userMessage(for:)` in `references/concurrency.md`), not `localizedDescription` pass-through.
 - Domain models are not directly coupled to View rendering.
 - Navigation destinations are modeled as value types (enum/struct), not imperative calls.
 - ViewModel does not import UIKit or reference presentation APIs directly.

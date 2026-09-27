@@ -72,6 +72,10 @@ Architecture reference mapping:
 - MVP (UIKit passive views with presenter-driven rendering) → `references/mvp.md`
 - Coordinator (navigation flows and deep linking) → `references/coordinator.md`
 
+Shared references (load alongside the selected playbook when relevant):
+- `references/concurrency.md`: cancellation, stale-response guards, and the `userMessage(for:)` error-mapping convention used by playbook snippets; load when writing or reviewing async code
+- `references/observation.md`: `@Observable` vs `ObservableObject` by deployment target; load when wiring SwiftUI state
+
 When the best fit combines patterns, follow **Combining Architectures** in `references/selection-guide.md`, read both playbooks, and state which pattern owns each boundary before giving file structure or code.
 
 ## Analyze Existing Codebase (When Applicable)

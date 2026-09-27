@@ -106,6 +106,8 @@ swift-architecture-skill/
   SKILL.md                       # Routing logic and output requirements
   references/
     selection-guide.md           # Decision framework across architectures
+    concurrency.md               # Shared async, cancellation, and error-mapping rules
+    observation.md               # Shared @Observable vs ObservableObject guidance
     mvp.md                       # MVP playbook
     mvvm.md                      # MVVM playbook
     mvi.md                       # MVI playbook

@@ -102,15 +102,15 @@ func reduce(state: inout CounterState, action: CounterAction) {
     case .incrementResponse(.success(let value)):
         state.load = .loaded(value)
     case .incrementResponse(.failure(let error)):
-        state.load = .failed(error.localizedDescription)
+        state.load = .failed(userMessage(for: error))
     case .decrementResponse(.success(let value)):
         state.load = .loaded(value)
     case .decrementResponse(.failure(let error)):
-        state.load = .failed(error.localizedDescription)
+        state.load = .failed(userMessage(for: error))
     case .resetResponse(.success(let value)):
         state.load = .loaded(value)
     case .resetResponse(.failure(let error)):
-        state.load = .failed(error.localizedDescription)
+        state.load = .failed(userMessage(for: error))
     }
 }
 ```
@@ -553,10 +553,9 @@ UIKit rules:
 
 ## Concurrency Rules
 
-- Track active tasks by intent/effect key where duplicate requests are possible.
-- Cancel stale in-flight work before starting a newer request.
-- Use request IDs when responses can arrive out-of-order.
-- Keep shared mutable service state in actors.
+Follow the shared rules in `references/concurrency.md`. MVI-specific additions:
+- Track active tasks by intent/effect key in the store where duplicate requests are possible.
+- Carry request IDs in response actions and compare them in the reducer when responses can arrive out-of-order.
 
 ## Migration Notes (MVVM -> MVI)
 

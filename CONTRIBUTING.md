@@ -18,6 +18,8 @@ swift-architecture-skill/
   agents/openai.yaml
   references/
     selection-guide.md
+    concurrency.md
+    observation.md
     mvvm.md
     mvi.md
     tca.md
@@ -49,7 +51,7 @@ When editing any architecture playbook in `swift-architecture-skill/references/`
 Content expectations:
 
 - Use protocol-based dependency injection
-- Include error handling in async operations
+- Include error handling in async operations, following the shared rules in `references/concurrency.md` (use `userMessage(for:)` rather than `localizedDescription` for user-facing errors)
 - Prefer value-based navigation modeling (enum/struct) over UIKit reference wiring
 - Keep examples focused and syntactically correct
 

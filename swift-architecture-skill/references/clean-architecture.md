@@ -242,7 +242,7 @@ Rules:
 - prefer `async let` for concurrent independent fetches
 - cancellation propagates automatically through `try await`
 - use `Task.checkCancellation()` before expensive work if needed
-- in presentation, cancel tasks on view disappearance or new request
+- in presentation, cancel tasks on view disappearance or new request (see `references/concurrency.md`)
 
 ## Presentation Boundary
 
