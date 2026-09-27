@@ -812,7 +812,7 @@ Prefer Clean Architecture/VIPER when:
 
 ## Cross-Playbook Navigation
 
-- If this feels too heavy for a small feature, switch to `references/mvp.md` (UIKit passive-view) or a trimmed MVVM baseline.
+- If this feels too heavy for a small feature, trim to the Minimal Baseline above (one `State`, one `ViewModel`, one `View`) rather than switching patterns. For UIKit screens that need a strictly passive view and explicit view commands, consider `references/mvp.md`.
 - If complexity grows (strict state machine, advanced effect orchestration), evolve to `references/mvi.md` or `references/tca.md`.
 
 ## Production Hardening Checklist

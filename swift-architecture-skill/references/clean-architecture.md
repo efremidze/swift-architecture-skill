@@ -62,9 +62,11 @@ For one feature, start with:
 ```text
 Domain/
   Entities/
+  Repositories/
   UseCases/
 Data/
   Repositories/
+  Mappers/
   API/
   Persistence/
 Presentation/
@@ -73,8 +75,8 @@ App/
 ```
 
 Guidance:
-- keep entities and use-case protocols in `Domain`
-- keep repository implementations and external adapters in `Data`
+- keep entities, repository protocols, and use-case protocols in `Domain`
+- keep repository implementations, DTO mappers, and external adapters in `Data`
 - keep views/view models/controllers in `Presentation`
 - keep DI composition root and app bootstrap in `App`
 
@@ -208,10 +210,10 @@ Data/
   Mappers/UserMapper.swift
   Repositories/LiveUserRepository.swift
 Presentation/
-  Profile/ProfileViewModel.swift
-  Profile/ProfileView.swift
+  Features/Profile/ProfileViewModel.swift
+  Features/Profile/ProfileView.swift
 App/
-  ProfileAssembly.swift
+  UserFeatureAssembly.swift
 ```
 
 End-to-end request path:

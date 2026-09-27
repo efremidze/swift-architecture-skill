@@ -47,8 +47,8 @@ Core rules:
 Start with:
 - Value `State` + user-only `Intent` + internal `Action`
 - `reduce(state:intent:) -> FeatureEffect?` where `FeatureEffect` is a plain enum describing work to perform
-- `run(_ effect: FeatureEffect) async -> Action` at the boundary
-- Store that executes effects and feeds resulting actions back
+- `run(_ effect: FeatureEffect, service: FeatureServicing) async -> Action` at the boundary
+- A small adapter that wraps `run` in `Effect.run` so the `Store` (which takes `Effect<Action>?`) can execute it and feed the resulting action back (see `makeCounterStore` under Reducer Pattern)
 
 ## Core Types
 
