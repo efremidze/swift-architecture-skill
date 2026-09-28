@@ -5,7 +5,6 @@ Use this reference for strict unidirectional flow, strong composition, and `Test
 ## Contents
 - [Mental Model](#mental-model)
 - [Default Path](#default-path)
-- [Minimal Baseline Implementation](#minimal-baseline-implementation)
 - [Canonical Feature Shape](#canonical-feature-shape)
 - [View Integration](#view-integration)
 - [Advanced Variants](#advanced-variants)
@@ -16,11 +15,7 @@ Use this reference for strict unidirectional flow, strong composition, and `Test
 - [Testing with TestStore](#testing-with-teststore)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Migration Notes (Non-TCA -> TCA)](#migration-notes-non-tca---tca)
-- [When to Prefer TCA](#when-to-prefer-tca)
-- [When Not to Use TCA (Cost Signals)](#when-not-to-use-tca-cost-signals)
-- [Testing Minimum Bar](#testing-minimum-bar)
-- [Cross-Playbook Navigation](#cross-playbook-navigation)
-- [Production Hardening Checklist](#production-hardening-checklist)
+- [When to Use TCA](#when-to-use-tca)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Mental Model
@@ -40,17 +35,13 @@ Core expectations:
 
 ## Default Path
 
-- **Default path**: one `@Reducer` feature with value `State`, focused `Action`, and dependency-injected effects.
-- Adopt `@ObservableState` and modern view bindings by default for current TCA.
-- Compose child reducers only when a feature boundary is truly distinct.
-
-## Minimal Baseline Implementation
-
-Start with:
+Start with one `@Reducer` feature using `@ObservableState` and modern view bindings:
 - `State` (equatable, value-based)
 - `Action` (user intents + effect results)
 - One `Reduce` body with explicit success/failure actions
 - One dependency client with `liveValue` + `testValue`
+
+Compose child reducers only when a feature boundary is truly distinct.
 
 ## Canonical Feature Shape
 
@@ -307,8 +298,13 @@ Keep navigation decisions in reducers and keep views declarative.
 
 ## Testing with `TestStore`
 
+### Minimum Bar
+
+- One reducer transition test for each core user intent.
+- Async success + failure coverage for each effect path.
+- At least one cancellation test for re-entrant effects.
+
 Use `TestStore` for deterministic action/state assertions.
-Cover success, failure, and cancellation paths in async effects.
 
 ```swift
 import XCTest
@@ -428,53 +424,32 @@ final class CounterFeatureTests: XCTestCase {
 - Translate view-intent methods into `Action`, then move async coordination into `.run` effects.
 - Keep navigation and side-effect adapters at module edges during migration to limit churn.
 
-## When to Prefer TCA
+## When to Use TCA
 
-Prefer TCA when:
-- app has many stateful workflows
-- test determinism is critical
+Use TCA when:
+- the app has many stateful workflows
+- test determinism and effect cancellation correctness are critical
 - composition and modular scaling are required
-- effect cancellation correctness matters
-
-Prefer MVVM or lighter MVI variants when:
-- app is small and unlikely to grow
-- team is not ready for UDF discipline
-- feature speed and low ceremony are prioritized
-
-## When Not to Use TCA (Cost Signals)
 
 Avoid TCA-first adoption when most of these are true:
 - only simple screen-level state with few async branches
 - no near-term need for reducer composition or strict state replay
-- team cannot absorb dependency and testing model changes now
-- migration budget is low and feature delivery speed is critical
+- the team cannot absorb dependency and testing model changes now
+- migration budget is low and delivery speed is critical
 
-In those cases, start with `references/mvvm.md` or `references/mvi.md` and migrate selective high-complexity flows later.
+Switch or pair when:
+- the cost signals above dominate: start with `references/mvvm.md` or `references/mvi.md` and migrate selective high-complexity flows later
+- system boundaries become primary: pair with `references/clean-architecture.md` for domain/data layering
 
-## Testing Minimum Bar
-
-- One reducer transition test for each core user intent.
-- Async success + failure coverage for each effect path.
-- At least one cancellation test for re-entrant effects.
-
-## Cross-Playbook Navigation
-
-- If this feels too heavy, switch to `references/mvi.md` or `references/mvvm.md`.
-- If system boundaries become primary, pair with `references/clean-architecture.md` for domain/data layering.
-
-## Production Hardening Checklist
-
-- Every effect has explicit error mapping and cancellation strategy.
-- Dependency clients are overrideable in tests and not hidden singletons.
-- Large features are decomposed before reducer size becomes unreviewable.
+For cross-architecture disqualifiers and migration triggers, see `references/selection-guide.md`.
 
 ## PR Review Checklist
 
 - State is value-based and equatable.
 - Reducer avoids direct side effects.
-- Dependencies are injected and overrideable in tests.
-- Effects have cancellation strategy where needed.
-- Features compose with `Scope`/`forEach`.
+- Dependencies are injected and overrideable in tests (no hidden singletons).
+- Every effect has explicit error mapping and a cancellation strategy where re-entrant.
+- Features compose with `Scope`/`forEach`, and large features are decomposed before the reducer becomes unreviewable.
 - Navigation is modeled in state.
-- Tests cover success, failure, and cancellation flows.
+- Tests meet the minimum bar in Testing with `TestStore`.
 - Views render and send actions only.

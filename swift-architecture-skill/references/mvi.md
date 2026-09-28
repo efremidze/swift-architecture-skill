@@ -5,7 +5,6 @@ Use this reference for strict unidirectional flow and deterministic state transi
 ## Contents
 - [Mental Model](#mental-model)
 - [Default Path](#default-path)
-- [Minimal Baseline Implementation](#minimal-baseline-implementation)
 - [Core Types](#core-types)
 - [Reducer Pattern](#reducer-pattern)
 - [Store Pattern](#store-pattern)
@@ -17,10 +16,7 @@ Use this reference for strict unidirectional flow and deterministic state transi
 - [End-to-End Feature Slice](#end-to-end-feature-slice)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Expectations](#testing-expectations)
-- [When to Prefer MVI](#when-to-prefer-mvi)
-- [Testing Minimum Bar](#testing-minimum-bar)
-- [Cross-Playbook Navigation](#cross-playbook-navigation)
-- [Production Hardening Checklist](#production-hardening-checklist)
+- [When to Use MVI](#when-to-use-mvi)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Mental Model
@@ -38,17 +34,13 @@ Core rules:
 
 ## Default Path
 
-- **Default path**: one feature-scoped `State`, `Intent`, `Action`, a reducer pair (`intent` + `action`), and one store instance.
-- Start with pure intent reduction that returns effect descriptors (a plain `FeatureEffect` enum, see the `CounterEffect` example under Reducer Pattern) when team familiarity allows.
-- Use service-coupled reducer signatures only as a temporary simplicity tradeoff.
-
-## Minimal Baseline Implementation
-
-Start with:
+Start with one feature-scoped `State`, `Intent`, `Action`, a reducer pair (`intent` + `action`), and one store instance:
 - Value `State` + user-only `Intent` + internal `Action`
 - `reduce(state:intent:) -> FeatureEffect?` where `FeatureEffect` is a plain enum describing work to perform
 - `run(_ effect: FeatureEffect, service: FeatureServicing) async -> Action` at the boundary
-- A small adapter that wraps `run` in `Effect.run` so the `Store` (which takes `Effect<Action>?`) can execute it and feed the resulting action back (see `makeCounterStore` under Reducer Pattern)
+- A small adapter that wraps `run` in `Effect.run` so the `Store` (which takes `Effect<Action>?`) can execute it and feed the resulting action back (see `CounterEffect` and `makeCounterStore` under Reducer Pattern)
+
+Use service-coupled reducer signatures only as a temporary simplicity tradeoff.
 
 ## Core Types
 
@@ -110,15 +102,15 @@ func reduce(state: inout CounterState, action: CounterAction) {
     case .incrementResponse(.success(let value)):
         state.load = .loaded(value)
     case .incrementResponse(.failure(let error)):
-        state.load = .failed(error.localizedDescription)
+        state.load = .failed(userMessage(for: error))
     case .decrementResponse(.success(let value)):
         state.load = .loaded(value)
     case .decrementResponse(.failure(let error)):
-        state.load = .failed(error.localizedDescription)
+        state.load = .failed(userMessage(for: error))
     case .resetResponse(.success(let value)):
         state.load = .loaded(value)
     case .resetResponse(.failure(let error)):
-        state.load = .failed(error.localizedDescription)
+        state.load = .failed(userMessage(for: error))
     }
 }
 ```
@@ -561,10 +553,9 @@ UIKit rules:
 
 ## Concurrency Rules
 
-- Track active tasks by intent/effect key where duplicate requests are possible.
-- Cancel stale in-flight work before starting a newer request.
-- Use request IDs when responses can arrive out-of-order.
-- Keep shared mutable service state in actors.
+Follow the shared rules in `references/concurrency.md`. MVI-specific additions:
+- Track active tasks by intent/effect key in the store where duplicate requests are possible.
+- Carry request IDs in response actions and compare them in the reducer when responses can arrive out-of-order.
 
 ## Migration Notes (MVVM -> MVI)
 
@@ -611,9 +602,13 @@ Features/Counter/
 
 ## Testing Expectations
 
-- Unit test intent reducer transitions.
-- Unit test action reducer success/failure transitions.
-- Verify cancellation and stale-response handling.
+### Minimum Bar
+
+- Reducer tests for immediate intent transitions.
+- Reducer tests for action success/failure transitions.
+- One cancellation or stale-response test for each re-entrant effect path.
+
+Rules:
 - Keep tests deterministic with controlled services, schedulers, or clocks.
 - Assert state-machine behavior, not view details.
 
@@ -708,39 +703,25 @@ private enum TestError: Error {
 }
 ```
 
-## When to Prefer MVI
+## When to Use MVI
 
-Prefer MVI for:
-- complex state machines
-- heavy concurrency/effect orchestration
-- high determinism and testability requirements
+Use MVI when:
+- the feature is a complex state machine
+- concurrency/effect orchestration is heavy
+- determinism and testability requirements are high, without adding a framework dependency
 
-Prefer MVVM when:
-- screen complexity is moderate
-- lower boilerplate is more important than strict state-machine modeling
+Switch or pair when:
+- screen complexity is moderate and lower boilerplate matters more: switch to `references/mvvm.md`
+- many composed child features and dependency overrides are needed: evolve to `references/tca.md`
 
-## Testing Minimum Bar
-
-- Reducer tests for immediate intent transitions.
-- Reducer tests for action success/failure transitions.
-- One cancellation or stale-response test for each re-entrant effect path.
-
-## Cross-Playbook Navigation
-
-- If this feels too heavy, switch to `references/mvvm.md` for lower ceremony.
-- If complexity grows to many composed child features and dependency overrides, evolve to `references/tca.md`.
-
-## Production Hardening Checklist
-
-- Ensure every expected service failure maps to explicit failure actions.
-- Reserve unexpected-error hooks for true invariant/wiring faults.
-- Keep reducer logic deterministic and free from direct side effects.
+For cross-architecture disqualifiers and migration triggers, see `references/selection-guide.md`.
 
 ## PR Review Checklist
 
 - State is value-based and canonical.
 - Reducers are deterministic and side-effect free.
 - Effects are isolated and mapped back into actions.
+- Expected service failures map to explicit failure actions; unexpected-error hooks are reserved for invariant/wiring faults.
 - Cancellation/versioning exists for concurrent requests.
 - View sends intents only; no direct business mutation.
-- Reducer tests cover success, failure, and cancellation.
+- Reducer tests meet the minimum bar in Testing Expectations.

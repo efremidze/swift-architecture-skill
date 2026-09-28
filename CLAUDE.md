@@ -11,8 +11,9 @@ This repository contains an Agent Skill that provides Swift architecture design 
 swift-architecture-skill/     # The Agent Skill itself
   SKILL.md                    # Skill definition and workflow
   references/
-    _index.md                 # Navigation hub and problem router
     selection-guide.md        # Architecture decision framework
+    concurrency.md            # Shared async, cancellation, and error-mapping rules
+    observation.md            # Shared @Observable vs ObservableObject guidance
     mvp.md                    # MVP pattern playbook
     mvvm.md                   # MVVM pattern playbook
     mvi.md                    # MVI pattern playbook

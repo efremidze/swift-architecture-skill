@@ -5,7 +5,6 @@ Use this reference for MVVM requests or screen-level state with async effects.
 ## Contents
 - [Core Boundaries](#core-boundaries)
 - [Default Path](#default-path)
-- [Minimal Baseline Implementation](#minimal-baseline-implementation)
 - [Feature Structure](#feature-structure)
 - [State Modeling](#state-modeling)
 - [ViewModel Pattern](#viewmodel-pattern)
@@ -16,10 +15,7 @@ Use this reference for MVVM requests or screen-level state with async effects.
 - [Migration Notes](#migration-notes)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Expectations](#testing-expectations)
-- [When to Prefer MVVM](#when-to-prefer-mvvm)
-- [Testing Minimum Bar](#testing-minimum-bar)
-- [Cross-Playbook Navigation](#cross-playbook-navigation)
-- [Production Hardening Checklist](#production-hardening-checklist)
+- [When to Use MVVM](#when-to-use-mvvm)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Boundaries
@@ -36,19 +32,13 @@ Dependency direction:
 
 ## Default Path
 
-- **Default path**: start with one `State` type, one `ViewModel`, one `View`, and one injected repository/use-case protocol.
-- Keep navigation simple: begin with ViewModel-owned value-type destinations for SwiftUI-only features.
-- Add a router/coordinator only when flows become multi-screen, reused, or deep-link driven.
-
-## Minimal Baseline Implementation
-
-Build the smallest MVVM feature with:
+Start with one `State` type, one `ViewModel`, one `View`, and one injected repository/use-case protocol:
 - `FeatureState` enum/struct for load + content + error
 - `FeatureViewModel` on `@MainActor` with one async `load()` and cancellation
 - `FeatureView` that renders only `state` and forwards intents
 - `FeatureAssembly.makeViewModel()` for dependency wiring
 
-Treat additional types (`ViewData`, dedicated router, app container) as optional expansions, not mandatory starting points.
+Keep navigation simple: begin with ViewModel-owned value-type destinations for SwiftUI-only features, and add a router/coordinator only when flows become multi-screen, reused, or deep-link driven. Treat additional types (`ViewData`, dedicated router, app container) as optional expansions, not mandatory starting points.
 
 ## Feature Structure
 
@@ -142,7 +132,8 @@ final class FeedViewModel {
             } catch is CancellationError {
                 // Ignore cancellation.
             } catch {
-                state.load = .failed(error.localizedDescription)
+                guard !Task.isCancelled else { return }
+                state.load = .failed(userMessage(for: error))
             }
         }
     }
@@ -185,7 +176,8 @@ final class FeedViewModel: ObservableObject {
             } catch is CancellationError {
                 // Ignore cancellation.
             } catch {
-                state.load = .failed(error.localizedDescription)
+                guard !Task.isCancelled else { return }
+                state.load = .failed(userMessage(for: error))
             }
         }
     }
@@ -461,127 +453,27 @@ struct FeedView: View {
 }
 ```
 
-### Coordinator Pattern (UIKit or Mixed Codebases)
+### UIKit Hosts, Multi-Screen Flows, and Deep Links
 
-When UIKit is involved or complex multi-step flows require centralized control, use a Coordinator protocol.
-
-```swift
-@MainActor
-protocol FeedCoordinator: AnyObject {
-    func showDetail(itemID: UUID)
-    func showProfile(userId: UUID)
-    func presentCompose(onComplete: @MainActor @escaping () -> Void)
-}
-```
-
-Inject the Coordinator into the ViewModel:
+When UIKit hosts SwiftUI screens, flows span multiple screens, or deep links target nested destinations, move navigation ownership into a coordinator and follow `references/coordinator.md` (coordinator protocol, child coordinators, deep-link parsing). MVVM-specific rules:
+- ViewModels expose navigation as injected closures, never coordinator references.
+- In SwiftUI-only apps, a deep link can set the ViewModel's value-type `navigationPath` directly; parse and validate the URL in one place before touching state.
 
 ```swift
 @MainActor
 @Observable
 final class FeedViewModel {
     private(set) var state = FeedState()
-
     private let repository: FeedRepository
-    private weak var coordinator: FeedCoordinator?
-    private var loadTask: Task<Void, Never>?
+    private let onSelectItem: (UUID) -> Void
 
-    init(repository: FeedRepository, coordinator: FeedCoordinator) {
+    init(repository: FeedRepository, onSelectItem: @escaping (UUID) -> Void) {
         self.repository = repository
-        self.coordinator = coordinator
+        self.onSelectItem = onSelectItem
     }
 
     func didTapItem(_ item: FeedItemViewData) {
-        coordinator?.showDetail(itemID: item.id)
-    }
-
-    func didTapCompose() {
-        coordinator?.presentCompose { [weak self] in
-            self?.load()
-        }
-    }
-}
-```
-
-Concrete implementation lives in the navigation layer:
-
-```swift
-@MainActor
-final class FeedFlowCoordinator: FeedCoordinator {
-    private let navigationController: UINavigationController
-
-    init(navigationController: UINavigationController) {
-        self.navigationController = navigationController
-    }
-
-    func showDetail(itemID: UUID) {
-        let viewModel = FeedDetailAssembly.makeViewModel(itemID: itemID)
-        let vc = UIHostingController(rootView: FeedDetailView(viewModel: viewModel))
-        navigationController.pushViewController(vc, animated: true)
-    }
-
-    func showProfile(userId: UUID) {
-        let viewModel = ProfileAssembly.makeViewModel(userId: userId)
-        let vc = UIHostingController(rootView: ProfileView(viewModel: viewModel))
-        navigationController.pushViewController(vc, animated: true)
-    }
-
-    func presentCompose(onComplete: @MainActor @escaping () -> Void) {
-        let composeVM = ComposeAssembly.makeViewModel(onComplete: onComplete)
-        let vc = UIHostingController(rootView: ComposeView(viewModel: composeVM))
-        navigationController.present(vc, animated: true)
-    }
-}
-```
-
-### Deep Linking
-
-Centralize deep link resolution in a router that maps URLs to navigation destinations.
-
-```swift
-enum DeepLink {
-    case feedItem(id: UUID)
-    case profile(userId: UUID)
-    case settings
-
-    init?(url: URL) {
-        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-              let host = components.host else { return nil }
-        switch host {
-        case "feed":
-            guard let idString = components.queryItems?.first(where: { $0.name == "id" })?.value,
-                  let id = UUID(uuidString: idString) else { return nil }
-            self = .feedItem(id: id)
-        case "profile":
-            guard let idString = components.queryItems?.first(where: { $0.name == "userId" })?.value,
-                  let id = UUID(uuidString: idString) else { return nil }
-            self = .profile(userId: id)
-        case "settings":
-            self = .settings
-        default:
-            return nil
-        }
-    }
-}
-```
-
-Apply deep links to existing navigation state:
-
-```swift
-@MainActor
-@Observable
-final class AppRouter {
-    var feedViewModel: FeedViewModel
-
-    func handle(_ deepLink: DeepLink) {
-        switch deepLink {
-        case .feedItem(let id):
-            feedViewModel.navigationPath = [.detail(id: id)]
-        case .profile(let userId):
-            feedViewModel.navigationPath = [.profile(userId: userId)]
-        case .settings:
-            feedViewModel.navigationPath = [.settings]
-        }
+        onSelectItem(item.id)
     }
 }
 ```
@@ -592,9 +484,9 @@ final class AppRouter {
 |---|---|
 | Pure SwiftUI, linear flows | `NavigationStack` path on ViewModel |
 | Sheets, alerts, confirmations | Optional state-driven presentation |
-| UIKit host or mixed SwiftUI/UIKit | Coordinator protocol |
-| Multi-step flows (onboarding, checkout) | Coordinator with child coordinators |
-| Universal Links / push notifications | Deep link router + state-driven nav |
+| UIKit host or mixed SwiftUI/UIKit | Coordinator (`references/coordinator.md`) |
+| Multi-step flows (onboarding, checkout) | Child coordinators (`references/coordinator.md`) |
+| Universal Links / push notifications | Centralized deep-link parsing + state-driven nav |
 
 ## Advanced Variants
 
@@ -646,7 +538,7 @@ func load() {
         } catch is CancellationError {
             // Ignore cancellation.
         } catch {
-            state.load = .failed(error.localizedDescription)
+            state.load = .failed(userMessage(for: error))
         }
     }
 }
@@ -669,7 +561,7 @@ func load() {
         } catch is CancellationError {
             // Ignore cancellation.
         } catch {
-            state.load = .failed(error.localizedDescription)
+            state.load = .failed(userMessage(for: error))
         }
     }
 }
@@ -679,11 +571,10 @@ If mapping is small but reused, extract it into a pure helper (`static`/`nonisol
 
 ## Testing Expectations
 
-Focus on deterministic state transitions:
-- success path (`loading -> loaded`)
-- failure path (`loading -> failed`)
-- cancellation path (no stale overwrite)
-- mapping correctness (domain -> view data)
+### Minimum Bar
+
+- Per async intent: one success test (`loading -> loaded`), one failure test (`loading -> failed`), and one cancellation/stale-response test (no stale overwrite).
+- At least one mapping test for domain -> `ViewData`/state correctness.
 
 Test strategy:
 - Use protocol stubs/fakes for repositories.
@@ -788,47 +679,31 @@ private enum TestError: Error {
 }
 ```
 
-## When to Prefer MVVM
+## When to Use MVVM
 
-Prefer MVVM when:
+Use MVVM when:
 - screen-level state management is the primary concern
-- team wants explicit View/ViewModel boundaries without introducing a full reducer/store framework
+- the team wants explicit View/ViewModel boundaries without a full reducer/store framework
 - feature complexity is moderate and does not require strict unidirectional flow
-- the team accepts moderate structure (for example, `State`, `ViewData`, assembly/router types) in exchange for clarity and testability
 
-MVVM is often lower ceremony than TCA/VIPER, but not "no ceremony." A strict MVVM style can introduce several files per feature; scale file splitting to actual complexity instead of applying every type up front.
+MVVM is lower ceremony than TCA/VIPER, but not "no ceremony": scale file splitting (`State`, `ViewData`, assembly/router types) to actual complexity instead of applying every type up front.
 
-Prefer MVI/TCA when:
-- deterministic state-machine modeling is required
-- complex effect orchestration and cancellation correctness are critical
+Switch or pair when:
+- the feature feels too heavy: trim to the Default Path rather than switching patterns; consider `references/mvp.md` only for UIKit screens that need a strictly passive view
+- deterministic state machines or complex effect orchestration become primary: evolve to `references/mvi.md` or `references/tca.md`
+- strict layer boundaries matter more than presentation simplicity: pair with `references/clean-architecture.md`
 
-Prefer Clean Architecture/VIPER when:
-- strict layer boundaries and use-case isolation matter more than presentation-layer simplicity
-
-## Testing Minimum Bar
-
-- At least one success test, one failure test, and one cancellation/stale-response test per async intent.
-- At least one mapping test for domain -> `ViewData`/state correctness.
-
-## Cross-Playbook Navigation
-
-- If this feels too heavy for a small feature, trim to the Minimal Baseline above (one `State`, one `ViewModel`, one `View`) rather than switching patterns. For UIKit screens that need a strictly passive view and explicit view commands, consider `references/mvp.md`.
-- If complexity grows (strict state machine, advanced effect orchestration), evolve to `references/mvi.md` or `references/tca.md`.
-
-## Production Hardening Checklist
-
-- Replace `localizedDescription` pass-through with user-safe error mapping.
-- Ensure all long-running tasks have cancellation and stale-response protection.
-- Keep UIKit/navigation API references out of ViewModel via router/coordinator protocols.
+For cross-architecture disqualifiers and migration triggers, see `references/selection-guide.md`.
 
 ## PR Review Checklist
 
 - View does not call services directly.
 - ViewModel exposes explicit state model.
 - Dependencies are injected (no app-wide singleton dependency in ViewModel).
-- Async tasks have cancellation strategy.
+- Async tasks have cancellation and stale-response protection.
+- Errors are mapped to user-safe messages (see `userMessage(for:)` in `references/concurrency.md`), not `localizedDescription` pass-through.
 - Domain models are not directly coupled to View rendering.
 - Navigation destinations are modeled as value types (enum/struct), not imperative calls.
 - ViewModel does not import UIKit or reference presentation APIs directly.
 - Deep link handling routes through a centralized router, not ad-hoc view logic.
-- Unit tests cover success, failure, and cancellation.
+- Unit tests meet the minimum bar in Testing Expectations.

@@ -28,31 +28,6 @@ Use this reference when the user asks for an architecture recommendation.
 - **MVP**: UIKit-native fit; Presenter drives passive View via protocol commands; SwiftUI uses an observable adapter.
 - **Coordinator**: Works with both stacks; UIKit uses `UINavigationController` wrapper; SwiftUI models navigation as value-type state bound to `NavigationStack`.
 
-## Observation Model (`@Observable` vs `ObservableObject`)
-
-The deployment target determines which observation mechanism to use. This affects SwiftUI wiring in every architecture:
-
-| Factor | `@Observable` (iOS 17+) | `ObservableObject` (iOS 14–16) |
-|--------|--------------------------|-------------------------------|
-| Import | `import Observation` (or none — built-in) | `import Combine` |
-| Property tracking | Fine-grained (per-property) | Coarse (any `@Published` change re-renders) |
-| View ownership | `@State` | `@StateObject` |
-| Binding access | `@Bindable` | `@ObservedObject` / `$property` |
-| Combine interop | Manual (wrap with `Publisher`) | Native (`$property` is a publisher) |
-| UIKit integration | Observe with `withObservationTracking` or use KVO bridge | Subscribe to `objectWillChange` or `@Published` publishers |
-| TCA | Uses `@ObservableState` macro (built on Observation) | Older `ViewStore`-based API |
-
-**When to use `@Observable`:**
-- iOS 17+ deployment target
-- SwiftUI-first features where fine-grained re-rendering matters
-- New code without existing Combine subscriber chains
-
-**When to keep `ObservableObject`:**
-- iOS 16 or earlier deployment target
-- Existing UIKit code subscribing to `@Published` properties via Combine
-- Shared models that expose publishers to multiple consumers
-- Gradual migration: keep `ObservableObject` on existing types, use `@Observable` on new types
-
 ## Quick Decision Flow
 
 ```text
@@ -124,24 +99,6 @@ Use these request signals:
 - multiple screens need to be reused across different flows
 - view controllers or ViewModels currently contain push/present calls
 
-## Validating User-Requested Architectures
-
-When the user pre-selects an architecture, validate it before finalizing:
-
-1. Check fit across:
-   - UI stack (SwiftUI/UIKit/mixed)
-   - minimum deployment target (determines `@Observable` vs `ObservableObject` wiring)
-   - feature complexity and state model needs
-   - effect orchestration requirements
-   - team familiarity and dependency tolerance
-   - alignment with existing codebase conventions
-2. Decide whether the request is a `fit` or a `mismatch`.
-3. Respond based on the result:
-   - `fit`: proceed with requested architecture
-   - `mismatch`: recommend closest-fit alternative and explain why
-
-If the user insists on a mismatched choice, proceed with the requested architecture but include a risk-mitigation plan.
-
 ## Combining Architectures
 
 Some projects use multiple patterns. Common valid combinations:
@@ -157,10 +114,11 @@ Some projects use multiple patterns. Common valid combinations:
 Combination selection rules:
 - Choose one **primary** pattern for the user's main boundary: feature state/presentation, domain layering, or navigation flow.
 - Choose a **secondary** pattern only for a distinct concern such as navigation (`Coordinator`) or streams (`Reactive`).
+- Coordinator is usually secondary unless the main problem is flow ownership, deep linking, or reusable navigation.
+- Reactive is usually secondary when streams live inside MVVM, MVP, VIPER, MVI, or TCA presentation boundaries.
+- Clean Architecture is usually primary for app/module layering, with MVVM, MVP, or TCA as the presentation pattern.
 - Read both playbooks when recommending a combination, then explicitly say which files/modules each pattern owns.
 - Do not recommend multiple full presentation patterns for the same feature boundary unless the task is a migration between them.
-
-When combining, clarify which pattern governs which layer and keep boundaries consistent.
 
 ## Disqualifier Checklist
 
@@ -183,13 +141,3 @@ Use these signals to recommend evolving architecture:
 - MVP/MVVM -> VIPER: modules repeatedly blur responsibilities and team ownership boundaries.
 - Presentation-only pattern -> Clean Architecture: repeated coupling to infrastructure blocks testing/replacement.
 - Async-first -> Reactive-first: event pipelines (search/live feed/real-time updates) dominate feature complexity.
-
-## Recommendation Format
-
-When recommending:
-
-1. Name one pattern and provide a fit result (`fit` or `mismatch`).
-2. Give 1-2 concise reasons grounded in user constraints.
-3. Cite the reference file.
-4. If `mismatch`, include the closest-fit alternative and one trade-off.
-5. Apply the selected playbook to the user’s feature.

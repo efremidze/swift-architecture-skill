@@ -5,7 +5,6 @@ Use this reference when a Swift codebase needs strict layer boundaries and use-c
 ## Contents
 - [Core Dependency Rule](#core-dependency-rule)
 - [Default Path](#default-path)
-- [Minimal Baseline Implementation](#minimal-baseline-implementation)
 - [Canonical Layer Layout](#canonical-layer-layout)
 - [Entities](#entities)
 - [Use Cases](#use-cases)
@@ -19,10 +18,7 @@ Use this reference when a Swift codebase needs strict layer boundaries and use-c
 - [Migration Notes](#migration-notes)
 - [Anti-Patterns and Fixes](#anti-patterns-and-fixes)
 - [Testing Strategy](#testing-strategy)
-- [When to Prefer Clean Architecture](#when-to-prefer-clean-architecture)
-- [Testing Minimum Bar](#testing-minimum-bar)
-- [Cross-Playbook Navigation](#cross-playbook-navigation)
-- [Production Hardening Checklist](#production-hardening-checklist)
+- [When to Use Clean Architecture](#when-to-use-clean-architecture)
 - [PR Review Checklist](#pr-review-checklist)
 
 ## Core Dependency Rule
@@ -46,16 +42,13 @@ Rules:
 
 ## Default Path
 
-- **Default path**: one focused use case, one domain repository protocol, one data implementation, one presentation adapter.
-- Keep boundaries strict, but avoid creating extra layers/components until needed.
-
-## Minimal Baseline Implementation
-
-For one feature, start with:
+For one feature, start with one focused use case, one domain repository protocol, one data implementation, and one presentation adapter:
 - `Domain/Entities` + `Domain/UseCases` + repository protocol
 - `Data/Repositories` + mapper from DTO to domain
 - `Presentation` ViewModel/Presenter consuming use-case abstraction
 - `App` assembly wiring concrete dependencies
+
+Keep boundaries strict, but avoid creating extra layers/components until needed.
 
 ## Canonical Layer Layout
 
@@ -249,7 +242,7 @@ Rules:
 - prefer `async let` for concurrent independent fetches
 - cancellation propagates automatically through `try await`
 - use `Task.checkCancellation()` before expensive work if needed
-- in presentation, cancel tasks on view disappearance or new request
+- in presentation, cancel tasks on view disappearance or new request (see `references/concurrency.md`)
 
 ## Presentation Boundary
 
@@ -307,10 +300,11 @@ UIKit adaptation:
 
 ## Testing Strategy
 
-Prioritize:
-- use-case unit tests with repository stubs
-- mapper tests (DTO <-> domain) in data layer
-- presentation tests with mocked use cases
+### Minimum Bar
+
+- Use-case success + failure tests with repository stubs.
+- Mapper edge-case test for invalid transport input.
+- Presentation test proving it depends on use-case abstraction (not live data classes).
 
 Rules:
 - avoid network in unit tests
@@ -376,39 +370,26 @@ private actor BlockingUserRepository: UserRepository {
 private enum TestError: Error { case notFound }
 ```
 
-## When to Prefer Clean Architecture
+## When to Use Clean Architecture
 
-Prefer when:
+Use Clean Architecture when:
 - app/domain complexity is medium to large
 - multiple teams need stable boundaries
 - long-term maintainability and replaceable infrastructure matter
 
-Prefer lighter layering when:
-- app is small and short-lived
-- strict layering overhead is higher than expected benefit
+Switch or pair when:
+- the app or feature is small and layering overhead exceeds the benefit: use `references/mvvm.md` or `references/mvp.md` alone
+- state orchestration grows inside presentation: pair with `references/mvi.md` or `references/tca.md`
 
-## Testing Minimum Bar
-
-- Use-case success + failure tests with repository stubs.
-- Mapper edge-case test for invalid transport input.
-- Presentation test proving it depends on use-case abstraction (not live data classes).
-
-## Cross-Playbook Navigation
-
-- If this feels too heavy for a single feature, switch to `references/mvvm.md` or `references/mvp.md`.
-- If state orchestration complexity grows inside presentation, pair with `references/mvi.md` or `references/tca.md`.
-
-## Production Hardening Checklist
-
-- Domain must remain framework-independent.
-- DTOs never cross into presentation/domain APIs.
-- Composition root owns concrete implementations and environment wiring.
+For cross-architecture disqualifiers and migration triggers, see `references/selection-guide.md`.
 
 ## PR Review Checklist
 
 - Dependency direction points inward only.
 - Domain layer is framework-independent.
+- DTOs never cross into presentation/domain APIs.
 - Use cases encapsulate business rules and stay focused.
 - Presentation does not import data implementations.
 - Repository abstractions live at domain boundary.
-- Tests isolate use cases from infrastructure.
+- Composition root owns concrete implementations and environment wiring.
+- Tests isolate use cases from infrastructure and meet the minimum bar in Testing Strategy.

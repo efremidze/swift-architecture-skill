@@ -12,6 +12,10 @@ README_PATH = ROOT / "README.md"
 QUALITY_CONTRACT_PATH = ROOT / "tooling" / "evals" / "contract.json"
 
 
+# Non-architecture references (routing and cross-cutting guidance).
+SHARED_REFERENCE_SLUGS: Set[str] = {"selection-guide", "concurrency", "observation"}
+
+
 SELECTION_HEADER_TO_SLUG: Dict[str, str] = {
     "MVVM": "mvvm",
     "MVI": "mvi",
@@ -43,7 +47,7 @@ def expected_reference_slugs() -> Set[str]:
     slugs = {
         p.stem
         for p in REFERENCES_DIR.glob("*.md")
-        if p.stem not in {"selection-guide", "_index"}
+        if p.stem not in SHARED_REFERENCE_SLUGS
     }
     return slugs
 
